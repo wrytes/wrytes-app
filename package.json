@@ -1,7 +1,18 @@
 {
-  "name": "wrytes-app",
+  "name": "@wrytes/wrytes-app",
   "version": "0.1.0",
   "private": true,
+  "license": "GPL-3.0",
+  "author": "samclassix <samclassix@proton.me>",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/wrytes/wrytes-app"
+  },
+  "keywords": [],
+  "bugs": {
+    "url": "https://github.com/wrytes/wrytes-app/issues"
+  },
+  "homepage": "https://github.com/wrytes/wrytes-app#readme",
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
