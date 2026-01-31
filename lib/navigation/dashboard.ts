@@ -2,7 +2,7 @@ import {
   faLightbulb,
   faVault,
   faHistory,
-  faMoneyCheckDollar,
+  faArrowRightArrowLeft,
   faUserCheck,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
@@ -24,10 +24,10 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     description: 'Dashboard overview and stats',
   },
   {
-    label: 'Borrow',
-    path: '/dashboard/borrow',
-    icon: faMoneyCheckDollar,
-    description: 'View and manage borrow positions',
+    label: 'Swap',
+    path: '/dashboard/swap',
+    icon: faArrowRightArrowLeft,
+    description: 'Swap tokens via CoW Protocol',
   },
   {
     label: 'Vaults',

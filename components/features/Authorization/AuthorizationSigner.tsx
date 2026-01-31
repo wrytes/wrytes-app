@@ -11,7 +11,7 @@ import {
   useAuthorizationBalance,
 } from '@/hooks/authorization';
 import { useBalance } from '@/hooks/web3/useBalance';
-import { TOKENS } from '@/lib/tokens/config';
+import { useCowTokenList } from '@/hooks/tokens';
 
 interface AuthorizationSignerProps {
   selectedAddress?: string;
@@ -31,6 +31,7 @@ export const AuthorizationSigner: React.FC<AuthorizationSignerProps> = ({
   const { isConnected } = useAccount();
   const chainId = useChainId();
   const { signTypedData, data: signature, isPending, error } = useSignTypedData();
+  const { getTokenByAddress } = useCowTokenList(chainId);
 
   const { authorization, verifyingContract, errors, updateField, validateForm, resetForm } =
     useAuthorizationForm();
@@ -161,10 +162,8 @@ export const AuthorizationSigner: React.FC<AuthorizationSignerProps> = ({
     Object.entries(errors).filter(i => i[1] != undefined).length === 0;
 
   const getTokenSymbol = () => {
-    const tokenEntry = Object.entries(TOKENS).find(
-      ([, config]) => config.address === selectedToken
-    );
-    return tokenEntry ? tokenEntry[1].symbol : 'TOKEN';
+    const token = getTokenByAddress(selectedToken);
+    return token?.symbol ?? 'TOKEN';
   };
 
   return (

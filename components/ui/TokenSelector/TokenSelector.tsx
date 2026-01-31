@@ -1,7 +1,8 @@
 import React from 'react';
-import { TOKENS, TokenConfig } from '@/lib/tokens/config';
+import { TokenConfig } from '@/lib/tokens/config';
 import { TokenLogo } from '@/components/ui/TokenLogo';
 import { TokenSelectorProps } from './types';
+import { useCowTokenList } from '@/hooks/tokens';
 
 export const TokenSelector: React.FC<TokenSelectorProps> = ({
   selectedToken,
@@ -12,27 +13,25 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
   className = "",
   availableTokens
 }) => {
-  // Get available tokens (filter if specified)
-  const getAvailableTokens = (): [string, TokenConfig][] => {
-    const tokenEntries = Object.entries(TOKENS);
-    
+  const { tokens, isLoading, getTokenByAddress } = useCowTokenList();
+
+  // Get available tokens (filter by symbol if specified)
+  const getAvailableTokens = (): TokenConfig[] => {
     if (availableTokens && availableTokens.length > 0) {
-      return tokenEntries.filter(([symbol]) => availableTokens.includes(symbol));
+      return tokens.filter((t) => availableTokens.includes(t.symbol));
     }
-    
-    return tokenEntries;
+    return tokens;
   };
 
   const handleTokenChange = (tokenAddress: string) => {
-    // Find the token config by address
-    const tokenEntry = Object.entries(TOKENS).find(([, config]) => config.address === tokenAddress);
-    if (tokenEntry) {
-      const [, tokenConfig] = tokenEntry;
+    const tokenConfig = getTokenByAddress(tokenAddress);
+    if (tokenConfig) {
       onChange(tokenAddress, tokenConfig);
     }
   };
 
   const availableTokensList = getAvailableTokens();
+  const selectedTokenConfig = selectedToken ? getTokenByAddress(selectedToken) : undefined;
 
   return (
     <div className={`space-y-3 ${className}`}>
@@ -48,22 +47,22 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
         <select
           value={selectedToken}
           onChange={(e) => handleTokenChange(e.target.value)}
-          disabled={disabled}
+          disabled={disabled || isLoading}
           className={`
-            w-full bg-dark-surface border rounded-lg px-4 py-3 
-            text-white 
+            w-full bg-dark-surface border rounded-lg px-4 py-3
+            text-white
             focus:outline-none transition-colors
-            ${error 
-              ? 'border-red-400 focus:border-red-400' 
+            ${error
+              ? 'border-red-400 focus:border-red-400'
               : 'border-gray-600 focus:border-accent-orange'
             }
             ${disabled ? 'opacity-50 cursor-not-allowed' : ''}
           `}
         >
           <option value="" disabled>
-            Select a token
+            {isLoading ? 'Loading tokens...' : 'Select a token'}
           </option>
-          {availableTokensList.map(([symbol, config]) => (
+          {availableTokensList.map((config) => (
             <option key={config.address} value={config.address}>
               {config.symbol} - {config.name} ({config.decimals} decimals)
             </option>
@@ -72,41 +71,21 @@ export const TokenSelector: React.FC<TokenSelectorProps> = ({
       </div>
 
       {/* Token Info */}
-      {selectedToken && (
+      {selectedToken && selectedTokenConfig && (
         <div className="flex items-center justify-between text-xs">
           <div className="flex items-center gap-2">
-            {(() => {
-              const tokenEntry = Object.entries(TOKENS).find(([, config]) => config.address === selectedToken);
-              if (tokenEntry) {
-                const [, tokenConfig] = tokenEntry;
-                return (
-                  <>
-                    <TokenLogo currency={tokenConfig.symbol} size={4} />
-                    <span className="text-text-secondary">
-                      {tokenConfig.symbol} - {tokenConfig.name}
-                    </span>
-                  </>
-                );
-              }
-              return (
-                <span className="text-text-secondary">
-                  Contract: {selectedToken.slice(0, 6)}...{selectedToken.slice(-4)}
-                </span>
-              );
-            })()}
+            <TokenLogo
+              logoURI={selectedTokenConfig.logoURI}
+              currency={selectedTokenConfig.symbol}
+              size={4}
+            />
+            <span className="text-text-secondary">
+              {selectedTokenConfig.symbol} - {selectedTokenConfig.name}
+            </span>
           </div>
-          {(() => {
-            const tokenEntry = Object.entries(TOKENS).find(([, config]) => config.address === selectedToken);
-            if (tokenEntry) {
-              const [, tokenConfig] = tokenEntry;
-              return (
-                <span className="text-text-secondary">
-                  Decimals: {tokenConfig.decimals}
-                </span>
-              );
-            }
-            return null;
-          })()}
+          <span className="text-text-secondary">
+            Decimals: {selectedTokenConfig.decimals}
+          </span>
         </div>
       )}
 

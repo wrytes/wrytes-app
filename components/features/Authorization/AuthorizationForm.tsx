@@ -14,7 +14,7 @@ import {
   useAuthorizationAddresses,
   OperationKind,
 } from '@/hooks/authorization';
-import { TOKENS } from '@/lib/tokens/config';
+import { useCowTokenList } from '@/hooks/tokens';
 
 interface AuthorizationFormProps {
   selectedAddress?: string;
@@ -29,6 +29,7 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
   const chainId = useChainId();
   const { signTypedData, data: signature, isPending, error } = useSignTypedData();
   const { addresses } = useAuthorizationAddresses();
+  const { getTokenByAddress } = useCowTokenList(chainId);
 
   const {
     authorization,
@@ -235,12 +236,7 @@ export const AuthorizationForm: React.FC<AuthorizationFormProps> = ({
             title="Amount"
             amount={authorization.amount}
             onAmountChange={value => updateField('amount', value)}
-            symbol={(() => {
-              const tokenEntry = Object.entries(TOKENS).find(
-                ([, config]) => config.address === authorization.token
-              );
-              return tokenEntry ? tokenEntry[1].symbol : 'TOKEN';
-            })()}
+            symbol={getTokenByAddress(authorization.token)?.symbol ?? 'TOKEN'}
             decimals={selectedTokenDecimals}
             availableBalance={BigInt('1000000000000000000000')} // Mock balance
             onMaxClick={handleMaxClick}

@@ -1,9 +1,9 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useCallback, useMemo } from 'react';
 import { useChainId } from 'wagmi';
 import { UseTokenBalancesProps, UseTokenBalancesReturn, TokenBalanceInfo } from './types';
 import { useBalance } from '@/hooks/web3/useBalance';
 import { useAuthorizationBalance } from './useAuthorizationBalance';
-import { TOKENS } from '@/lib/tokens/config';
+import { useCowTokenList } from '@/hooks/tokens';
 
 /**
  * useTokenBalances - Fetch wallet and processor balances for multiple tokens
@@ -18,8 +18,8 @@ export const useTokenBalances = ({
 }: UseTokenBalancesProps): UseTokenBalancesReturn => {
   const chainId = useChainId();
 
-  // Get all configured tokens
-  const tokens = Object.values(TOKENS);
+  // Get all configured tokens from CoW token list + custom tokens
+  const { tokens } = useCowTokenList(chainId);
 
   // Create individual balance hooks for each token (wallet balances)
   const walletBalanceHooks = tokens.map(token =>
