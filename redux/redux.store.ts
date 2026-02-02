@@ -4,14 +4,16 @@ import { persistStore, persistReducer } from 'redux-persist';
 import storage from 'redux-persist/lib/storage';
 import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist';
 
-// splices
+// slices
 import { transactionQueueReducer } from './slices/transactionQueue.slice';
+import { activeAccountReducer } from './slices/activeAccount.slice';
 // transforms
 import { bigIntTransform } from './transforms/bigint.transform';
 
 // Combine reducers
 const rootReducer = combineReducers({
 	transactionQueue: transactionQueueReducer,
+	activeAccount: activeAccountReducer,
 });
 
 // Redux Persist configuration
@@ -19,8 +21,8 @@ const persistConfig = {
 	key: 'wrytes_redux_store',
 	version: 1,
 	storage,
-	// Only persist the transaction queue
-	whitelist: ['transactionQueue'],
+	// Persist transaction queue and active account
+	whitelist: ['transactionQueue', 'activeAccount'],
 	// Add BigInt transform
 	transforms: [bigIntTransform],
 };

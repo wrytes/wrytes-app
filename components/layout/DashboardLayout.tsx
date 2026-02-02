@@ -8,6 +8,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { QueueIcon, QueuePanel } from '@/components/ui/TransactionQueue';
 import { SidebarNav } from '@/components/navigation/SidebarNav';
+import { AccountSelector } from '@/components/navigation/AccountSelector';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
 
@@ -135,7 +136,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 border-t border-dark-surface pt-4">
+            <div className="md:hidden mt-4 border-t border-dark-surface pt-4 space-y-4">
+              {/* Mobile Account Selector */}
+              <AccountSelector className="pb-4" />
+
               <SidebarNav
                 items={DASHBOARD_NAVIGATION}
                 isActive={isActive}
@@ -192,6 +196,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
+          {/* Account Selector */}
+          <AccountSelector className="p-4 border-accent-orange/20" />
+
           <SidebarNav
             items={DASHBOARD_NAVIGATION}
             isActive={isActive}
@@ -207,7 +214,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <p className="text-text-secondary text-sm font-medium">
               <strong className="text-white">
-                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for Distributed Ledger Technology protocols. We do not audit or endorse protocols - users must conduct their own due diligence.
+                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for
+                Distributed Ledger Technology protocols. We do not audit or endorse protocols -
+                users must conduct their own due diligence.
               </strong>
             </p>
           </div>

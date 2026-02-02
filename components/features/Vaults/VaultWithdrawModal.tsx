@@ -11,7 +11,8 @@ import { AmountInput } from '@/components/ui/AmountInput';
 import { useTransactionQueue } from '@/hooks/redux/useTransactionQueue';
 import { useAppKitAccount } from '@reown/appkit-controllers/react';
 import { erc4626ABI } from '@/lib/vaults/abi';
-import { formatCompactNumber, shortenAddress } from '@/lib/utils/format-handling';
+import { formatCompactNumber } from '@/lib/utils/format-number';
+import { shortenAddress } from '@/lib/utils/format-string';
 
 interface VaultWithdrawModalProps {
   vault: Vault;

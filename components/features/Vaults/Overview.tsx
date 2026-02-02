@@ -8,7 +8,7 @@ import {
 import { StatGrid } from '@/components/ui/Stats';
 import { VAULTS } from '@/lib/vaults/config';
 import { SavingsOverviewProps } from './types';
-import { formatCompactNumber } from '@/lib/utils/format-handling';
+import { formatCompactNumber } from '@/lib/utils/format-number';
 
 /**
  * Overview - Stats overview for vaults page

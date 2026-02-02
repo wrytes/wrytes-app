@@ -16,7 +16,8 @@ import { useVaultData } from '@/hooks/vaults/useVaultData';
 import { getBlockExplorerUrl } from '@/lib/web3/config';
 import { formatUnits } from 'viem';
 import { VaultCardProps } from './types';
-import { formatCompactNumber, formatDuration } from '@/lib/utils/format-handling';
+import { formatCompactNumber } from '@/lib/utils/format-number';
+import { formatDuration } from '@/lib/utils/format-date';
 
 /**
  * VaultCard - Refactored vault display component
