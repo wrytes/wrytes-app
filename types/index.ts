@@ -56,9 +56,4 @@ export type {
   RecentActivityProps, 
   ActivityItem 
 } from '@/components/features/Dashboard';
-export type { 
-  VaultCardProps, 
-  VaultGridProps, 
-  UseVaultDataReturn 
-} from '@/components/features/Vaults';
 export type { UseModalReturn } from '@/hooks/ui/types';

@@ -1,6 +1,14 @@
 import React from 'react';
-import { getRiskColor } from '@/lib/vaults/config';
 import { ColoredBadgeProps } from './types';
+
+const getRiskColor = (riskLevel: string): string => {
+  switch (riskLevel) {
+    case 'low': return 'text-green-400 bg-green-400/20';
+    case 'medium': return 'text-yellow-400 bg-yellow-400/20';
+    case 'high': return 'text-red-400 bg-red-400/20';
+    default: return 'text-gray-400 bg-gray-400/20';
+  }
+};
 
 export const ColoredBadge: React.FC<ColoredBadgeProps> = ({
   text,

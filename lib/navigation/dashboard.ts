@@ -1,9 +1,7 @@
 import {
   faLightbulb,
-  faVault,
   faHistory,
   faMoneyCheckDollar,
-  faUserCheck,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -30,21 +28,9 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     description: 'View and manage borrow positions',
   },
   {
-    label: 'Vaults',
-    path: '/dashboard/vaults',
-    icon: faVault,
-    description: 'Manage your DeFi vaults',
-  },
-  {
     label: 'Queue',
     path: '/dashboard/queue',
     icon: faHistory,
     description: 'View and manage pending transactions',
-  },
-  {
-    label: 'Authorizations',
-    path: '/dashboard/authorizations',
-    icon: faUserCheck,
-    description: 'Manage authorization signatures for smart contracts',
   },
 ];
