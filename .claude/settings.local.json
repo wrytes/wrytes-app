@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(yarn lint --fix)",
+      "Bash(yarn run build:*)",
+      "Bash(yarn run type-check:*)",
+      "Bash(yarn run lint)",
+      "Bash(yarn type-check)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git checkout:*)",
+      "Bash(gh issue list:*)",
+      "Bash(gh issue view:*)",
+      "Bash(yarn lint:*)",
+      "Bash(mkdir:*)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:github.com)",
+      "WebFetch(domain:github.com)",
+      "WebSearch",
+      "WebFetch(domain:docs.cow.fi)",
+      "WebFetch(domain:files.cow.fi)",
+      "Bash(find:*)",
+      "Bash(yarn add:*)",
+      "WebFetch(domain:app.aragon.org)",
+      "Bash(echo:*)"
+    ],
+    "deny": []
+  }
+}
