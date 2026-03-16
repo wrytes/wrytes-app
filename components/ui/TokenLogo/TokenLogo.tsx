@@ -1,62 +1,41 @@
-import { useEffect, useState } from "react";
-import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import { faCircleQuestion } from "@fortawesome/free-solid-svg-icons";
+import { useState } from 'react';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faCircleQuestion } from '@fortawesome/free-solid-svg-icons';
+import Image from 'next/image';
 
 interface TokenLogoProps {
-    currency: string;
-    size?: number;
-    chain?: string;
-    className?: string;
+  logoURI?: string;
+  currency?: string;
+  size?: number;
+  className?: string;
 }
 
-export const TokenLogo: React.FC<TokenLogoProps> = ({ 
-    currency, 
-    size = 8, 
-    chain,
-    className = ""
+export const TokenLogo: React.FC<TokenLogoProps> = ({
+  logoURI,
+  currency,
+  size = 8,
+  className = '',
 }) => {
-    const [imgExist, setImgExist] = useState(true);
-    const [src, setSrc] = useState(`/coin/${currency?.toLowerCase()}.svg`);
-    
-    const onImageError = (e: any) => {
-        const src = e.target.src;
-        if (src.includes(".svg")) {
-            setSrc(src.replace(".svg", ".png"));
-        } else if (src.includes(".png")) {
-            setSrc(src.replace(".png", ".jpeg"));
-        } else {
-            setImgExist(false);
-        }
-    };
+  const [failed, setFailed] = useState(false);
 
-    useEffect(() => {
-        setSrc(`/coin/${currency?.toLowerCase()}.svg`);
-        setImgExist(true);
-    }, [currency]);
+  // Use logoURI if provided, otherwise try local path
+  const src = logoURI || (currency ? `/coin/${currency.toLowerCase()}.svg` : undefined);
 
-    return imgExist ? (
-        <picture className={`relative ${className}`}>
-            <img 
-                src={src} 
-                className={`w-${size} h-${size} rounded-full`} 
-                alt="token-logo" 
-                onError={onImageError} 
-            />
-            {chain && (
-                <picture className="absolute -bottom-1 -right-1 p-[1px] rounded-full bg-gray-600">
-                    <img
-                        src={`/chain/${chain.toLowerCase()}.svg`}
-                        className={`w-3 h-3 rounded-full`}
-                        alt="chain-logo"
-                        onError={onImageError}
-                    />
-                </picture>
-            )}
-        </picture>
-    ) : (
-        <FontAwesomeIcon 
-            icon={faCircleQuestion} 
-            className={`w-${size} h-${size} text-text-secondary ${className}`} 
-        />
+  if (!src || failed) {
+    return (
+      <FontAwesomeIcon
+        icon={faCircleQuestion}
+        className={`w-${size} h-${size} text-text-secondary ${className}`}
+      />
     );
+  }
+
+  return (
+    <Image
+      src={src}
+      className={`w-${size} h-${size} rounded-full ${className}`}
+      alt={currency ?? 'token'}
+      onError={() => setFailed(true)}
+    />
+  );
 };
