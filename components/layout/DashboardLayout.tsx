@@ -6,7 +6,6 @@ import { COMPANY } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { QueueIcon, QueuePanel } from '@/components/ui/TransactionQueue';
 import { SidebarNav } from '@/components/navigation/SidebarNav';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
@@ -20,7 +19,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showTransactionQueue, setShowTransactionQueue] = useState(false);
   const { isAuthenticated, signOut } = useAuth();
   const { address: walletAddress, isConnected } = useWallet();
   const { isActive } = useActiveNavigation();
@@ -60,10 +58,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   };
 
-  const toggleTransactionQueue = () => {
-    setShowTransactionQueue(!showTransactionQueue);
-  };
-
   // Show disclaimer toast when dashboard loads
   useEffect(() => {
     if (showDisclaimer) {
@@ -92,9 +86,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Desktop CTA Button */}
             <div className="hidden md:flex items-center gap-3">
-              {/* Transaction Queue */}
-              <QueueIcon onClick={toggleTransactionQueue} className="mr-4" />
-
               {!isConnected ? (
                 <button
                   type="button"
@@ -123,7 +114,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Mobile Actions */}
             <div className="md:hidden flex items-center gap-2">
-              <QueueIcon onClick={toggleTransactionQueue} />
               <button
                 onClick={toggleMobileMenu}
                 className="p-2 flex items-center justify-center text-text-secondary hover:text-accent-orange transition-colors"
@@ -207,7 +197,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           >
             <p className="text-text-secondary text-sm font-medium">
               <strong className="text-white">
-                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for Distributed Ledger Technology protocols. We do not audit or endorse protocols - users must conduct their own due diligence.
+                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for
+                Distributed Ledger Technology protocols. We do not audit or endorse protocols -
+                users must conduct their own due diligence.
               </strong>
             </p>
           </div>
@@ -220,13 +212,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
-      />
-
-      {/* Transaction Queue Panel */}
-      <QueuePanel
-        isOpen={showTransactionQueue}
-        onClose={toggleTransactionQueue}
-        onClearCompleted={() => {}}
       />
     </div>
   );

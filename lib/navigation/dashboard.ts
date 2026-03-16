@@ -23,13 +23,13 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
   },
   {
     label: 'Borrow',
-    path: '/dashboard/borrow',
+    path: '/dashboard',
     icon: faMoneyCheckDollar,
     description: 'View and manage borrow positions',
   },
   {
     label: 'Queue',
-    path: '/dashboard/queue',
+    path: '/dashboard',
     icon: faHistory,
     description: 'View and manage pending transactions',
   },
