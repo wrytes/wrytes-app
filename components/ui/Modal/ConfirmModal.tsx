@@ -2,7 +2,7 @@ import React from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExclamationTriangle, faSpinner } from '@fortawesome/free-solid-svg-icons';
 import { cn } from '@/lib/utils';
-import Button from '@/components/ui/Button';
+import ButtonInput from '@/components/ui/Input/ButtonInput';
 import { Modal } from './Modal';
 import { ConfirmModalProps } from './types';
 
@@ -73,29 +73,23 @@ export const ConfirmModal: React.FC<ConfirmModalProps> = ({
         </div>
 
         {/* Actions */}
-        <div className="flex gap-3 justify-center">
-          <Button
+        <div className="flex justify-center">
+          <ButtonInput
+            label={cancelText}
             variant="secondary"
             onClick={onClose}
             disabled={loading}
             className="min-w-[80px]"
-          >
-            {cancelText}
-          </Button>
-          
-          <Button
-            variant={buttonVariants[confirmVariant]}
-            onClick={handleConfirm}
-            disabled={loading}
-            loading={loading}
-            className={cn(
-              'min-w-[80px]',
-              getDangerStyles()
-            )}
-            icon={loading ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : undefined}
-          >
-            {confirmText}
-          </Button>
+            second={{
+              label: confirmText,
+              variant: buttonVariants[confirmVariant],
+              onClick: handleConfirm,
+              disabled: loading,
+              loading,
+              icon: loading ? <FontAwesomeIcon icon={faSpinner} className="animate-spin" /> : undefined,
+              className: cn('min-w-[80px]', getDangerStyles()),
+            }}
+          />
         </div>
       </div>
     </Modal>

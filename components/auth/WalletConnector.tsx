@@ -5,7 +5,7 @@ import { faSpinner, faExclamationTriangle, faCheck } from '@fortawesome/free-sol
 import { useWallet } from '@/hooks/useWallet'
 import { useAuth } from '@/hooks/useAuth'
 import { AuthStep } from '@/lib/auth/types'
-import Button from '@/components/ui/Button'
+import ButtonInput from '@/components/ui/Input/ButtonInput'
 import { useAppKit } from '@reown/appkit/react'
 
 interface WalletConnectorProps {
@@ -126,13 +126,12 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
             animate={{ opacity: 1, y: 0 }}
             exit={{ opacity: 0, y: -20 }}
           >
-            <Button
+            <ButtonInput
+              label="Connect Wallet"
               onClick={handleConnect}
               className="w-full mb-4"
               variant="primary"
-            >
-              Connect Wallet
-            </Button>
+            />
           </motion.div>
         )}
 
@@ -150,24 +149,22 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
                 {address}
               </p>
             </div>
-            <Button
+            <ButtonInput
+              label={authFlow?.currentStep === AuthStep.SIGN_MESSAGE && authFlow?.error
+                ? 'Retry Sign Message'
+                : 'Sign Message'}
+              icon={<FontAwesomeIcon icon={faCheck} />}
               onClick={handleAuthenticate}
-              className="w-full mb-2"
-              variant="primary"
-            >
-              <FontAwesomeIcon icon={faCheck} className="mr-2" />
-              {authFlow?.currentStep === AuthStep.SIGN_MESSAGE && authFlow?.error 
-                ? 'Retry Sign Message' 
-                : 'Sign Message'
-              }
-            </Button>
-            <Button
-              onClick={handleDisconnect}
               className="w-full"
-              variant="secondary"
-            >
-              Disconnect
-            </Button>
+              variant="primary"
+              second={{
+                label: 'Disconnect',
+                onClick: handleDisconnect,
+                variant: 'secondary',
+                className: 'w-full',
+              }}
+              layout="col"
+            />
           </motion.div>
         )}
 
@@ -186,13 +183,12 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
                 {address}
               </p>
             </div>
-            <Button
+            <ButtonInput
+              label="Disconnect"
               onClick={handleDisconnect}
               className="w-full"
               variant="secondary"
-            >
-              Disconnect
-            </Button>
+            />
           </motion.div>
         )}
       </AnimatePresence>
