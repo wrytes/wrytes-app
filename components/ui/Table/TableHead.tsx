@@ -1,5 +1,6 @@
-import { faArrowDownWideShort, faArrowUpShortWide } from '@fortawesome/free-solid-svg-icons';
+import { faArrowDownWideShort, faArrowUpShortWide, faCheck } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { useEffect, useRef, useState } from 'react';
 
 interface Props {
   headers: string[];
@@ -27,7 +28,10 @@ export default function TableHead({
   return (
     <div className="items-center justify-between rounded-t-lg bg-table-header-primary py-4 px-8 md:flex xl:px-12">
       {/* Desktop */}
-      <div className={`max-md:hidden pl-8 flex-grow grid-cols-2 md:grid md:grid-cols-${colSpan || headers.length}`}>
+      <div
+        className="max-md:hidden pl-8 flex-grow md:grid"
+        style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
+      >
         {headers.map((header, i) => (
           <div
             key={`table-header-${i}`}
@@ -77,27 +81,42 @@ interface TableHeadMobileProps {
 }
 
 function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobileProps) {
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
   return (
     <div className="md:hidden flex items-center gap-3">
       <span className="flex-1 font-semibold text-text-secondary">Sort By</span>
-      <div className="flex items-center gap-2">
-        {tab && (
-          <FontAwesomeIcon
-            icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-            className="text-text-active w-4 h-4"
-          />
-        )}
-        <select
-          value={tab}
-          onChange={(e) => tabOnChange(e.target.value)}
-          className="bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
+      <div className="relative" ref={ref}>
+        <button
+          onClick={() => setOpen((prev) => !prev)}
+          className="flex items-center gap-2 bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
         >
-          {headers.map((h) => (
-            <option key={h} value={h}>
-              {h}
-            </option>
-          ))}
-        </select>
+          <span>{tab || headers[0]}</span>
+          <FontAwesomeIcon icon={reverse ? faArrowUpShortWide : faArrowDownWideShort} className="w-3 h-3 text-text-secondary" />
+        </button>
+        {open && (
+          <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-dark-card shadow-card border border-table-header-secondary py-1">
+            {headers.map((h) => (
+              <button
+                key={h}
+                onClick={() => { tabOnChange(h); setOpen(false); }}
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-table-row-hover"
+              >
+                <span className={`flex-1 ${tab === h ? 'text-text-active font-semibold' : 'text-text-primary'}`}>{h}</span>
+                {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-button-default" />}
+              </button>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   );

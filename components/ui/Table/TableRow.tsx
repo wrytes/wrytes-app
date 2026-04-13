@@ -35,7 +35,10 @@ export default function TableRow({
     >
       <div className="flex sm:pl-8 flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
-        <div className={`max-md:hidden text-right grid flex-grow grid-cols-${colSpan || childArray.length} items-center`}>
+        <div
+          className="max-md:hidden text-right grid flex-grow items-center"
+          style={{ gridTemplateColumns: `repeat(${colSpan || childArray.length}, minmax(0, 1fr))` }}
+        >
           {children}
         </div>
 

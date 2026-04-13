@@ -3,6 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faArrowDownWideShort,
   faArrowUpShortWide,
+  faCheck,
   faMagnifyingGlass,
   faSlidersH,
 } from '@fortawesome/free-solid-svg-icons';
@@ -68,11 +69,23 @@ export default function TableHeadSearchable({
 }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
+  const [sortOpen, setSortOpen] = useState(false);
+  const sortRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     function handleClickOutside(e: MouseEvent) {
       if (filterRef.current && !filterRef.current.contains(e.target as Node)) {
         setFilterOpen(false);
+      }
+    }
+    document.addEventListener('mousedown', handleClickOutside);
+    return () => document.removeEventListener('mousedown', handleClickOutside);
+  }, []);
+
+  useEffect(() => {
+    function handleClickOutside(e: MouseEvent) {
+      if (sortRef.current && !sortRef.current.contains(e.target as Node)) {
+        setSortOpen(false);
       }
     }
     document.addEventListener('mousedown', handleClickOutside);
@@ -257,23 +270,29 @@ export default function TableHeadSearchable({
         <div className="md:hidden flex items-center gap-3">
           <span className="flex-1 font-semibold text-text-secondary">Sort By</span>
           <div className="flex items-center gap-2">
-            {tab && (
-              <FontAwesomeIcon
-                icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-                className="text-text-active w-4 h-4"
-              />
-            )}
-            <select
-              value={tab}
-              onChange={(e) => handleTabClick(e.target.value)}
-              className="bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
-            >
-              {headers.map((h) => (
-                <option key={h} value={h}>
-                  {h}
-                </option>
-              ))}
-            </select>
+            <div className="relative" ref={sortRef}>
+              <button
+                onClick={() => setSortOpen((prev) => !prev)}
+                className="flex items-center gap-2 bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
+              >
+                <span>{tab || headers[0]}</span>
+                <FontAwesomeIcon icon={reverse ? faArrowUpShortWide : faArrowDownWideShort} className="w-3 h-3 text-text-secondary" />
+              </button>
+              {sortOpen && (
+                <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-dark-card shadow-card border border-table-header-secondary py-1">
+                  {headers.map((h) => (
+                    <button
+                      key={h}
+                      onClick={() => { handleTabClick(h); setSortOpen(false); }}
+                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-table-row-hover"
+                    >
+                      <span className={`flex-1 ${tab === h ? 'text-text-active font-semibold' : 'text-text-primary'}`}>{h}</span>
+                      {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-button-default" />}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
           </div>
         </div>
       </div>

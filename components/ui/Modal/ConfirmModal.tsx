@@ -33,7 +33,7 @@ export function ConfirmModal({
   const dangerClass = confirmVariant === 'danger' ? 'bg-red-600 hover:bg-red-700 text-white border-red-600' : '';
 
   return (
-    <Modal isOpen={isOpen} onClose={onClose} size="sm" className={className} closeOnBackdrop={!loading} closeOnEscape={!loading}>
+    <Modal isOpen={isOpen} onClose={onClose} size="sm" className={className} closeOnBackdrop={!loading} closeOnEscape={!loading} showCloseButton={false}>
       <div className="text-center">
         <div className="mx-auto mb-4 w-12 h-12 bg-yellow-400/20 rounded-full flex items-center justify-center">
           <FontAwesomeIcon icon={faExclamationTriangle} className="w-6 h-6 text-yellow-400" />
