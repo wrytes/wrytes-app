@@ -15,7 +15,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAuth } from '@/hooks/useAuth';
 import { RoleBadge } from '@/components/auth/RequireRole';
-import { PageHeader } from '@/components/ui/Layout';
+import { Breadcrumb, PageHeader, PageTitle, Section } from '@/components/ui/Layout';
 import { StatGrid } from '@/components/ui/Stats';
 import Card from '@/components/ui/Card';
 import {
@@ -36,7 +36,7 @@ import {
   TableRowEmpty,
 } from '@/components/ui/Table';
 import { TokenLogo, ChainLogo } from '@/components/ui/logo';
-import { Badge, Modal, ConfirmModal, showToast, IconLogo } from '@/components/ui';
+import { Badge, CardTitle, Modal, ConfirmModal, showToast, IconLogo } from '@/components/ui';
 import HeroSteps from '@/components/ui/HeroSteps';
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
@@ -167,14 +167,12 @@ export default function Dashboard() {
 
         {/* ── Button demos ──────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">Button Components</h2>
+          <PageTitle title="Button Components" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Variants */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Variants
-              </p>
+              <CardTitle title="Variants" />
               <div className="flex flex-wrap gap-3">
                 <ButtonInput label="Primary" variant="primary" />
                 <ButtonInput label="Secondary" variant="secondary" />
@@ -185,9 +183,7 @@ export default function Dashboard() {
 
             {/* Sizes */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Sizes
-              </p>
+              <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-center gap-3">
                 <ButtonInput label="Small" variant="primary" size="sm" />
                 <ButtonInput label="Medium" variant="primary" size="md" />
@@ -197,9 +193,7 @@ export default function Dashboard() {
 
             {/* With icons */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                With icons
-              </p>
+              <CardTitle title="With icons" />
               <div className="flex flex-wrap gap-3">
                 <ButtonInput
                   label="New Position"
@@ -227,9 +221,7 @@ export default function Dashboard() {
 
             {/* States + second button */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                States &amp; paired buttons
-              </p>
+              <CardTitle title="States & paired buttons" />
               <div className="space-y-3">
                 <ButtonInput label="Disabled" variant="primary" disabled />
                 <ButtonInput
@@ -256,14 +248,12 @@ export default function Dashboard() {
 
         {/* ── Badge demos ───────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">Badge Components</h2>
+          <PageTitle title="Badge Components" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Risk variants */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Risk levels
-              </p>
+              <CardTitle title="Risk levels" />
               <div className="flex flex-wrap gap-3">
                 <Badge text="Low Risk" variant="risk" riskLevel="low" />
                 <Badge text="Medium Risk" variant="risk" riskLevel="medium" />
@@ -273,9 +263,7 @@ export default function Dashboard() {
 
             {/* Sizes */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Sizes
-              </p>
+              <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-center gap-3">
                 <Badge text="Small" variant="risk" riskLevel="low" size="sm" />
                 <Badge text="Medium" variant="risk" riskLevel="low" size="md" />
@@ -285,9 +273,7 @@ export default function Dashboard() {
 
             {/* Custom colors */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Custom colors
-              </p>
+              <CardTitle title="Custom colors" />
               <div className="flex flex-wrap gap-3">
                 <Badge
                   text="Active"
@@ -318,9 +304,7 @@ export default function Dashboard() {
 
             {/* In context */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                In context
-              </p>
+              <CardTitle title="In context" />
               <div className="space-y-3 text-sm">
                 {[
                   {
@@ -358,14 +342,12 @@ export default function Dashboard() {
 
         {/* ── Input demos ───────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">Input Components</h2>
+          <PageTitle title="Input Components" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* TokenInput */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-4">
-                TokenInput
-              </p>
+              <CardTitle title="TokenInput" />
               <TokenInput
                 label="You send"
                 symbol="ETH"
@@ -393,9 +375,7 @@ export default function Dashboard() {
 
             {/* NormalInput + AddressInput */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-4">
-                NormalInput &amp; AddressInput
-              </p>
+              <CardTitle title="NormalInput & AddressInput" />
               <NormalInput
                 label="Collateral amount"
                 symbol="WBTC"
@@ -419,9 +399,7 @@ export default function Dashboard() {
 
             {/* LiquidationSlider */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-4">
-                LiquidationSlider
-              </p>
+              <CardTitle title="LiquidationSlider" />
               <LiquidationSlider
                 label="Liquidation price"
                 value={liqPrice}
@@ -440,9 +418,7 @@ export default function Dashboard() {
 
             {/* TabInput + PageTabInput */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-4">
-                TabInput &amp; PageTabInput
-              </p>
+              <CardTitle title="TabInput & PageTabInput" />
               <TabInput
                 tabs={['Deposit', 'Withdraw', 'Borrow']}
                 tab={activeTab}
@@ -494,7 +470,7 @@ export default function Dashboard() {
 
         {/* ── Searchable table ──────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">TableHeadSearchable</h2>
+          <PageTitle title="TableHeadSearchable" />
 
           <Table>
             <TableHeadSearchable
@@ -544,7 +520,7 @@ export default function Dashboard() {
 
         {/* ── Sortable table ────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">TableHead (sortable)</h2>
+          <PageTitle title="TableHead (sortable)" />
 
           <Table>
             <TableHead
@@ -580,14 +556,12 @@ export default function Dashboard() {
         </section>
         {/* ── IconLogo demos ────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">IconLogo</h2>
+          <PageTitle title="IconLogo" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Sizes */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Sizes
-              </p>
+              <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-end gap-4">
                 <div className="flex flex-col items-center gap-2">
                   <IconLogo
@@ -622,9 +596,7 @@ export default function Dashboard() {
 
             {/* In context */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                With icons
-              </p>
+              <CardTitle title="With icons" />
               <div className="flex flex-wrap gap-4">
                 <IconLogo
                   icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400" />}
@@ -655,8 +627,9 @@ export default function Dashboard() {
 
         {/* ── HeroSteps demo ────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">HeroSteps</h2>
+          <PageTitle title="HeroSteps" />
 
+          <CardTitle title="3-step flow" />
           <HeroSteps
             steps={[
               {
@@ -679,63 +652,30 @@ export default function Dashboard() {
             ]}
           />
 
-          <Card hover={false}>
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-              3-step onboarding flow
-            </p>
-            <HeroSteps
-              steps={[
-                {
-                  icon: '1',
-                  title: 'Connect wallet',
-                  description:
-                    'Link your MetaMask, WalletConnect, or Coinbase wallet to get started.',
-                },
-                {
-                  icon: '2',
-                  title: 'Select a vault',
-                  description:
-                    'Browse available lending vaults and pick the one that fits your risk profile.',
-                },
-                {
-                  icon: '3',
-                  title: 'Deposit & earn',
-                  description: 'Supply assets to start earning yield. Withdraw at any time.',
-                },
-              ]}
-            />
-          </Card>
-
-          <Card hover={false}>
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-              2-step flow
-            </p>
-            <HeroSteps
-              steps={[
-                {
-                  icon: '1',
-                  title: 'Approve token',
-                  description:
-                    'Grant the protocol permission to move your tokens. One-time transaction.',
-                },
-                {
-                  icon: '2',
-                  title: 'Confirm deposit',
-                  description: 'Sign the deposit transaction to lock collateral and mint ZCHF.',
-                },
-              ]}
-            />
-          </Card>
+          <CardTitle title="2-step flow" />
+          <HeroSteps
+            steps={[
+              {
+                icon: '1',
+                title: 'Approve token',
+                description:
+                  'Grant the protocol permission to move your tokens. One-time transaction.',
+              },
+              {
+                icon: '2',
+                title: 'Confirm deposit',
+                description: 'Sign the deposit transaction to lock collateral and mint ZCHF.',
+              },
+            ]}
+          />
         </section>
 
         {/* ── Toast demos ───────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">Toast Notifications</h2>
+          <PageTitle title="Toast Notifications" />
 
           <Card hover={false}>
-            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-              Trigger toasts
-            </p>
+            <CardTitle title="Trigger toasts" />
             <div className="flex flex-wrap gap-3">
               <ButtonInput
                 label="Success"
@@ -766,16 +706,130 @@ export default function Dashboard() {
           </Card>
         </section>
 
+        {/* ── Breadcrumb demos ──────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <PageTitle title="Breadcrumb" />
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <Card hover={false}>
+              <CardTitle title="Static path" />
+              <Breadcrumb
+                items={[
+                  { label: 'Dashboard', href: '/dashboard' },
+                  { label: 'Vaults', href: '/vaults' },
+                  { label: 'Morpho Blue' },
+                ]}
+              />
+            </Card>
+
+            <Card hover={false}>
+              <CardTitle title="Deep path" />
+              <Breadcrumb
+                items={[
+                  { label: 'Dashboard', href: '/dashboard' },
+                  { label: 'Protocols', href: '/protocols' },
+                  { label: 'Ethereum', href: '/protocols/ethereum' },
+                  { label: 'Frankencoin', href: '/protocols/ethereum/frankencoin' },
+                  { label: 'Position #3' },
+                ]}
+              />
+            </Card>
+
+            <Card hover={false}>
+              <CardTitle title="With onClick" />
+              <Breadcrumb
+                items={[
+                  { label: 'Overview', onClick: () => {} },
+                  { label: 'Strategies', onClick: () => {} },
+                  { label: 'BTC Covered Call' },
+                ]}
+              />
+            </Card>
+
+            <Card hover={false}>
+              <CardTitle title="Single item" />
+              <Breadcrumb items={[{ label: 'Dashboard' }]} />
+            </Card>
+          </div>
+        </section>
+
+        {/* ── Section demos ─────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <PageTitle title="Section Component" />
+
+          {/* Default — no wrapper */}
+          <Section title="Default variant" description="Children render directly with no background or card wrapper.">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {['Alpha', 'Beta', 'Gamma'].map(name => (
+                <Card key={name} hover={false}>
+                  <p className="text-text-primary font-semibold">{name}</p>
+                  <p className="text-sm text-text-secondary mt-1">Placeholder content block.</p>
+                </Card>
+              ))}
+            </div>
+          </Section>
+
+          {/* Card variant */}
+          <Section
+            title="Card variant"
+            description="Wraps children in a single Card."
+            variant="card"
+          >
+            <p className="text-text-secondary text-sm">
+              All content sits inside one Card container — useful for grouped settings or detail panels.
+            </p>
+          </Section>
+
+          {/* Filled variant */}
+          <Section
+            title="Filled variant"
+            description="Subtle dark background, no card border."
+            variant="filled"
+          >
+            <p className="text-text-secondary text-sm">
+              Great for secondary areas or inline callouts that need visual separation without a full card.
+            </p>
+          </Section>
+
+          {/* With actions */}
+          <Section
+            title="With actions"
+            description="Actions slot renders to the right of the header."
+            actions={
+              <>
+                <ButtonInput label="Export" variant="secondary" icon={<FontAwesomeIcon icon={faDownload} />} />
+                <ButtonInput label="New" variant="primary" icon={<FontAwesomeIcon icon={faPlus} />} />
+              </>
+            }
+          >
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              {['Position A', 'Position B'].map(name => (
+                <Card key={name} hover={false}>
+                  <p className="text-text-primary font-semibold">{name}</p>
+                  <p className="text-sm text-text-secondary mt-1">Mock position data.</p>
+                </Card>
+              ))}
+            </div>
+          </Section>
+
+          {/* Spacing variants */}
+          <Section title="Spacing — sm" spacing="sm">
+            <Card hover={false}><p className="text-text-secondary text-sm">Tight spacing between header and content.</p></Card>
+          </Section>
+
+          <Section title="Spacing — lg" spacing="lg">
+            <Card hover={false}><p className="text-text-secondary text-sm">Loose spacing between header and content.</p></Card>
+          </Section>
+        </section>
+
         {/* ── Modal demos ───────────────────────────────────────────────── */}
         <section className="space-y-4">
-          <h2 className="text-xl font-bold text-text-primary">Modal Components</h2>
+          <PageTitle title="Modal Components" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic modal */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                Basic modal
-              </p>
+              <CardTitle title="Basic modal" />
               <ButtonInput
                 label="Open modal"
                 variant="primary"
@@ -785,9 +839,7 @@ export default function Dashboard() {
 
             {/* Modal with footer */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                With footer
-              </p>
+              <CardTitle title="With footer" />
               <ButtonInput
                 label="Open modal with footer"
                 variant="secondary"
@@ -797,9 +849,7 @@ export default function Dashboard() {
 
             {/* ConfirmModal */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                ConfirmModal
-              </p>
+              <CardTitle title="ConfirmModal" />
               <ButtonInput
                 label="Confirm action"
                 variant="outline"
@@ -809,9 +859,7 @@ export default function Dashboard() {
 
             {/* Danger ConfirmModal */}
             <Card hover={false}>
-              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
-                ConfirmModal — danger
-              </p>
+              <CardTitle title="ConfirmModal — danger" />
               <ButtonInput
                 label="Delete position"
                 variant="ghost"
