@@ -12,10 +12,10 @@ export default function Card({ children, className, hover = true, gradient = fal
   return (
     <div
       className={cn(
-        'bg-dark-card rounded-lg p-6 border border-dark-surface transition-all duration-300',
+        'bg-dark-card rounded-lg p-6 transition-all duration-300',
         hover && 'hover:shadow-card-hover hover:-translate-y-1',
         gradient && 'bg-gradient-card',
-        className,
+        className
       )}
     >
       {children}

@@ -133,17 +133,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="mobile"
               />
               {!isConnected ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleCTAClick();
-                    closeMobileMenu();
-                  }}
-                  className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                >
-                  <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
-                  Connect Wallet
-                </button>
+                <div className="flex justify-end items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCTAClick();
+                      closeMobileMenu();
+                    }}
+                    className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 mt-4 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                  >
+                    <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
+                    Connect Wallet
+                  </button>
+                </div>
               ) : (
                 <div className="flex justify-end items-center">
                   <button

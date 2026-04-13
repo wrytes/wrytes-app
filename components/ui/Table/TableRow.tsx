@@ -55,7 +55,9 @@ export default function TableRow({
 
         {/* Action column */}
         {actionCol && (
-          <div className="flex-shrink-0 md:w-[8rem] md:ml-[2rem] max-md:w-full my-2">{actionCol}</div>
+          <div className="flex-shrink-0 md:w-[8rem] md:ml-[2rem] max-md:w-full my-2">
+            {actionCol}
+          </div>
         )}
       </div>
     </div>
@@ -71,10 +73,19 @@ interface TableRowMobileProps {
   rawHeader: boolean;
 }
 
-function TableRowMobile({ children, rawHeader, headers, subHeaders, tab, className }: TableRowMobileProps) {
+function TableRowMobile({
+  children,
+  rawHeader,
+  headers,
+  subHeaders,
+  tab,
+  className,
+}: TableRowMobileProps) {
   if (headers.length === 0) {
     return (
-      <div className={`${className} md:hidden justify-items-center text-center gap-6 grid flex-grow grid-cols-1`}>
+      <div
+        className={`${className} md:hidden justify-items-center text-center gap-6 grid flex-grow grid-cols-1`}
+      >
         {children}
       </div>
     );
@@ -86,9 +97,17 @@ function TableRowMobile({ children, rawHeader, headers, subHeaders, tab, classNa
         <div className="mt-2 flex" key={c.key ?? `row-mobile-${tab}-${idx}`}>
           <div className="flex-1 text-left">
             {idx === 0 && !rawHeader ? (
-              <div className={headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'}>{c}</div>
+              <div
+                className={
+                  headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'
+                }
+              >
+                {c}
+              </div>
             ) : subHeaders.length === 0 ? (
-              <div className={`text-md ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'}`}>
+              <div
+                className={`text-md ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'}`}
+              >
                 {headers[idx]}
               </div>
             ) : (

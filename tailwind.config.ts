@@ -32,11 +32,11 @@ module.exports = {
         'text-header': '#ffffff',
         'text-subheader': '#a0a0a0',
         'button-default': '#ff6b35',
-        'button-disabled': '#374151',
+        'button-disabled': '#111827',
 
         // Input component tokens
-        'card-input-border': '#1f2937',
-        'card-input-disabled': '#111827',
+        'card-input-border': '#374151',
+        'card-input-disabled': '#1f1f1f',
         'card-input-hover': '#4B5563',
         'card-input-focus': '#ff6b35',
         'card-input-error': '#ef4444',
