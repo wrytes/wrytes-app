@@ -94,11 +94,8 @@ export const StatCard: React.FC<StatCardProps> = ({
 
   if (onClick) {
     return (
-      <div 
-        className={cn(
-          'transition-all duration-200 cursor-pointer hover:scale-[1.02]',
-          className
-        )}
+      <div
+        className={cn('cursor-pointer', className)}
         onClick={onClick}
         role="button"
         tabIndex={0}
@@ -109,7 +106,7 @@ export const StatCard: React.FC<StatCardProps> = ({
           }
         }}
       >
-        <Card>
+        <Card hover={false}>
           {cardContent}
         </Card>
       </div>
@@ -117,7 +114,7 @@ export const StatCard: React.FC<StatCardProps> = ({
   }
 
   return (
-    <Card className={className}>
+    <Card hover={false} className={className}>
       {cardContent}
     </Card>
   );
