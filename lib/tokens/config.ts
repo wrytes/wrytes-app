@@ -19,7 +19,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'USD Coin',
     decimals: 6,
     chainId: 1,
-    logoURI: '/coin/usdc.svg',
+    logoURI: '/tokens/usdc.svg',
   },
   USDT: {
     address: '0xdAC17F958D2ee523a2206206994597C13D831ec7',
@@ -27,7 +27,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Tether USD',
     decimals: 6,
     chainId: 1,
-    logoURI: '/coin/usdt.svg',
+    logoURI: '/tokens/usdt.svg',
   },
   DAI: {
     address: '0x6B175474E89094C44Da98b954EedeAC495271d0F',
@@ -35,7 +35,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Dai Stablecoin',
     decimals: 18,
     chainId: 1,
-    logoURI: '/coin/dai.svg',
+    logoURI: '/tokens/dai.svg',
   },
   ZCHF: {
     address: '0xB58E61C3098d85632Df34EecfB899A1Ed80921cB',
@@ -43,7 +43,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Frankencoin',
     decimals: 18,
     chainId: 1,
-    logoURI: '/coin/zchf.svg',
+    logoURI: '/tokens/zchf.svg',
   },
   USDU: {
     address: '0xdde3eC717f220Fc6A29D6a4Be73F91DA5b718e55',
@@ -51,17 +51,25 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'USDU',
     decimals: 18,
     chainId: 1,
-    logoURI: '/coin/usdu.png',
+    logoURI: '/tokens/usdu.png',
   },
 
   // Crypto
+  ETH: {
+    address: '0xEeeeeEeeeEeEeeEeEeEeeEEEeeeeEeeeeeeeEEeE',
+    symbol: 'ETH',
+    name: 'Ether',
+    decimals: 18,
+    chainId: 1,
+    logoURI: '/tokens/eth.svg',
+  },
   WETH: {
     address: '0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2',
     symbol: 'WETH',
     name: 'Wrapped Ether',
     decimals: 18,
     chainId: 1,
-    logoURI: '/coin/weth.png',
+    logoURI: '/tokens/weth.png',
   },
   WBTC: {
     address: '0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599',
@@ -69,7 +77,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Wrapped BTC',
     decimals: 8,
     chainId: 1,
-    logoURI: '/coin/wbtc.svg',
+    logoURI: '/tokens/wbtc.svg',
   },
   cbBTC: {
     address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
@@ -77,7 +85,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Coinbase Wrapped BTC',
     decimals: 8,
     chainId: 1,
-    logoURI: '/coin/cbbtc.png',
+    logoURI: '/tokens/cbbtc.png',
   },
   FPS: {
     address: '0x1bA26788dfDe592fec8bcB0Eaff472a42BE341B2',
@@ -85,7 +93,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Frankencoin Pool Share',
     decimals: 18,
     chainId: 1,
-    logoURI: '/coin/fps.png',
+    logoURI: '/tokens/fps.png',
   },
 };
 

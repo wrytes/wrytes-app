@@ -42,8 +42,8 @@ import { TokenLogo, ChainLogo } from '@/components/ui/logo';
 const SEARCHABLE_HEADERS = ['Asset', 'Balance', 'Value (USD)', 'APY'];
 
 const MOCK_POSITIONS = [
-  { asset: 'DAI', balance: '0.42', value: '$28,140', apy: '4.2%' },
-  { asset: 'SUI', balance: '0.42', value: '$28,140', apy: '4.2%' },
+  { asset: 'WBNB', balance: '0.42', value: '$28,140', apy: '4.2%' },
+  { asset: 'GHO', balance: '0.42', value: '$28,140', apy: '4.2%' },
   { asset: 'WETH', balance: '3.80', value: '$11,400', apy: '3.8%' },
   { asset: 'USDC', balance: '5,000', value: '$5,000', apy: '6.1%' },
   { asset: 'ZCHF', balance: '2,200', value: '$2,530', apy: '2.9%' },
@@ -154,17 +154,16 @@ export default function Dashboard() {
           <h2 className="text-xl font-bold text-text-primary">Button Components</h2>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
             {/* Variants */}
             <Card hover={false}>
               <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
                 Variants
               </p>
               <div className="flex flex-wrap gap-3">
-                <ButtonInput label="Primary"   variant="primary"   />
+                <ButtonInput label="Primary" variant="primary" />
                 <ButtonInput label="Secondary" variant="secondary" />
-                <ButtonInput label="Outline"   variant="outline"   />
-                <ButtonInput label="Ghost"     variant="ghost"     />
+                <ButtonInput label="Outline" variant="outline" />
+                <ButtonInput label="Ghost" variant="ghost" />
               </div>
             </Card>
 
@@ -174,9 +173,9 @@ export default function Dashboard() {
                 Sizes
               </p>
               <div className="flex flex-wrap items-center gap-3">
-                <ButtonInput label="Small"  variant="primary" size="sm" />
+                <ButtonInput label="Small" variant="primary" size="sm" />
                 <ButtonInput label="Medium" variant="primary" size="md" />
-                <ButtonInput label="Large"  variant="primary" size="lg" />
+                <ButtonInput label="Large" variant="primary" size="lg" />
               </div>
             </Card>
 
@@ -216,11 +215,7 @@ export default function Dashboard() {
                 States &amp; paired buttons
               </p>
               <div className="space-y-3">
-                <ButtonInput
-                  label="Disabled"
-                  variant="primary"
-                  disabled
-                />
+                <ButtonInput label="Disabled" variant="primary" disabled />
                 <ButtonInput
                   label="Loading…"
                   variant="primary"
@@ -240,7 +235,6 @@ export default function Dashboard() {
                 />
               </div>
             </Card>
-
           </div>
         </section>
 
