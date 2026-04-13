@@ -23,6 +23,30 @@ module.exports = {
         'text-secondary': '#a0a0a0',
         'text-muted': '#666666',
         
+        // Table component tokens
+        'table-header-primary': '#242424',
+        'table-header-secondary': '#374151',
+        'table-row-primary': '#1f1f1f',
+        'table-row-hover': '#2a2a2a',
+        // text-active/header/subheader are used as text-text-active, text-text-header, etc.
+        'text-active': '#ff6b35',
+        'text-header': '#ffffff',
+        'text-subheader': '#a0a0a0',
+        'button-default': '#ff6b35',
+        'button-disabled': '#374151',
+
+        // Input component tokens
+        'card-input-border': '#374151',
+        'card-input-disabled': '#111827',
+        'card-input-hover': '#4B5563',
+        'card-input-focus': '#ff6b35',
+        'card-input-error': '#ef4444',
+        'card-input-label': '#9CA3AF',
+        'card-input-empty': '#6B7280',
+        'card-input-max': '#ff6b35',
+        'card-input-min': '#ffd700',
+        'card-input-reset': '#9CA3AF',
+
         // Gradient colors
         'gradient': {
           'dark-start': '#1a1a1a',

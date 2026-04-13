@@ -1,0 +1,1 @@
+export { ChainLogo } from './ChainLogo';
