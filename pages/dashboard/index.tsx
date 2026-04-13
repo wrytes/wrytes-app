@@ -35,8 +35,7 @@ import {
   TableRow,
   TableRowEmpty,
 } from '@/components/ui/Table';
-import { TokenLogo } from '@/components/ui/TokenLogo';
-import { ChainLogo } from '@/components/ui/ChainLogo';
+import { TokenLogo, ChainLogo } from '@/components/ui/logo';
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 

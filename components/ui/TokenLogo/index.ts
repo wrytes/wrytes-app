@@ -1,1 +1,0 @@
-export { TokenLogo } from './TokenLogo';

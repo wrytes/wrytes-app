@@ -1,7 +1,7 @@
 import { formatUnits } from 'viem';
 import { useRef } from 'react';
 import { BigNumberInput } from './BigNumberInput';
-import { TokenLogo } from '@/components/ui/TokenLogo';
+import { TokenLogo } from '@/components/ui/logo';
 import { formatCurrency } from '@/lib/utils/format-handling';
 
 interface Props {

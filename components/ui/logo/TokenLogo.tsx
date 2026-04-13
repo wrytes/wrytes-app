@@ -11,12 +11,7 @@ interface TokenLogoProps {
   className?: string;
 }
 
-export const TokenLogo: React.FC<TokenLogoProps> = ({
-  logoURI,
-  currency,
-  size = 8,
-  className = '',
-}) => {
+export function TokenLogo({ logoURI, currency, size = 8, className = '' }: TokenLogoProps) {
   const [failed, setFailed] = useState(false);
   const src = useTokenLogo(currency, logoURI);
 
@@ -29,16 +24,14 @@ export const TokenLogo: React.FC<TokenLogoProps> = ({
     );
   }
 
-  const px = size * 4;
-
   return (
     <Image
       src={src}
-      width={px}
-      height={px}
+      width={size * 4}
+      height={size * 4}
       className={`w-${size} h-${size} rounded-full ${className}`}
       alt={currency ?? 'token'}
       onError={() => setFailed(true)}
     />
   );
-};
+}

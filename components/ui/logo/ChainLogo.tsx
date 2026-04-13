@@ -9,12 +9,10 @@ interface ChainLogoProps {
   className?: string;
 }
 
-export const ChainLogo: React.FC<ChainLogoProps> = ({ chain, size = 6, className = '' }) => {
+export function ChainLogo({ chain, size = 6, className = '' }: ChainLogoProps) {
   const [failed, setFailed] = useState(false);
 
-  const src = chain ? `/chain/${chain.toLowerCase()}.svg` : undefined;
-
-  if (!src || failed) {
+  if (!chain || failed) {
     return (
       <FontAwesomeIcon
         icon={faCircleQuestion}
@@ -23,16 +21,14 @@ export const ChainLogo: React.FC<ChainLogoProps> = ({ chain, size = 6, className
     );
   }
 
-  const px = size * 4;
-
   return (
     <Image
-      src={src}
-      width={px}
-      height={px}
+      src={`/chain/${chain.toLowerCase()}.svg`}
+      width={size * 4}
+      height={size * 4}
       className={`w-${size} h-${size} rounded-full ${className}`}
-      alt={chain ?? 'chain'}
+      alt={chain}
       onError={() => setFailed(true)}
     />
   );
-};
+}

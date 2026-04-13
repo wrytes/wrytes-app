@@ -1,1 +1,0 @@
-export { ChainLogo } from './ChainLogo';
