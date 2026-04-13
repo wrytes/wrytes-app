@@ -36,6 +36,8 @@ import {
   TableRowEmpty,
 } from '@/components/ui/Table';
 import { TokenLogo, ChainLogo } from '@/components/ui/logo';
+import { Badge, Modal, ConfirmModal, showToast, IconLogo } from '@/components/ui';
+import HeroSteps from '@/components/ui/HeroSteps';
 
 // ─── Mock data ────────────────────────────────────────────────────────────────
 
@@ -73,15 +75,29 @@ export default function Dashboard() {
   const [inWallet, setInWallet] = useState(false);
   const [activeFilters, setActiveFilters] = useState<string[]>([]);
 
-  // Sort state (shared across both tables for demo)
+  // Modal state
+  const [basicModalOpen, setBasicModalOpen] = useState(false);
+  const [footerModalOpen, setFooterModalOpen] = useState(false);
+  const [confirmModalOpen, setConfirmModalOpen] = useState(false);
+  const [dangerModalOpen, setDangerModalOpen] = useState(false);
+
   const [sortTab, setSortTab] = useState('Asset');
   const [sortReverse, setSortReverse] = useState(false);
-
   const handleSortChange = (col: string) => {
     if (col === sortTab) setSortReverse(r => !r);
     else {
       setSortTab(col);
       setSortReverse(false);
+    }
+  };
+
+  const [protocolSortTab, setProtocolSortTab] = useState('Protocol');
+  const [protocolSortReverse, setProtocolSortReverse] = useState(false);
+  const handleProtocolSortChange = (col: string) => {
+    if (col === protocolSortTab) setProtocolSortReverse(r => !r);
+    else {
+      setProtocolSortTab(col);
+      setProtocolSortReverse(false);
     }
   };
 
@@ -233,6 +249,108 @@ export default function Dashboard() {
                   className="flex-1"
                   second={{ label: 'Withdraw', variant: 'outline', className: 'flex-1' }}
                 />
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* ── Badge demos ───────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">Badge Components</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Risk variants */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                Risk levels
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Badge text="Low Risk" variant="risk" riskLevel="low" />
+                <Badge text="Medium Risk" variant="risk" riskLevel="medium" />
+                <Badge text="High Risk" variant="risk" riskLevel="high" />
+              </div>
+            </Card>
+
+            {/* Sizes */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                Sizes
+              </p>
+              <div className="flex flex-wrap items-center gap-3">
+                <Badge text="Small" variant="risk" riskLevel="low" size="sm" />
+                <Badge text="Medium" variant="risk" riskLevel="low" size="md" />
+                <Badge text="Large" variant="risk" riskLevel="low" size="lg" />
+              </div>
+            </Card>
+
+            {/* Custom colors */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                Custom colors
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <Badge
+                  text="Active"
+                  variant="custom"
+                  customColor="text-orange-400"
+                  customBgColor="bg-orange-400/20"
+                />
+                <Badge
+                  text="Pending"
+                  variant="custom"
+                  customColor="text-blue-400"
+                  customBgColor="bg-blue-400/20"
+                />
+                <Badge
+                  text="Paused"
+                  variant="custom"
+                  customColor="text-purple-400"
+                  customBgColor="bg-purple-400/20"
+                />
+                <Badge
+                  text="Closed"
+                  variant="custom"
+                  customColor="text-gray-400"
+                  customBgColor="bg-gray-400/20"
+                />
+              </div>
+            </Card>
+
+            {/* In context */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                In context
+              </p>
+              <div className="space-y-3 text-sm">
+                {[
+                  {
+                    label: 'Morpho Blue',
+                    chain: 'Ethereum',
+                    status: 'Active',
+                    risk: 'low' as const,
+                  },
+                  {
+                    label: 'Frankencoin',
+                    chain: 'Ethereum',
+                    status: 'Pending',
+                    risk: 'medium' as const,
+                  },
+                  { label: 'Aerodrome', chain: 'Base', status: 'High Risk', risk: 'high' as const },
+                ].map(row => (
+                  <div key={row.label} className="flex items-center justify-between">
+                    <span className="text-text-primary font-medium">{row.label}</span>
+                    <div className="flex items-center gap-2">
+                      <Badge
+                        text={row.chain}
+                        variant="custom"
+                        customColor="text-blue-400"
+                        customBgColor="bg-blue-400/10"
+                        size="sm"
+                      />
+                      <Badge text={row.status} variant="risk" riskLevel={row.risk} size="sm" />
+                    </div>
+                  </div>
+                ))}
               </div>
             </Card>
           </div>
@@ -403,7 +521,13 @@ export default function Dashboard() {
                 <TableRowEmpty>No assets match your search.</TableRowEmpty>
               ) : (
                 filteredPositions.map(pos => (
-                  <TableRow key={pos.asset} headers={SEARCHABLE_HEADERS} tab={sortTab} colSpan={4}>
+                  <TableRow
+                    key={pos.asset}
+                    headers={SEARCHABLE_HEADERS}
+                    tab={sortTab}
+                    colSpan={4}
+                    rawHeader
+                  >
                     <div className="text-left font-semibold text-text-primary flex items-center gap-2">
                       <TokenLogo currency={pos.asset} size={6} />
                       {pos.asset}
@@ -425,14 +549,20 @@ export default function Dashboard() {
           <Table>
             <TableHead
               headers={PROTOCOL_HEADERS}
-              tab={sortTab}
-              reverse={sortReverse}
-              tabOnChange={handleSortChange}
+              tab={protocolSortTab}
+              reverse={protocolSortReverse}
+              tabOnChange={handleProtocolSortChange}
               colSpan={4}
             />
             <TableBody>
               {PROTOCOL_ROWS.map(row => (
-                <TableRow key={row.protocol} headers={PROTOCOL_HEADERS} tab={sortTab} colSpan={4}>
+                <TableRow
+                  key={row.protocol}
+                  headers={PROTOCOL_HEADERS}
+                  tab={protocolSortTab}
+                  colSpan={4}
+                  rawHeader
+                >
                   <div className="text-left font-semibold text-text-primary flex items-center gap-2">
                     <ChainLogo chain={row.chain} size={6} />
                     {row.protocol}
@@ -448,6 +578,346 @@ export default function Dashboard() {
             </TableBody>
           </Table>
         </section>
+        {/* ── IconLogo demos ────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">IconLogo</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Sizes */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                Sizes
+              </p>
+              <div className="flex flex-wrap items-end gap-4">
+                <div className="flex flex-col items-center gap-2">
+                  <IconLogo
+                    icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-xs" />}
+                    size={6}
+                  />
+                  <span className="text-xs text-text-secondary">size 6</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <IconLogo
+                    icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-sm" />}
+                    size={8}
+                  />
+                  <span className="text-xs text-text-secondary">size 8</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <IconLogo
+                    icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-base" />}
+                    size={10}
+                  />
+                  <span className="text-xs text-text-secondary">size 10</span>
+                </div>
+                <div className="flex flex-col items-center gap-2">
+                  <IconLogo
+                    icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-xl" />}
+                    size={14}
+                  />
+                  <span className="text-xs text-text-secondary">size 14</span>
+                </div>
+              </div>
+            </Card>
+
+            {/* In context */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                With icons
+              </p>
+              <div className="flex flex-wrap gap-4">
+                <IconLogo
+                  icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400" />}
+                  size={10}
+                />
+                <IconLogo
+                  icon={<FontAwesomeIcon icon={faChartLine} className="text-green-400" />}
+                  size={10}
+                />
+                <IconLogo
+                  icon={<FontAwesomeIcon icon={faShield} className="text-blue-400" />}
+                  size={10}
+                />
+                <IconLogo
+                  icon={
+                    <FontAwesomeIcon icon={faArrowRightArrowLeft} className="text-purple-400" />
+                  }
+                  size={10}
+                />
+                <IconLogo
+                  icon={<FontAwesomeIcon icon={faLightbulb} className="text-yellow-400" />}
+                  size={10}
+                />
+              </div>
+            </Card>
+          </div>
+        </section>
+
+        {/* ── HeroSteps demo ────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">HeroSteps</h2>
+
+          <HeroSteps
+            steps={[
+              {
+                icon: '1',
+                title: 'Connect wallet',
+                description:
+                  'Link your MetaMask, WalletConnect, or Coinbase wallet to get started.',
+              },
+              {
+                icon: '2',
+                title: 'Select a vault',
+                description:
+                  'Browse available lending vaults and pick the one that fits your risk profile.',
+              },
+              {
+                icon: '3',
+                title: 'Deposit & earn',
+                description: 'Supply assets to start earning yield. Withdraw at any time.',
+              },
+            ]}
+          />
+
+          <Card hover={false}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+              3-step onboarding flow
+            </p>
+            <HeroSteps
+              steps={[
+                {
+                  icon: '1',
+                  title: 'Connect wallet',
+                  description:
+                    'Link your MetaMask, WalletConnect, or Coinbase wallet to get started.',
+                },
+                {
+                  icon: '2',
+                  title: 'Select a vault',
+                  description:
+                    'Browse available lending vaults and pick the one that fits your risk profile.',
+                },
+                {
+                  icon: '3',
+                  title: 'Deposit & earn',
+                  description: 'Supply assets to start earning yield. Withdraw at any time.',
+                },
+              ]}
+            />
+          </Card>
+
+          <Card hover={false}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+              2-step flow
+            </p>
+            <HeroSteps
+              steps={[
+                {
+                  icon: '1',
+                  title: 'Approve token',
+                  description:
+                    'Grant the protocol permission to move your tokens. One-time transaction.',
+                },
+                {
+                  icon: '2',
+                  title: 'Confirm deposit',
+                  description: 'Sign the deposit transaction to lock collateral and mint ZCHF.',
+                },
+              ]}
+            />
+          </Card>
+        </section>
+
+        {/* ── Toast demos ───────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">Toast Notifications</h2>
+
+          <Card hover={false}>
+            <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+              Trigger toasts
+            </p>
+            <div className="flex flex-wrap gap-3">
+              <ButtonInput
+                label="Success"
+                variant="primary"
+                onClick={() => showToast.success('Transaction confirmed. Funds are now deposited.')}
+              />
+              <ButtonInput
+                label="Error"
+                variant="outline"
+                className="text-red-400 border-red-400/40 hover:border-red-400"
+                onClick={() =>
+                  showToast.error('Transaction failed. Insufficient balance for gas fees.')
+                }
+              />
+              <ButtonInput
+                label="Info"
+                variant="secondary"
+                onClick={() => showToast.info('Signature required. Please check your wallet.')}
+              />
+              <ButtonInput
+                label="Warning"
+                variant="ghost"
+                onClick={() =>
+                  showToast.warning('Health factor approaching liquidation threshold.')
+                }
+              />
+            </div>
+          </Card>
+        </section>
+
+        {/* ── Modal demos ───────────────────────────────────────────────── */}
+        <section className="space-y-4">
+          <h2 className="text-xl font-bold text-text-primary">Modal Components</h2>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Basic modal */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                Basic modal
+              </p>
+              <ButtonInput
+                label="Open modal"
+                variant="primary"
+                onClick={() => setBasicModalOpen(true)}
+              />
+            </Card>
+
+            {/* Modal with footer */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                With footer
+              </p>
+              <ButtonInput
+                label="Open modal with footer"
+                variant="secondary"
+                onClick={() => setFooterModalOpen(true)}
+              />
+            </Card>
+
+            {/* ConfirmModal */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                ConfirmModal
+              </p>
+              <ButtonInput
+                label="Confirm action"
+                variant="outline"
+                onClick={() => setConfirmModalOpen(true)}
+              />
+            </Card>
+
+            {/* Danger ConfirmModal */}
+            <Card hover={false}>
+              <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary mb-5">
+                ConfirmModal — danger
+              </p>
+              <ButtonInput
+                label="Delete position"
+                variant="ghost"
+                className="text-red-400 hover:text-red-300"
+                onClick={() => setDangerModalOpen(true)}
+              />
+            </Card>
+          </div>
+        </section>
+
+        {/* ── Modals (portaled) ─────────────────────────────────────────── */}
+        <Modal
+          isOpen={basicModalOpen}
+          onClose={() => setBasicModalOpen(false)}
+          title="Vault Details"
+          size="md"
+        >
+          <div className="space-y-4 text-sm text-text-secondary">
+            <div className="flex justify-between">
+              <span>Protocol</span>
+              <span className="text-text-primary font-medium">Morpho Blue</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Network</span>
+              <span className="text-text-primary font-medium">Ethereum</span>
+            </div>
+            <div className="flex justify-between">
+              <span>TVL</span>
+              <span className="text-text-primary font-medium">$1.2B</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Current APY</span>
+              <span className="text-green-400 font-medium">5.4%</span>
+            </div>
+          </div>
+        </Modal>
+
+        <Modal
+          isOpen={footerModalOpen}
+          onClose={() => setFooterModalOpen(false)}
+          title="Confirm Deposit"
+          size="md"
+          footer={
+            <ButtonInput
+              label="Confirm"
+              variant="primary"
+              onClick={() => {
+                setFooterModalOpen(false);
+                showToast.success('Deposit submitted successfully.');
+              }}
+              second={{
+                label: 'Cancel',
+                variant: 'secondary',
+                onClick: () => setFooterModalOpen(false),
+              }}
+            />
+          }
+        >
+          <div className="space-y-4 text-sm text-text-secondary">
+            <p>
+              You are about to deposit{' '}
+              <span className="text-text-primary font-semibold">3.8 ETH</span> into the Morpho Blue
+              vault.
+            </p>
+            <div className="flex justify-between border-t border-dark-surface pt-4">
+              <span>You will receive</span>
+              <span className="text-text-primary font-medium">≈ 11,400 ZCHF</span>
+            </div>
+            <div className="flex justify-between">
+              <span>Estimated APY</span>
+              <span className="text-green-400 font-medium">5.4%</span>
+            </div>
+          </div>
+        </Modal>
+
+        <ConfirmModal
+          isOpen={confirmModalOpen}
+          onClose={() => setConfirmModalOpen(false)}
+          title="Withdraw Position"
+          message="Are you sure you want to withdraw your full position from this vault? This action cannot be undone."
+          confirmText="Withdraw"
+          cancelText="Keep position"
+          onConfirm={() => {
+            setConfirmModalOpen(false);
+            showToast.success('Withdrawal submitted.');
+          }}
+        />
+
+        <ConfirmModal
+          isOpen={dangerModalOpen}
+          onClose={() => setDangerModalOpen(false)}
+          title="Delete Position"
+          message={
+            <span>
+              This will <span className="text-red-400 font-semibold">permanently close</span> your
+              position and return collateral to your wallet. Proceed?
+            </span>
+          }
+          confirmText="Delete"
+          cancelText="Cancel"
+          confirmVariant="danger"
+          onConfirm={() => {
+            setDangerModalOpen(false);
+            showToast.error('Position deleted.');
+          }}
+        />
       </div>
     </>
   );
