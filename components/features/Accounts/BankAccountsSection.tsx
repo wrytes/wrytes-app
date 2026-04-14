@@ -28,9 +28,10 @@ const EMPTY_FORM = {
 
 interface Props {
   isAdmin: boolean;
+  hasScope: boolean;
 }
 
-export default function BankAccountsSection({ isAdmin }: Props) {
+export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
 
@@ -46,6 +47,10 @@ export default function BankAccountsSection({ isAdmin }: Props) {
   const [editSaving, setEditSaving] = useState(false);
 
   const load = useCallback(async () => {
+    if (!hasScope) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiRequest<BankAccount[]>('/bank-accounts');
@@ -55,7 +60,7 @@ export default function BankAccountsSection({ isAdmin }: Props) {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [hasScope]);
 
   useEffect(() => {
     load();
@@ -188,16 +193,31 @@ export default function BankAccountsSection({ isAdmin }: Props) {
           description="Bank Account and Safe Wallet destinations"
           icon={faBuildingColumns}
           actions={
-            <ButtonInput
-              label="Add account"
-              icon={<FontAwesomeIcon icon={faPlus} />}
-              variant="primary"
-              size="sm"
-              onClick={() => setAddOpen(true)}
-            />
+            hasScope ? (
+              <ButtonInput
+                label="Add account"
+                icon={<FontAwesomeIcon icon={faPlus} />}
+                variant="primary"
+                size="sm"
+                onClick={() => setAddOpen(true)}
+              />
+            ) : undefined
           }
         />
 
+        {!hasScope ? (
+          <p className="text-text-secondary text-sm">
+            Bank account management requires the{' '}
+            <Badge
+              text="BANK"
+              variant="custom"
+              customColor="text-orange-400"
+              customBgColor="bg-orange-400/10"
+              size="sm"
+            />{' '}
+            scope.
+          </p>
+        ) : (
         <Table>
           <TableHead
             headers={HEADERS}
@@ -274,6 +294,7 @@ export default function BankAccountsSection({ isAdmin }: Props) {
             )}
           </TableBody>
         </Table>
+        )}
       </Section>
 
       {/* Add modal */}

@@ -5,6 +5,7 @@ import { BankAccountsSection, SafeWalletsSection } from '@/components/features/A
 export default function AccountsPage() {
   const { user } = useAuth();
   const isAdmin = user?.scopes.includes('ADMIN') ?? false;
+  const hasBankScope = isAdmin || (user?.scopes.includes('BANK') ?? false);
   const hasSafeScope = isAdmin || (user?.scopes.includes('SAFE') ?? false);
 
   return (
@@ -12,7 +13,7 @@ export default function AccountsPage() {
       <Head>
         <title>Accounts – Wrytes</title>
       </Head>
-      <BankAccountsSection isAdmin={isAdmin} />
+      <BankAccountsSection isAdmin={isAdmin} hasScope={hasBankScope} />
       <SafeWalletsSection hasScope={hasSafeScope} />
     </>
   );

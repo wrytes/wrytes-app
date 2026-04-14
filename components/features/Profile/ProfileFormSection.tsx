@@ -42,7 +42,13 @@ const EMPTY: FormState = {
   country: '',
 };
 
-export default function ProfileFormSection() {
+interface Props {
+  isAdmin?: boolean;
+  hasScope?: boolean;
+  userId?: string;
+}
+
+export default function ProfileFormSection({ isAdmin = false, hasScope = false, userId }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -50,6 +56,10 @@ export default function ProfileFormSection() {
   const [errors, setErrors] = useState<Partial<Record<keyof FormState, string>>>({});
 
   const loadProfile = useCallback(async () => {
+    if (!hasScope) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiRequest<Profile>('/user/profile');
@@ -70,7 +80,7 @@ export default function ProfileFormSection() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [hasScope]);
 
   useEffect(() => {
     loadProfile();
@@ -122,7 +132,7 @@ export default function ProfileFormSection() {
         description="Your personal and business information"
         icon={faUser}
         actions={
-          !loading && (
+          hasScope && !loading ? (
             <ButtonInput
               label={saving ? 'Saving…' : 'Save profile'}
               icon={<FontAwesomeIcon icon={faCheck} />}
@@ -132,11 +142,22 @@ export default function ProfileFormSection() {
               loading={saving}
               disabled={saving}
             />
-          )
+          ) : undefined
         }
       />
 
-      {loading ? (
+      {!hasScope ? (
+        <p className="text-text-secondary text-sm">
+          Profile management requires{' '}
+          <Badge
+            text="LOGIN"
+            variant="custom"
+            customColor="text-orange-400"
+            customBgColor="bg-orange-400/10"
+            size="sm"
+          />
+        </p>
+      ) : loading ? (
         <p className="text-text-secondary text-sm">Loading…</p>
       ) : (
         <>
@@ -241,6 +262,22 @@ export default function ProfileFormSection() {
                     Identity verification is handled by the Wrytes team. Contact support to start the
                     process.
                   </p>
+                  {isAdmin && userId && (
+                    <ButtonInput
+                      label="Verify profile"
+                      variant="primary"
+                      size="sm"
+                      onClick={async () => {
+                        try {
+                          await apiRequest(`/user/profile/${userId}/verify`, { method: 'POST' });
+                          showToast.success('Profile verified');
+                          loadProfile();
+                        } catch {
+                          showToast.error('Failed to verify profile');
+                        }
+                      }}
+                    />
+                  )}
                 </div>
               )}
             </Card>
