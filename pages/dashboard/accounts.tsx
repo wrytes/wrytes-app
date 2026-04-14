@@ -1,6 +1,12 @@
 import Head from 'next/head';
 import { useEffect, useState, useCallback } from 'react';
-import { faBuildingColumns, faPlus, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBuildingColumns,
+  faPlus,
+  faTrash,
+  faStar,
+  faShield,
+} from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
@@ -8,6 +14,7 @@ import { Badge, Modal, ConfirmModal, AddressDisplay, showToast } from '@/compone
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { ChainLogo } from '@/components/ui/logo';
 import { useAuth } from '@/hooks/useAuth';
+import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 
 interface BankAccount {
@@ -52,6 +59,13 @@ export default function AccountsPage() {
   const [loading, setLoading] = useState(true);
   const [safeWallets, setSafeWallets] = useState<SafeWallet[]>([]);
   const [loadingSafe, setLoadingSafe] = useState(true);
+
+  const { sortTab: accSort, sortReverse: accRev, handleSort: handleAccSort } = useSort('Label');
+  const {
+    sortTab: safeSort,
+    sortReverse: safeRev,
+    handleSort: handleSafeSort,
+  } = useSort('Address');
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [deleteTarget, setDeleteTarget] = useState<BankAccount | null>(null);
@@ -148,16 +162,46 @@ export default function AccountsPage() {
     }
   };
 
+  const sortedAccounts = [...accounts].sort((a, b) => {
+    const m = accRev ? -1 : 1;
+    switch (accSort) {
+      case 'Holder':
+        return m * a.holderName.localeCompare(b.holderName);
+      case 'IBAN':
+        return m * a.iban.localeCompare(b.iban);
+      case 'Currency':
+        return m * a.currency.localeCompare(b.currency);
+      case 'Default':
+        return m * (Number(b.isDefault) - Number(a.isDefault));
+      default:
+        return m * a.label.localeCompare(b.label); // Label
+    }
+  });
+
+  const sortedSafe = [...safeWallets].sort((a, b) => {
+    const m = safeRev ? -1 : 1;
+    switch (safeSort) {
+      case 'Chain':
+        return m * (CHAIN_NAMES[a.chainId] ?? '').localeCompare(CHAIN_NAMES[b.chainId] ?? '');
+      case 'Label':
+        return m * a.label.localeCompare(b.label);
+      case 'Status':
+        return m * (Number(b.deployed) - Number(a.deployed));
+      default:
+        return m * a.address.localeCompare(b.address); // Address
+    }
+  });
+
   return (
     <>
       <Head>
-        <title>Bank Accounts – Wrytes</title>
+        <title>Accounts – Wrytes</title>
       </Head>
 
-      <div className="space-y-8">
+      <Section>
         <PageHeader
-          title="Bank Accounts"
-          description="Fiat off-ramp destinations"
+          title="Accounts"
+          description="Bank Account and Safe Wallet destinations"
           icon={faBuildingColumns}
           actions={
             <ButtonInput
@@ -171,15 +215,27 @@ export default function AccountsPage() {
         />
 
         <Table>
-          <TableHead headers={HEADERS} colSpan={HEADERS.length} />
+          <TableHead
+            headers={HEADERS}
+            colSpan={HEADERS.length}
+            tab={accSort}
+            reverse={accRev}
+            tabOnChange={handleAccSort}
+          />
           <TableBody>
             {loading ? (
               <TableRowEmpty>Loading…</TableRowEmpty>
-            ) : accounts.length === 0 ? (
+            ) : sortedAccounts.length === 0 ? (
               <TableRowEmpty>No bank accounts yet. Add one to enable off-ramp.</TableRowEmpty>
             ) : (
-              accounts.map(acc => (
-                <TableRow key={acc.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+              sortedAccounts.map(acc => (
+                <TableRow
+                  key={acc.id}
+                  headers={HEADERS}
+                  colSpan={HEADERS.length}
+                  tab={accSort}
+                  rawHeader
+                >
                   <div className="text-left font-medium text-text-primary">{acc.label}</div>
                   <div className="text-right text-text-secondary">{acc.holderName}</div>
                   <div className="text-right font-mono text-text-secondary text-sm">{acc.iban}</div>
@@ -227,65 +283,77 @@ export default function AccountsPage() {
             )}
           </TableBody>
         </Table>
+      </Section>
 
-        {/* Safe wallets */}
-        <Section title="Safe Wallets" description="Company-managed multi-sig deposit addresses">
-          {!hasSafeScope ? (
-            <p className="text-text-secondary text-sm">
-              Safe wallet access requires the{' '}
-              <Badge
-                text="SAFE"
-                variant="custom"
-                customColor="text-orange-400"
-                customBgColor="bg-orange-400/10"
-                size="sm"
-              />{' '}
-              scope.
-            </p>
-          ) : (
-            <Table>
-              <TableHead headers={SAFE_HEADERS} colSpan={SAFE_HEADERS.length} />
-              <TableBody>
-                {loadingSafe ? (
-                  <TableRowEmpty>Loading…</TableRowEmpty>
-                ) : safeWallets.length === 0 ? (
-                  <TableRowEmpty>No Safe wallets found.</TableRowEmpty>
-                ) : (
-                  safeWallets.map(w => (
-                    <TableRow
-                      key={w.id}
-                      headers={SAFE_HEADERS}
-                      colSpan={SAFE_HEADERS.length}
-                      rawHeader
-                    >
-                      <div className="text-left">
-                        <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
-                      </div>
-                      <div className="flex justify-end items-center gap-2 text-text-secondary text-sm">
-                        <ChainLogo chain={CHAIN_NAMES[w.chainId] ?? 'Ethereum'} size={4} />
-                        {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
-                      </div>
-                      <div className="text-right text-text-secondary text-sm">
-                        {' '}
-                        <AddressDisplay address={w.label} prefixLength={8} suffixLength={6} />
-                      </div>
-                      <div className="flex justify-end">
-                        <Badge
-                          text={w.deployed ? 'Deployed' : 'Predicted'}
-                          variant="custom"
-                          customColor={w.deployed ? 'text-green-400' : 'text-gray-400'}
-                          customBgColor={w.deployed ? 'bg-green-400/10' : 'bg-gray-400/10'}
-                          size="sm"
-                        />
-                      </div>
-                    </TableRow>
-                  ))
-                )}
-              </TableBody>
-            </Table>
-          )}
-        </Section>
-      </div>
+      {/* Safe wallets */}
+      <Section>
+        <PageHeader
+          title="Safe Accounts"
+          description="Company-managed multi-sig deposit addresses"
+          icon={faShield}
+        />
+        {!hasSafeScope ? (
+          <p className="text-text-secondary text-sm">
+            Safe wallet access requires the{' '}
+            <Badge
+              text="SAFE"
+              variant="custom"
+              customColor="text-orange-400"
+              customBgColor="bg-orange-400/10"
+              size="sm"
+            />{' '}
+            scope.
+          </p>
+        ) : (
+          <Table>
+            <TableHead
+              headers={SAFE_HEADERS}
+              colSpan={SAFE_HEADERS.length}
+              tab={safeSort}
+              reverse={safeRev}
+              tabOnChange={handleSafeSort}
+            />
+            <TableBody>
+              {loadingSafe ? (
+                <TableRowEmpty>Loading…</TableRowEmpty>
+              ) : sortedSafe.length === 0 ? (
+                <TableRowEmpty>No Safe wallets found.</TableRowEmpty>
+              ) : (
+                sortedSafe.map(w => (
+                  <TableRow
+                    key={w.id}
+                    headers={SAFE_HEADERS}
+                    colSpan={SAFE_HEADERS.length}
+                    tab={safeSort}
+                    rawHeader
+                  >
+                    <div className="text-left">
+                      <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
+                    </div>
+                    <div className="flex justify-end items-center gap-2 text-text-secondary text-sm">
+                      <ChainLogo chain={CHAIN_NAMES[w.chainId] ?? 'Ethereum'} size={4} />
+                      {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
+                    </div>
+                    <div className="text-right text-text-secondary text-sm">
+                      {' '}
+                      <AddressDisplay address={w.label} prefixLength={8} suffixLength={6} />
+                    </div>
+                    <div className="flex justify-end">
+                      <Badge
+                        text={w.deployed ? 'Deployed' : 'Predicted'}
+                        variant="custom"
+                        customColor={w.deployed ? 'text-green-400' : 'text-gray-400'}
+                        customBgColor={w.deployed ? 'bg-green-400/10' : 'bg-gray-400/10'}
+                        size="sm"
+                      />
+                    </div>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
+        )}
+      </Section>
 
       {/* Add modal */}
       <Modal

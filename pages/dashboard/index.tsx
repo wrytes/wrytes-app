@@ -15,7 +15,7 @@ import {
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAuth } from '@/hooks/useAuth';
 import { UserBadge } from '@/components/auth/RequireScope';
-import { Breadcrumb, PageHeader, PageTitle, Section } from '@/components/ui/Layout';
+import { Breadcrumb, PageHeader, Section } from '@/components/ui/Layout';
 import { StatGrid } from '@/components/ui/Stats';
 import Card from '@/components/ui/Card';
 import {
@@ -110,10 +110,10 @@ export default function Dashboard() {
     ? `≈ ${((Number(sendAmount) / 1e18) * ethPrice).toFixed(2)}`
     : undefined;
 
-  const displayName = user?.profile
-    ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
-    : user?.telegramHandle
-      ? `@${user.telegramHandle}`
+  const displayName = user?.telegramHandle
+    ? `@${user.telegramHandle}`
+    : user?.profile
+      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
       : user?.walletAddress
         ? `${user.walletAddress.slice(0, 6)}…${user.walletAddress.slice(-4)}`
         : null
@@ -125,16 +125,13 @@ export default function Dashboard() {
         <meta name="description" content="Dashboard overview" />
       </Head>
 
-      <div className="space-y-10">
-        {/* ── Page header ───────────────────────────────────────────────── */}
+      <Section>
         <PageHeader
           title="Dashboard Overview"
           description={`Welcome back${displayName ? `, ${displayName}` : ''}! Here's what's happening with your portfolio.`}
           icon={faLightbulb}
           userInfo={user && <UserBadge />}
         />
-
-        {/* ── Stats ─────────────────────────────────────────────────────── */}
         <StatGrid
           stats={[
             {
@@ -168,10 +165,10 @@ export default function Dashboard() {
           ]}
           columns={{ base: 1, md: 2, lg: 4 }}
         />
+      </Section>
 
         {/* ── Button demos ──────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Button Components" />
+        <Section title="Button Components">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Variants */}
@@ -248,11 +245,10 @@ export default function Dashboard() {
               </div>
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── Badge demos ───────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Badge Components" />
+        <Section title="Badge Components">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Risk variants */}
@@ -342,11 +338,10 @@ export default function Dashboard() {
               </div>
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── Input demos ───────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Input Components" />
+        <Section title="Input Components">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* TokenInput */}
@@ -470,11 +465,10 @@ export default function Dashboard() {
               />
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── Searchable table ──────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="TableHeadSearchable" />
+        <Section title="TableHeadSearchable">
 
           <Table>
             <TableHeadSearchable
@@ -520,11 +514,10 @@ export default function Dashboard() {
               )}
             </TableBody>
           </Table>
-        </section>
+      </Section>
 
         {/* ── Sortable table ────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="TableHead (sortable)" />
+        <Section title="TableHead (sortable)">
 
           <Table>
             <TableHead
@@ -557,10 +550,9 @@ export default function Dashboard() {
               ))}
             </TableBody>
           </Table>
-        </section>
+      </Section>
         {/* ── IconLogo demos ────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="IconLogo" />
+        <Section title="IconLogo">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Sizes */}
@@ -627,11 +619,10 @@ export default function Dashboard() {
               </div>
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── HeroSteps demo ────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="HeroSteps" />
+        <Section title="HeroSteps">
 
           <CardTitle title="3-step flow" />
           <HeroSteps
@@ -672,11 +663,10 @@ export default function Dashboard() {
               },
             ]}
           />
-        </section>
+      </Section>
 
         {/* ── Toast demos ───────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Toast Notifications" />
+        <Section title="Toast Notifications">
 
           <Card>
             <CardTitle title="Trigger toasts" />
@@ -708,11 +698,10 @@ export default function Dashboard() {
               />
             </div>
           </Card>
-        </section>
+      </Section>
 
         {/* ── Breadcrumb demos ──────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Breadcrumb" />
+        <Section title="Breadcrumb">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <Card>
@@ -755,11 +744,10 @@ export default function Dashboard() {
               <Breadcrumb items={[{ label: 'Dashboard' }]} />
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── Section demos ─────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Section Component" />
+        <Section title="Section Component">
 
           {/* Default — no wrapper */}
           <Section title="Default variant" description="Children render directly with no background or card wrapper.">
@@ -824,11 +812,10 @@ export default function Dashboard() {
           <Section title="Spacing — lg" spacing="lg">
             <Card><p className="text-text-secondary text-sm">Loose spacing between header and content.</p></Card>
           </Section>
-        </section>
+      </Section>
 
         {/* ── Modal demos ───────────────────────────────────────────────── */}
-        <section className="space-y-4">
-          <PageTitle title="Modal Components" />
+        <Section title="Modal Components">
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic modal */}
@@ -872,7 +859,7 @@ export default function Dashboard() {
               />
             </Card>
           </div>
-        </section>
+      </Section>
 
         {/* ── Modals (portaled) ─────────────────────────────────────────── */}
         <Modal
@@ -970,7 +957,6 @@ export default function Dashboard() {
             showToast.error('Position deleted.');
           }}
         />
-      </div>
     </>
   );
 }

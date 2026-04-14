@@ -1,11 +1,12 @@
 import Head from 'next/head';
 import { useEffect, useState, useCallback } from 'react';
-import { faUser, faCheck, faShieldHalved, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faUser, faCheck, faShieldHalved, faTrash, faLink, faKey } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import { TextInput, ButtonInput } from '@/components/ui/Input';
 import { Badge, Card, CardTitle, AddressDisplay, ConfirmModal, showToast } from '@/components/ui';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 
 // ── Types ────────────────────────────────────────────────────────────────────
@@ -76,6 +77,9 @@ export default function ProfilePage() {
   const [wallets, setWallets] = useState<LinkedWallet[]>([]);
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
+
+  const { sortTab: wSort, sortReverse: wRev, handleSort: handleWSort } = useSort('Linked');
+  const { sortTab: kSort, sortReverse: kRev, handleSort: handleKSort } = useSort('Created');
 
   // ── Data loading ────────────────────────────────────────────────────────────
 
@@ -186,6 +190,27 @@ export default function ProfilePage() {
 
   const fmt = (iso: string | null) => (iso ? new Date(iso).toLocaleDateString() : '—');
 
+  const dateMs = (iso: string | null) => (iso ? new Date(iso).getTime() : -Infinity);
+
+  const sortedWallets = [...wallets].sort((a, b) => {
+    const m = wRev ? -1 : 1;
+    switch (wSort) {
+      case 'Address': return m * a.address.localeCompare(b.address);
+      case 'Label':   return m * (a.label ?? '').localeCompare(b.label ?? '');
+      default:        return m * (dateMs(a.createdAt) - dateMs(b.createdAt)); // Linked
+    }
+  });
+
+  const sortedKeys = [...keys].sort((a, b) => {
+    const m = kRev ? -1 : 1;
+    switch (kSort) {
+      case 'Key ID':    return m * a.keyId.localeCompare(b.keyId);
+      case 'Last used': return m * (dateMs(a.lastUsedAt) - dateMs(b.lastUsedAt));
+      case 'Expires':   return m * (dateMs(a.expiresAt) - dateMs(b.expiresAt));
+      default:          return m * (dateMs(a.createdAt) - dateMs(b.createdAt)); // Created
+    }
+  });
+
   // ── Render ────────────────────────────────────────────────────────────────────
 
   return (
@@ -194,11 +219,24 @@ export default function ProfilePage() {
         <title>Profile – Wrytes</title>
       </Head>
 
-      <div className="space-y-8">
+      <Section>
         <PageHeader
           title="Profile"
           description="Your personal and business information"
           icon={faUser}
+          actions={
+            !loading && (
+              <ButtonInput
+                label={saving ? 'Saving…' : 'Save profile'}
+                icon={<FontAwesomeIcon icon={faCheck} />}
+                variant="primary"
+                size="sm"
+                onClick={handleSave}
+                loading={saving}
+                disabled={saving}
+              />
+            )
+          }
         />
 
         {loading ? (
@@ -313,115 +351,81 @@ export default function ProfilePage() {
               </Card>
             </div>
 
-            {/* ── Save ── */}
-            <div>
-              <ButtonInput
-                label={saving ? 'Saving…' : 'Save profile'}
-                icon={<FontAwesomeIcon icon={faCheck} />}
-                variant="primary"
-                onClick={handleSave}
-                loading={saving}
-                disabled={saving}
-              />
-            </div>
 
-            {/* ── Linked wallets ── */}
-            <Section title="Linked Wallets" titleSize="sm" spacing="sm">
-              <Table>
-                <TableHead headers={WALLET_HEADERS} colSpan={WALLET_HEADERS.length} />
-                <TableBody>
-                  {wallets.length === 0 ? (
-                    <TableRowEmpty>No wallets linked yet.</TableRowEmpty>
-                  ) : (
-                    wallets.map(w => (
-                      <TableRow
-                        key={w.id}
-                        headers={WALLET_HEADERS}
-                        colSpan={WALLET_HEADERS.length}
-                        rawHeader
-                      >
-                        <div className="text-left">
-                          <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
-                        </div>
-                        <div className="text-right text-text-secondary text-sm">
-                          {w.label ?? <span className="text-gray-600">—</span>}
-                        </div>
-                        <div className="text-right text-text-secondary text-sm">
-                          {new Date(w.createdAt).toLocaleDateString()}
-                        </div>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </Section>
 
-            {/* ── API Keys ── */}
-            <Section
-              title="API Keys"
-              titleSize="sm"
-              spacing="sm"
-              hint={<>Use <code className="text-orange-400">/api_create</code> in Telegram to generate a key</>}
-            >
-              <Table>
-                <TableHead headers={KEY_HEADERS} colSpan={KEY_HEADERS.length} />
-                <TableBody>
-                  {keys.length === 0 ? (
-                    <TableRowEmpty>No active API keys.</TableRowEmpty>
-                  ) : (
-                    keys.map(k => (
-                      <TableRow
-                        key={k.id}
-                        headers={KEY_HEADERS}
-                        colSpan={KEY_HEADERS.length}
-                        rawHeader
-                      >
-                        <div className="text-left font-mono text-sm text-text-primary">
-                          {k.keyId}
-                        </div>
-                        <div className="text-right text-text-secondary text-sm">
-                          {fmt(k.createdAt)}
-                        </div>
-                        <div className="text-right text-text-secondary text-sm">
-                          {fmt(k.lastUsedAt)}
-                        </div>
-                        <div className="flex justify-end">
-                          {k.expiresAt ? (
-                            <Badge
-                              text={fmt(k.expiresAt)}
-                              variant="custom"
-                              customColor="text-gray-400"
-                              customBgColor="bg-gray-400/10"
-                              size="sm"
-                            />
-                          ) : (
-                            <Badge
-                              text="Never"
-                              variant="custom"
-                              customColor="text-green-400"
-                              customBgColor="bg-green-400/10"
-                              size="sm"
-                            />
-                          )}
-                        </div>
-                        <div className="flex justify-end">
-                          <button
-                            onClick={() => setRevokeTarget(k)}
-                            className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
-                          >
-                            <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                            Revoke
-                          </button>
-                        </div>
-                      </TableRow>
-                    ))
-                  )}
-                </TableBody>
-              </Table>
-            </Section>
           </>
         )}
-      </div>
+      </Section>
+
+      <Section>
+        <PageHeader
+          title="Linked Wallets"
+          description="EOA addresses you can use to sign in"
+          icon={faLink}
+        />
+        <Table>
+          <TableHead headers={WALLET_HEADERS} colSpan={WALLET_HEADERS.length} tab={wSort} reverse={wRev} tabOnChange={handleWSort} />
+          <TableBody>
+            {sortedWallets.length === 0 ? (
+              <TableRowEmpty>No wallets linked yet.</TableRowEmpty>
+            ) : (
+              sortedWallets.map(w => (
+                <TableRow key={w.id} headers={WALLET_HEADERS} colSpan={WALLET_HEADERS.length} tab={wSort} rawHeader>
+                  <div className="text-left">
+                    <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
+                  </div>
+                  <div className="text-right text-text-secondary text-sm">
+                    {w.label ?? <span className="text-gray-600">—</span>}
+                  </div>
+                  <div className="text-right text-text-secondary text-sm">
+                    {new Date(w.createdAt).toLocaleDateString()}
+                  </div>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Section>
+
+      <Section>
+        <PageHeader
+          title="API Keys"
+          description="Programmatic access tokens — use /api_create in Telegram to generate one"
+          icon={faKey}
+        />
+        <Table>
+          <TableHead headers={KEY_HEADERS} colSpan={KEY_HEADERS.length} tab={kSort} reverse={kRev} tabOnChange={handleKSort} />
+          <TableBody>
+            {sortedKeys.length === 0 ? (
+              <TableRowEmpty>No active API keys.</TableRowEmpty>
+            ) : (
+              sortedKeys.map(k => (
+                <TableRow key={k.id} headers={KEY_HEADERS} colSpan={KEY_HEADERS.length} tab={kSort} rawHeader>
+                  <div className="text-left font-mono text-sm text-text-primary">{k.keyId}</div>
+                  <div className="text-right text-text-secondary text-sm">{fmt(k.createdAt)}</div>
+                  <div className="text-right text-text-secondary text-sm">{fmt(k.lastUsedAt)}</div>
+                  <div className="flex justify-end">
+                    {k.expiresAt ? (
+                      <Badge text={fmt(k.expiresAt)} variant="custom" customColor="text-gray-400" customBgColor="bg-gray-400/10" size="sm" />
+                    ) : (
+                      <Badge text="Never" variant="custom" customColor="text-green-400" customBgColor="bg-green-400/10" size="sm" />
+                    )}
+                  </div>
+                  <div className="flex justify-end">
+                    <button
+                      onClick={() => setRevokeTarget(k)}
+                      className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                      Revoke
+                    </button>
+                  </div>
+                </TableRow>
+              ))
+            )}
+          </TableBody>
+        </Table>
+      </Section>
 
       <ConfirmModal
         isOpen={!!revokeTarget}
