@@ -1,5 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
-import { faMoneyCheckDollar, faPlus, faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faArrowTrendDown, faPlus, faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
@@ -213,7 +213,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
         <PageHeader
           title="Off-Ramp"
           description="Crypto-to-fiat conversion routes linked to your bank accounts"
-          icon={faMoneyCheckDollar}
+          icon={faArrowTrendDown}
           actions={
             hasScope ? (
               <ButtonInput
