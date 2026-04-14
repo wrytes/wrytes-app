@@ -14,7 +14,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAuth } from '@/hooks/useAuth';
-import { RoleBadge } from '@/components/auth/RequireRole';
+import { UserBadge } from '@/components/auth/RequireScope';
 import { Breadcrumb, PageHeader, PageTitle, Section } from '@/components/ui/Layout';
 import { StatGrid } from '@/components/ui/Stats';
 import Card from '@/components/ui/Card';
@@ -110,6 +110,14 @@ export default function Dashboard() {
     ? `≈ ${((Number(sendAmount) / 1e18) * ethPrice).toFixed(2)}`
     : undefined;
 
+  const displayName = user?.profile
+    ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
+    : user?.telegramHandle
+      ? `@${user.telegramHandle}`
+      : user?.walletAddress
+        ? `${user.walletAddress.slice(0, 6)}…${user.walletAddress.slice(-4)}`
+        : null
+
   return (
     <>
       <Head>
@@ -121,13 +129,9 @@ export default function Dashboard() {
         {/* ── Page header ───────────────────────────────────────────────── */}
         <PageHeader
           title="Dashboard Overview"
-          description={`Welcome back${
-            user?.walletAddress
-              ? `, ${user.walletAddress.slice(0, 6)}...${user.walletAddress.slice(-4)}`
-              : ''
-          }! Here's what's happening with your portfolio.`}
+          description={`Welcome back${displayName ? `, ${displayName}` : ''}! Here's what's happening with your portfolio.`}
           icon={faLightbulb}
-          userInfo={user && <RoleBadge />}
+          userInfo={user && <UserBadge />}
         />
 
         {/* ── Stats ─────────────────────────────────────────────────────── */}

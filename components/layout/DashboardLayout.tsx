@@ -19,9 +19,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, signOut, user } = useAuth();
   const { address: walletAddress, isConnected } = useWallet();
   const { isActive } = useActiveNavigation();
+
+  const displayName = user?.profile
+    ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
+    : user?.telegramHandle
+      ? `@${user.telegramHandle}`
+      : null;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -100,13 +106,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   type="button"
                   onClick={() => setShowAuthModal(true)}
                   className="inline-flex items-center gap-2 text-white hover:text-accent-orange transition-colors text-sm font-medium"
-                  title="Click to disconnect wallet"
+                  title="Click to manage wallet"
                 >
                   <div className="text-right">
-                    <p className="text-sm text-gray-400">Connected as</p>
-                    <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
-                      {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
-                    </p>
+                    {displayName ? (
+                      <>
+                        <p className="text-white font-medium text-sm leading-tight">
+                          {displayName}
+                        </p>
+                        <p className="text-gray-500 font-mono text-xs hover:text-accent-orange transition-colors">
+                          {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-400">Connected as</p>
+                        <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
+                          {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </button>
               )}
@@ -155,13 +174,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       closeMobileMenu();
                     }}
                     className="inline-flex gap-2 mt-4 text-white hover:text-accent-orange transition-colors text-sm font-medium"
-                    title="Click to disconnect wallet"
+                    title="Click to manage wallet"
                   >
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Connected as</p>
-                      <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
-                        {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
-                      </p>
+                      {displayName ? (
+                        <>
+                          <p className="text-white font-medium text-sm leading-tight">
+                            {displayName}
+                          </p>
+                          <p className="text-gray-500 font-mono text-xs">
+                            {walletAddress?.slice(0, 6)}…{walletAddress?.slice(-4)}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-gray-400">Connected as</p>
+                          <p className="text-white font-mono text-sm">
+                            {walletAddress?.slice(0, 8)}…{walletAddress?.slice(-6)}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </button>
                 </div>
