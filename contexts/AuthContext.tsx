@@ -124,21 +124,25 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
-    if (state.isAuthenticated) return
-
-    if (isConnected && address) {
+    if (!isConnected) {
+      stopPolling()
+      if (state.isAuthenticated) {
+        // Wallet disconnected while logged in — clear session
+        authService.clearSession()
+        dispatch({ type: 'CLEAR_AUTH' })
+      } else {
+        dispatch({
+          type: 'SET_AUTH_FLOW',
+          payload: { currentStep: AuthStep.CONNECT_WALLET, error: null, sessionId: undefined },
+        })
+      }
+    } else if (isConnected && address && !state.isAuthenticated) {
       dispatch({
         type: 'SET_AUTH_FLOW',
         payload: { currentStep: AuthStep.SIGN_MESSAGE, error: null },
       })
-    } else if (!isConnected) {
-      stopPolling()
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { currentStep: AuthStep.CONNECT_WALLET, error: null, sessionId: undefined },
-      })
     }
-  }, [isConnected, address, state.isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
+  }, [isConnected, address]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------------------
   // Session polling (runs while PENDING_TG_APPROVAL)
