@@ -6,6 +6,7 @@ import {
   faTrash,
   faStar,
   faShield,
+  faPenToSquare,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
@@ -53,7 +54,7 @@ const EMPTY_FORM = {
 export default function AccountsPage() {
   const { user } = useAuth();
   const isAdmin = user?.scopes.includes('ADMIN') ?? false;
-  const hasSafeScope = user?.scopes.includes('SAFE') ?? false;
+  const hasSafeScope = isAdmin || (user?.scopes.includes('SAFE') ?? false);
 
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
@@ -71,6 +72,10 @@ export default function AccountsPage() {
   const [deleteTarget, setDeleteTarget] = useState<BankAccount | null>(null);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM>>({});
+  const [editTarget, setEditTarget] = useState<BankAccount | null>(null);
+  const [editForm, setEditForm] = useState({ label: '', bic: '', holderName: '' });
+  const [editErrors, setEditErrors] = useState<Partial<typeof editForm>>({});
+  const [editSaving, setEditSaving] = useState(false);
 
   const load = useCallback(async () => {
     setLoading(true);
@@ -146,6 +151,51 @@ export default function AccountsPage() {
       load();
     } catch {
       showToast.error('Failed to update default');
+    }
+  };
+
+  const openEdit = (acc: BankAccount) => {
+    setEditTarget(acc);
+    setEditForm({ label: acc.label, bic: acc.bic, holderName: acc.holderName });
+    setEditErrors({});
+  };
+
+  const setEdit = (field: keyof typeof editForm) => (value: string) =>
+    setEditForm(f => ({ ...f, [field]: value }));
+
+  const handleEdit = async () => {
+    if (!editTarget) return;
+    const e: Partial<typeof editForm> = {};
+    if (!editForm.label.trim()) e.label = 'Required';
+    if (!editForm.bic.trim()) e.bic = 'Required';
+    if (!editForm.holderName.trim()) e.holderName = 'Required';
+    setEditErrors(e);
+    if (Object.keys(e).length > 0) return;
+
+    const body: Record<string, string> = {};
+    if (editForm.label.trim() !== editTarget.label) body.label = editForm.label.trim();
+    if (editForm.bic.trim() !== editTarget.bic) body.bic = editForm.bic.trim();
+    if (editForm.holderName.trim() !== editTarget.holderName) body.holderName = editForm.holderName.trim();
+
+    if (Object.keys(body).length === 0) {
+      setEditTarget(null);
+      return;
+    }
+
+    setEditSaving(true);
+    try {
+      await apiRequest(`/bank-accounts/${editTarget.id}`, {
+        method: 'PUT',
+        body: JSON.stringify(body),
+      });
+      showToast.success('Account updated');
+      setEditTarget(null);
+      load();
+    } catch (err: unknown) {
+      const msg = (err as { message?: string }).message;
+      showToast.error(msg || 'Failed to update account');
+    } finally {
+      setEditSaving(false);
     }
   };
 
@@ -267,7 +317,14 @@ export default function AccountsPage() {
                       </button>
                     )}
                   </div>
-                  <div className="flex justify-end items-center gap-2">
+                  <div className="flex justify-end items-center gap-3">
+                    <button
+                      onClick={() => openEdit(acc)}
+                      className="text-xs text-text-secondary hover:text-orange-400 transition-colors flex items-center gap-1"
+                    >
+                      <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
+                      Edit
+                    </button>
                     {isAdmin && (
                       <button
                         onClick={() => setDeleteTarget(acc)}
@@ -435,6 +492,55 @@ export default function AccountsPage() {
             />
             Set as default account
           </label>
+        </div>
+      </Modal>
+
+      {/* Edit account modal */}
+      <Modal
+        isOpen={!!editTarget}
+        onClose={() => setEditTarget(null)}
+        title="Edit Bank Account"
+        size="md"
+        footer={
+          <ButtonInput
+            label={editSaving ? 'Saving…' : 'Save'}
+            variant="primary"
+            onClick={handleEdit}
+            loading={editSaving}
+            disabled={editSaving}
+            second={{
+              label: 'Cancel',
+              variant: 'secondary',
+              onClick: () => setEditTarget(null),
+            }}
+          />
+        }
+      >
+        <div className="space-y-3">
+          <TextInput
+            label="Label"
+            value={editForm.label}
+            onChange={setEdit('label')}
+            placeholder="e.g. main"
+            error={editErrors.label}
+            note="Unique identifier for this account"
+          />
+          <div className="grid grid-cols-2 gap-3">
+            <TextInput
+              label="BIC / SWIFT"
+              value={editForm.bic}
+              onChange={v => setEdit('bic')(v.toUpperCase())}
+              placeholder="CRESCHZZ80A"
+              error={editErrors.bic}
+            />
+            <TextInput
+              label="Account holder"
+              value={editForm.holderName}
+              onChange={setEdit('holderName')}
+              placeholder="Alice Smith"
+              error={editErrors.holderName}
+            />
+          </div>
         </div>
       </Modal>
 
