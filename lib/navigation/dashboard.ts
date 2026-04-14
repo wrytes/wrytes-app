@@ -26,27 +26,15 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     description: 'Dashboard overview and stats',
   },
   {
-    label: 'Profile',
-    path: '/dashboard/profile',
-    icon: faUser,
-    description: 'Manage your profile',
-  },
-  {
     label: 'Accounts',
     path: '/dashboard/accounts',
     icon: faBuildingColumns,
     description: 'Bank accounts for off-ramp',
   },
   {
-    label: 'Wallets',
-    path: '/dashboard/wallets',
-    icon: faWallet,
-    description: 'Safe and linked wallets',
-  },
-  {
-    label: 'API Keys',
-    path: '/dashboard/api-keys',
-    icon: faKey,
-    description: 'Manage API keys',
+    label: 'Profile',
+    path: '/dashboard/profile',
+    icon: faUser,
+    description: 'Manage your profile',
   },
 ];

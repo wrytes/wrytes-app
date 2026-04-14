@@ -2,25 +2,37 @@ import Head from 'next/head';
 import { useEffect, useState, useCallback } from 'react';
 import { faBuildingColumns, faPlus, faTrash, faStar } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { PageHeader } from '@/components/ui/Layout';
+import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
-import { Badge, Modal, ConfirmModal, showToast } from '@/components/ui';
+import { Badge, Modal, ConfirmModal, AddressDisplay, showToast } from '@/components/ui';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import { ChainLogo } from '@/components/ui/logo';
 import { useAuth } from '@/hooks/useAuth';
 import { apiRequest } from '@/lib/api/client';
 
 interface BankAccount {
-  id: string
-  iban: string   // masked
-  bic: string
-  holderName: string
-  currency: 'CHF' | 'EUR'
-  label: string
-  isDefault: boolean
-  createdAt: string
+  id: string;
+  iban: string; // masked
+  bic: string;
+  holderName: string;
+  currency: 'CHF' | 'EUR';
+  label: string;
+  isDefault: boolean;
+  createdAt: string;
 }
 
-const HEADERS = ['Label', 'Holder', 'IBAN', 'Currency', 'Default', 'Actions']
+interface SafeWallet {
+  id: string;
+  address: string;
+  chainId: number;
+  label: string;
+  deployed: boolean;
+}
+
+const CHAIN_NAMES: Record<number, string> = { 1: 'Ethereum', 8453: 'Base' };
+
+const HEADERS = ['Label', 'Holder', 'IBAN', 'Currency', 'Default', 'Actions'];
+const SAFE_HEADERS = ['Address', 'Chain', 'Label', 'Status'];
 
 const EMPTY_FORM = {
   iban: '',
@@ -29,101 +41,125 @@ const EMPTY_FORM = {
   currency: 'CHF' as 'CHF' | 'EUR',
   label: '',
   isDefault: false,
-}
+};
 
 export default function AccountsPage() {
-  const { user } = useAuth()
-  const isAdmin = user?.scopes.includes('ADMIN') ?? false
+  const { user } = useAuth();
+  const isAdmin = user?.scopes.includes('ADMIN') ?? false;
+  const hasSafeScope = user?.scopes.includes('SAFE') ?? false;
 
-  const [accounts, setAccounts] = useState<BankAccount[]>([])
-  const [loading, setLoading] = useState(true)
-  const [addOpen, setAddOpen] = useState(false)
-  const [saving, setSaving] = useState(false)
-  const [deleteTarget, setDeleteTarget] = useState<BankAccount | null>(null)
-  const [form, setForm] = useState(EMPTY_FORM)
-  const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM>>({})
+  const [accounts, setAccounts] = useState<BankAccount[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [safeWallets, setSafeWallets] = useState<SafeWallet[]>([]);
+  const [loadingSafe, setLoadingSafe] = useState(true);
+  const [addOpen, setAddOpen] = useState(false);
+  const [saving, setSaving] = useState(false);
+  const [deleteTarget, setDeleteTarget] = useState<BankAccount | null>(null);
+  const [form, setForm] = useState(EMPTY_FORM);
+  const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM>>({});
 
   const load = useCallback(async () => {
-    setLoading(true)
+    setLoading(true);
     try {
-      const data = await apiRequest<BankAccount[]>('/bank-accounts')
-      setAccounts(Array.isArray(data) ? data : [])
+      const data = await apiRequest<BankAccount[]>('/bank-accounts');
+      setAccounts(Array.isArray(data) ? data : []);
     } catch {
-      showToast.error('Failed to load bank accounts')
+      showToast.error('Failed to load bank accounts');
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
-  }, [])
+  }, []);
 
-  useEffect(() => { load() }, [load])
+  const loadSafe = useCallback(async () => {
+    if (!hasSafeScope) {
+      setLoadingSafe(false);
+      return;
+    }
+    setLoadingSafe(true);
+    try {
+      const data = await apiRequest<{ wallets: SafeWallet[] }>('/safe/wallets');
+      setSafeWallets(data.wallets ?? []);
+    } catch {
+      /* silent */
+    } finally {
+      setLoadingSafe(false);
+    }
+  }, [hasSafeScope]);
+
+  useEffect(() => {
+    load();
+    loadSafe();
+  }, [load, loadSafe]);
 
   const set = (field: keyof typeof EMPTY_FORM) => (value: string | boolean) =>
-    setForm(f => ({ ...f, [field]: value }))
+    setForm(f => ({ ...f, [field]: value }));
 
   const validate = () => {
-    const e: Partial<typeof EMPTY_FORM> = {}
-    if (!form.iban.trim()) e.iban = 'Required'
-    if (!form.bic.trim()) e.bic = 'Required'
-    if (!form.holderName.trim()) e.holderName = 'Required'
-    if (!form.label.trim()) e.label = 'Required'
-    setErrors(e)
-    return Object.keys(e).length === 0
-  }
+    const e: Partial<typeof EMPTY_FORM> = {};
+    if (!form.iban.trim()) e.iban = 'Required';
+    if (!form.bic.trim()) e.bic = 'Required';
+    if (!form.holderName.trim()) e.holderName = 'Required';
+    if (!form.label.trim()) e.label = 'Required';
+    setErrors(e);
+    return Object.keys(e).length === 0;
+  };
 
   const handleAdd = async () => {
-    if (!validate()) return
-    setSaving(true)
+    if (!validate()) return;
+    setSaving(true);
     try {
       await apiRequest('/bank-accounts', {
         method: 'POST',
         body: JSON.stringify(form),
-      })
-      showToast.success('Bank account added')
-      setAddOpen(false)
-      setForm(EMPTY_FORM)
-      setErrors({})
-      load()
+      });
+      showToast.success('Bank account added');
+      setAddOpen(false);
+      setForm(EMPTY_FORM);
+      setErrors({});
+      load();
     } catch (err: unknown) {
-      const msg = (err as { message?: string }).message
-      showToast.error(msg || 'Failed to add account')
+      const msg = (err as { message?: string }).message;
+      showToast.error(msg || 'Failed to add account');
     } finally {
-      setSaving(false)
+      setSaving(false);
     }
-  }
+  };
 
   const handleSetDefault = async (id: string) => {
     try {
-      await apiRequest(`/bank-accounts/${id}/default`, { method: 'POST' })
-      showToast.success('Default account updated')
-      load()
+      await apiRequest(`/bank-accounts/${id}/default`, { method: 'POST' });
+      showToast.success('Default account updated');
+      load();
     } catch {
-      showToast.error('Failed to update default')
+      showToast.error('Failed to update default');
     }
-  }
+  };
 
   const handleDelete = async () => {
-    if (!deleteTarget) return
+    if (!deleteTarget) return;
     try {
-      await apiRequest(`/bank-accounts/${deleteTarget.id}`, { method: 'DELETE' })
-      showToast.success('Account removed')
-      setDeleteTarget(null)
-      load()
+      await apiRequest(`/bank-accounts/${deleteTarget.id}`, { method: 'DELETE' });
+      showToast.success('Account removed');
+      setDeleteTarget(null);
+      load();
     } catch (err: unknown) {
-      const msg = (err as { message?: string }).message
-      showToast.error(msg || 'Failed to remove account')
+      const msg = (err as { message?: string }).message;
+      showToast.error(msg || 'Failed to remove account');
     }
-  }
+  };
 
   return (
     <>
-      <Head><title>Bank Accounts – Wrytes</title></Head>
+      <Head>
+        <title>Bank Accounts – Wrytes</title>
+      </Head>
 
       <div className="space-y-8">
         <PageHeader
           title="Bank Accounts"
           description="Fiat off-ramp destinations"
           icon={faBuildingColumns}
-          userInfo={
+          actions={
             <ButtonInput
               label="Add account"
               icon={<FontAwesomeIcon icon={faPlus} />}
@@ -135,10 +171,7 @@ export default function AccountsPage() {
         />
 
         <Table>
-          <TableHead
-            headers={HEADERS}
-            colSpan={HEADERS.length}
-          />
+          <TableHead headers={HEADERS} colSpan={HEADERS.length} />
           <TableBody>
             {loading ? (
               <TableRowEmpty>Loading…</TableRowEmpty>
@@ -161,7 +194,13 @@ export default function AccountsPage() {
                   </div>
                   <div className="flex justify-end">
                     {acc.isDefault ? (
-                      <Badge text="Default" variant="custom" customColor="text-green-400" customBgColor="bg-green-400/10" size="sm" />
+                      <Badge
+                        text="Default"
+                        variant="custom"
+                        customColor="text-green-400"
+                        customBgColor="bg-green-400/10"
+                        size="sm"
+                      />
                     ) : (
                       <button
                         onClick={() => handleSetDefault(acc.id)}
@@ -188,12 +227,74 @@ export default function AccountsPage() {
             )}
           </TableBody>
         </Table>
+
+        {/* Safe wallets */}
+        <Section title="Safe Wallets" description="Company-managed multi-sig deposit addresses">
+          {!hasSafeScope ? (
+            <p className="text-text-secondary text-sm">
+              Safe wallet access requires the{' '}
+              <Badge
+                text="SAFE"
+                variant="custom"
+                customColor="text-orange-400"
+                customBgColor="bg-orange-400/10"
+                size="sm"
+              />{' '}
+              scope.
+            </p>
+          ) : (
+            <Table>
+              <TableHead headers={SAFE_HEADERS} colSpan={SAFE_HEADERS.length} />
+              <TableBody>
+                {loadingSafe ? (
+                  <TableRowEmpty>Loading…</TableRowEmpty>
+                ) : safeWallets.length === 0 ? (
+                  <TableRowEmpty>No Safe wallets found.</TableRowEmpty>
+                ) : (
+                  safeWallets.map(w => (
+                    <TableRow
+                      key={w.id}
+                      headers={SAFE_HEADERS}
+                      colSpan={SAFE_HEADERS.length}
+                      rawHeader
+                    >
+                      <div className="text-left">
+                        <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
+                      </div>
+                      <div className="flex justify-end items-center gap-2 text-text-secondary text-sm">
+                        <ChainLogo chain={CHAIN_NAMES[w.chainId] ?? 'Ethereum'} size={4} />
+                        {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
+                      </div>
+                      <div className="text-right text-text-secondary text-sm">
+                        {' '}
+                        <AddressDisplay address={w.label} prefixLength={8} suffixLength={6} />
+                      </div>
+                      <div className="flex justify-end">
+                        <Badge
+                          text={w.deployed ? 'Deployed' : 'Predicted'}
+                          variant="custom"
+                          customColor={w.deployed ? 'text-green-400' : 'text-gray-400'}
+                          customBgColor={w.deployed ? 'bg-green-400/10' : 'bg-gray-400/10'}
+                          size="sm"
+                        />
+                      </div>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          )}
+        </Section>
       </div>
 
       {/* Add modal */}
       <Modal
         isOpen={addOpen}
-        onClose={() => { setAddOpen(false); setForm(EMPTY_FORM); setErrors({}) }}
+        onClose={() => {
+          setAddOpen(false);
+          setForm(EMPTY_FORM);
+          setErrors({});
+        }}
         title="Add Bank Account"
         size="md"
         footer={
@@ -203,7 +304,15 @@ export default function AccountsPage() {
             onClick={handleAdd}
             loading={saving}
             disabled={saving}
-            second={{ label: 'Cancel', variant: 'secondary', onClick: () => { setAddOpen(false); setForm(EMPTY_FORM); setErrors({}) } }}
+            second={{
+              label: 'Cancel',
+              variant: 'secondary',
+              onClick: () => {
+                setAddOpen(false);
+                setForm(EMPTY_FORM);
+                setErrors({});
+              },
+            }}
           />
         }
       >
@@ -268,8 +377,8 @@ export default function AccountsPage() {
         title="Remove Bank Account"
         message={
           <span>
-            Remove <strong>{deleteTarget?.label}</strong> ({deleteTarget?.iban})?
-            This cannot be undone if no active off-ramp route uses it.
+            Remove <strong>{deleteTarget?.label}</strong> ({deleteTarget?.iban})? This cannot be
+            undone if no active off-ramp route uses it.
           </span>
         }
         confirmText="Remove"
@@ -278,5 +387,5 @@ export default function AccountsPage() {
         onConfirm={handleDelete}
       />
     </>
-  )
+  );
 }
