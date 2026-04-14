@@ -2,6 +2,10 @@ import {
   faLightbulb,
   faHistory,
   faMoneyCheckDollar,
+  faUser,
+  faBuildingColumns,
+  faWallet,
+  faKey,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -22,15 +26,27 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     description: 'Dashboard overview and stats',
   },
   {
-    label: 'Borrow',
-    path: '/dashboard/borrow',
-    icon: faMoneyCheckDollar,
-    description: 'View and manage borrow positions',
+    label: 'Profile',
+    path: '/dashboard/profile',
+    icon: faUser,
+    description: 'Manage your profile',
   },
   {
-    label: 'Queue',
-    path: '/dashboard/query',
-    icon: faHistory,
-    description: 'View and manage pending transactions',
+    label: 'Accounts',
+    path: '/dashboard/accounts',
+    icon: faBuildingColumns,
+    description: 'Bank accounts for off-ramp',
+  },
+  {
+    label: 'Wallets',
+    path: '/dashboard/wallets',
+    icon: faWallet,
+    description: 'Safe and linked wallets',
+  },
+  {
+    label: 'API Keys',
+    path: '/dashboard/api-keys',
+    icon: faKey,
+    description: 'Manage API keys',
   },
 ];

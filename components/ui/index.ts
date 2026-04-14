@@ -1,5 +1,6 @@
 // UI Primitives
 export { default as Card } from './Card';
+export { AddressDisplay } from './AddressDisplay';
 export { CardTitle } from './CardTitle';
 export { default as Toast, showToast } from './Toast';
 export type { ToastProps } from './Toast';
