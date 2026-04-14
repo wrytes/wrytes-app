@@ -23,10 +23,10 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const { address: walletAddress, isConnected } = useWallet();
   const { isActive } = useActiveNavigation();
 
-  const displayName = user?.profile
-    ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
-    : user?.telegramHandle
-      ? `@${user.telegramHandle}`
+  const displayName = user?.telegramHandle
+    ? `@${user.telegramHandle}`
+    : user?.profile
+      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
       : null;
 
   const toggleSidebar = () => {
@@ -225,7 +225,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 py-8 md:ml-64">
+        <main className="flex-1 px-4 md:ml-64">
           <div
             className={`bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-8 ${showDisclaimer ? '' : 'hidden'}`}
           >

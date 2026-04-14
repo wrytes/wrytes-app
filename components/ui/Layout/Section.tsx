@@ -10,6 +10,8 @@ interface SectionProps {
   variant?: 'default' | 'card' | 'filled';
   /** Controls gap between header and content (and between children when spacing is inherited) */
   spacing?: 'sm' | 'md' | 'lg';
+  /** Vertical padding on the section element — useful for filled/card variants or page sections that need breathing room */
+  padding?: 'none' | 'sm' | 'md' | 'lg';
   /**
    * 'md' (default) — bold h2, `text-xl font-bold text-white` — for major page sections
    * 'sm' — compact uppercase label, `text-xs font-semibold uppercase tracking-wider` — for
@@ -24,6 +26,7 @@ interface SectionProps {
 }
 
 const SPACING = { sm: 'space-y-4', md: 'space-y-6', lg: 'space-y-8' };
+const PADDING = { none: '', sm: 'py-4', md: 'py-6', lg: 'py-8' };
 
 export function Section({
   title,
@@ -32,6 +35,7 @@ export function Section({
   variant = 'default',
   spacing = 'md',
   titleSize = 'md',
+  padding = 'md',
   className,
   actions,
   hint,
@@ -39,19 +43,18 @@ export function Section({
   const hasHeader = title || description || actions || hint;
 
   return (
-    <section className={cn(SPACING[spacing], className)}>
+    <section className={cn(SPACING[spacing], padding && PADDING[padding], className)}>
       {hasHeader && (
         <div className="flex items-center justify-between gap-4">
           <div className="flex-1 min-w-0">
-            {title && (
-              titleSize === 'sm' ? (
+            {title &&
+              (titleSize === 'sm' ? (
                 <p className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                   {title}
                 </p>
               ) : (
                 <h2 className="text-xl font-bold text-white mb-1">{title}</h2>
-              )
-            )}
+              ))}
             {description && titleSize === 'md' && (
               <p className="text-text-secondary text-sm">{description}</p>
             )}
