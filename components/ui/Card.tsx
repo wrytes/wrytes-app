@@ -1,31 +1,24 @@
-import React from 'react';
+import { ReactNode } from 'react';
 import { cn } from '@/lib/utils';
-import { CardProps } from '@/types';
 
-const Card: React.FC<CardProps> = ({
-  children,
-  className,
-  hover = true,
-  gradient = false,
-}) => {
-  const baseStyles = 'bg-dark-card rounded-2xl p-6 border border-dark-surface transition-all duration-300';
-  
-  const hoverStyles = hover ? 'hover:shadow-card-hover hover:-translate-y-1' : '';
-  const gradientStyles = gradient ? 'bg-gradient-card' : '';
-  
+interface CardProps {
+  children: ReactNode;
+  className?: string;
+  hover?: boolean;
+  gradient?: boolean;
+}
+
+export default function Card({ children, className, hover = false, gradient = false }: CardProps) {
   return (
     <div
       className={cn(
-        baseStyles,
-        hoverStyles,
-        gradientStyles,
-        'shadow-card',
+        'bg-dark-card rounded-lg p-6 transition-all duration-300',
+        hover && 'hover:shadow-card-hover hover:-translate-y-1',
+        gradient && 'bg-gradient-card',
         className
       )}
     >
       {children}
     </div>
   );
-};
-
-export default Card;
+}

@@ -6,7 +6,6 @@ import { COMPANY } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { QueueIcon, QueuePanel } from '@/components/ui/TransactionQueue';
 import { SidebarNav } from '@/components/navigation/SidebarNav';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
@@ -20,10 +19,15 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const [showTransactionQueue, setShowTransactionQueue] = useState(false);
-  const { isAuthenticated, signOut } = useAuth();
+  const { isAuthenticated, signOut, user } = useAuth();
   const { address: walletAddress, isConnected } = useWallet();
   const { isActive } = useActiveNavigation();
+
+  const displayName = user?.telegramHandle
+    ? `@${user.telegramHandle}`
+    : user?.profile
+      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
+      : null;
 
   const toggleSidebar = () => {
     setIsSidebarOpen(!isSidebarOpen);
@@ -60,10 +64,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     }
   };
 
-  const toggleTransactionQueue = () => {
-    setShowTransactionQueue(!showTransactionQueue);
-  };
-
   // Show disclaimer toast when dashboard loads
   useEffect(() => {
     if (showDisclaimer) {
@@ -92,9 +92,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Desktop CTA Button */}
             <div className="hidden md:flex items-center gap-3">
-              {/* Transaction Queue */}
-              <QueueIcon onClick={toggleTransactionQueue} className="mr-4" />
-
               {!isConnected ? (
                 <button
                   type="button"
@@ -109,13 +106,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                   type="button"
                   onClick={() => setShowAuthModal(true)}
                   className="inline-flex items-center gap-2 text-white hover:text-accent-orange transition-colors text-sm font-medium"
-                  title="Click to disconnect wallet"
+                  title="Click to manage wallet"
                 >
                   <div className="text-right">
-                    <p className="text-sm text-gray-400">Connected as</p>
-                    <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
-                      {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
-                    </p>
+                    {displayName ? (
+                      <>
+                        <p className="text-white font-medium text-sm leading-tight">
+                          {displayName}
+                        </p>
+                        <p className="text-gray-500 font-mono text-xs hover:text-accent-orange transition-colors">
+                          {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+                        </p>
+                      </>
+                    ) : (
+                      <>
+                        <p className="text-sm text-gray-400">Connected as</p>
+                        <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
+                          {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
+                        </p>
+                      </>
+                    )}
                   </div>
                 </button>
               )}
@@ -123,7 +133,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
             {/* Mobile Actions */}
             <div className="md:hidden flex items-center gap-2">
-              <QueueIcon onClick={toggleTransactionQueue} />
               <button
                 onClick={toggleMobileMenu}
                 className="p-2 flex items-center justify-center text-text-secondary hover:text-accent-orange transition-colors"
@@ -143,17 +152,19 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 variant="mobile"
               />
               {!isConnected ? (
-                <button
-                  type="button"
-                  onClick={() => {
-                    handleCTAClick();
-                    closeMobileMenu();
-                  }}
-                  className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                >
-                  <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
-                  Connect Wallet
-                </button>
+                <div className="flex justify-end items-center">
+                  <button
+                    type="button"
+                    onClick={() => {
+                      handleCTAClick();
+                      closeMobileMenu();
+                    }}
+                    className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 mt-4 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                  >
+                    <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
+                    Connect Wallet
+                  </button>
+                </div>
               ) : (
                 <div className="flex justify-end items-center">
                   <button
@@ -163,13 +174,26 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       closeMobileMenu();
                     }}
                     className="inline-flex gap-2 mt-4 text-white hover:text-accent-orange transition-colors text-sm font-medium"
-                    title="Click to disconnect wallet"
+                    title="Click to manage wallet"
                   >
                     <div className="text-right">
-                      <p className="text-sm text-gray-400">Connected as</p>
-                      <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
-                        {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
-                      </p>
+                      {displayName ? (
+                        <>
+                          <p className="text-white font-medium text-sm leading-tight">
+                            {displayName}
+                          </p>
+                          <p className="text-gray-500 font-mono text-xs">
+                            {walletAddress?.slice(0, 6)}…{walletAddress?.slice(-4)}
+                          </p>
+                        </>
+                      ) : (
+                        <>
+                          <p className="text-sm text-gray-400">Connected as</p>
+                          <p className="text-white font-mono text-sm">
+                            {walletAddress?.slice(0, 8)}…{walletAddress?.slice(-6)}
+                          </p>
+                        </>
+                      )}
                     </div>
                   </button>
                 </div>
@@ -201,16 +225,18 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 py-8 md:ml-64">
-          <div
+        <main className="flex-1 px-4 md:ml-64">
+          {/* <div
             className={`bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-8 ${showDisclaimer ? '' : 'hidden'}`}
           >
             <p className="text-text-secondary text-sm font-medium">
               <strong className="text-white">
-                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for Distributed Ledger Technology protocols. We do not audit or endorse protocols - users must conduct their own due diligence.
+                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for
+                Distributed Ledger Technology protocols. We do not audit or endorse protocols -
+                users must conduct their own due diligence.
               </strong>
             </p>
-          </div>
+          </div> */}
           <div>{children}</div>
         </main>
       </div>
@@ -220,13 +246,6 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         isOpen={showAuthModal}
         onClose={() => setShowAuthModal(false)}
         onSuccess={() => setShowAuthModal(false)}
-      />
-
-      {/* Transaction Queue Panel */}
-      <QueuePanel
-        isOpen={showTransactionQueue}
-        onClose={toggleTransactionQueue}
-        onClearCompleted={() => {}}
       />
     </div>
   );

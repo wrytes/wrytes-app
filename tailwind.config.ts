@@ -9,8 +9,8 @@ module.exports = {
   theme: {
     extend: {
       fontFamily: {
-        'sans': ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
-        'avenir': ['Avenir', 'system-ui', 'sans-serif'],
+        sans: ['var(--font-inter)', 'Inter', 'system-ui', 'sans-serif'],
+        avenir: ['Avenir', 'system-ui', 'sans-serif'],
       },
       colors: {
         // Dark theme colors based on project specifications
@@ -18,18 +18,41 @@ module.exports = {
         'dark-card': '#2a2a2a',
         'dark-surface': '#1f1f1f',
         'accent-orange': '#ff6b35',
-        'accent-gold': '#ffd700',
         'text-primary': '#ffffff',
         'text-secondary': '#a0a0a0',
         'text-muted': '#666666',
-        
+
+        // Table component tokens
+        'table-header-primary': '#242424',
+        'table-header-secondary': '#374151',
+        'table-row-primary': '#1f1f1f',
+        'table-row-hover': '#2a2a2a',
+        // text-active/header/subheader are used as text-text-active, text-text-header, etc.
+        'text-active': '#ff6b35',
+        'text-header': '#ffffff',
+        'text-subheader': '#a0a0a0',
+        'button-default': '#ff6b35',
+        'button-disabled': '#111827',
+
+        // Input component tokens
+        'card-input-border': '#4B5563',
+        'card-input-disabled': '#1f1f1f',
+        'card-input-hover': '#a0a0a0',
+        'card-input-focus': '#ff6b35',
+        'card-input-error': '#ef4444',
+        'card-input-label': '#9CA3AF',
+        'card-input-empty': '#6B7280',
+        'card-input-max': '#ff6b35',
+        'card-input-min': '#ffd700',
+        'card-input-reset': '#9CA3AF',
+
         // Gradient colors
-        'gradient': {
+        gradient: {
           'dark-start': '#1a1a1a',
           'dark-end': '#2d1b1b',
           'card-start': '#2a2a2a',
           'card-end': '#3a2a2a',
-        }
+        },
       },
       backgroundImage: {
         'gradient-dark': 'linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%)',
@@ -39,7 +62,7 @@ module.exports = {
       animation: {
         'fade-in': 'fadeIn 0.5s ease-in-out',
         'slide-up': 'slideUp 0.6s ease-out',
-        'float': 'float 3s ease-in-out infinite',
+        float: 'float 3s ease-in-out infinite',
         'pulse-slow': 'pulse 3s cubic-bezier(0.4, 0, 0.6, 1) infinite',
       },
       keyframes: {
@@ -57,13 +80,13 @@ module.exports = {
         },
       },
       boxShadow: {
-        'card': '0 4px 20px rgba(0, 0, 0, 0.3)',
+        card: '0 4px 20px rgba(0, 0, 0, 0.3)',
         'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4)',
-        'glow': '0 0 20px rgba(255, 107, 53, 0.3)',
+        glow: '0 0 20px rgba(255, 107, 53, 0.3)',
         'glow-gold': '0 0 20px rgba(255, 215, 0, 0.3)',
       },
       borderRadius: {
-        'xl': '1rem',
+        xl: '1rem',
         '2xl': '1.5rem',
         '3xl': '2rem',
       },
@@ -73,7 +96,7 @@ module.exports = {
         '128': '32rem',
       },
       screens: {
-        'xs': '475px',
+        xs: '475px',
       },
     },
   },

@@ -31,7 +31,7 @@ export default function About() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <Card className="h-full mb-5">
+            <Card hover className="h-full mb-5">
               <h3 className="text-2xl font-bold mb-4 text-white">The Meaning Behind Wrytes</h3>
               <p className="text-text-secondary mb-4 leading-relaxed">
                 Our name combines <strong className="text-white">&quot;write&quot;</strong> and{' '}
@@ -75,7 +75,7 @@ export default function About() {
             transition={{ duration: 0.8 }}
             viewport={{ once: true }}
           >
-            <Card gradient className="h-full text-center">
+            <Card hover gradient className="h-full text-center">
               <div className="mb-6">
                 <div className="w-16 h-16 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <div className="w-8 h-8 bg-accent-orange rounded-full animate-pulse" />
@@ -119,7 +119,7 @@ export default function About() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                <Card className="h-full group hover:shadow-lg transition-all duration-300">
+                <Card hover className="h-full group hover:shadow-lg transition-all duration-300">
                   {/* Icon and Title */}
                   <div className="mb-4">
                     <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:bg-accent-orange/30 rounded-xl transition-colors overflow-hidden">

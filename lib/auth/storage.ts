@@ -1,4 +1,4 @@
-import { type UserProfile } from './types'
+import { type User as UserProfile } from './types'
 
 const AUTH_TOKEN_KEY = 'wrytes_auth_token'
 const AUTH_USER_KEY = 'wrytes_auth_user'

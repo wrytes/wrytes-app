@@ -1,43 +1,41 @@
-import React from 'react';
+import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { cn } from '@/lib/utils';
 import { StatCard, StatCardSkeleton } from './StatCard';
-import { StatGridProps } from './types';
 
-/**
- * StatGrid - Responsive grid layout for displaying multiple StatCard components
- * Handles responsive columns and loading states for entire grid
- */
-export const StatGrid: React.FC<StatGridProps> = ({
-  stats,
-  columns = {
-    base: 1,
-    md: 2,
-    lg: 4
-  },
-  loading = false,
-  className
-}) => {
-  // Generate responsive grid classes based on column configuration
-  const getGridClasses = () => {
-    const classes = ['grid', 'gap-6'];
-    
-    if (columns.base) classes.push(`grid-cols-${columns.base}`);
-    if (columns.sm) classes.push(`sm:grid-cols-${columns.sm}`);
-    if (columns.md) classes.push(`md:grid-cols-${columns.md}`);
-    if (columns.lg) classes.push(`lg:grid-cols-${columns.lg}`);
-    if (columns.xl) classes.push(`xl:grid-cols-${columns.xl}`);
-    
-    return classes.join(' ');
-  };
+interface StatItem {
+  icon: IconDefinition;
+  label: string;
+  value: string | number;
+  trend?: { value: number; direction: 'up' | 'down'; label?: string };
+  color?: 'orange' | 'green' | 'blue' | 'purple' | 'yellow';
+  loading?: boolean;
+}
 
+interface StatGridProps {
+  stats: StatItem[];
+  columns?: { base?: number; sm?: number; md?: number; lg?: number; xl?: number };
+  loading?: boolean;
+  className?: string;
+}
+
+function getGridClasses(columns: StatGridProps['columns'] = {}) {
+  const { base = 1, sm, md, lg, xl } = columns;
+  return cn(
+    'grid gap-6',
+    `grid-cols-${base}`,
+    sm && `sm:grid-cols-${sm}`,
+    md && `md:grid-cols-${md}`,
+    lg && `lg:grid-cols-${lg}`,
+    xl && `xl:grid-cols-${xl}`,
+  );
+}
+
+export function StatGrid({ stats, columns = { base: 1, md: 2, lg: 4 }, loading = false, className }: StatGridProps) {
   if (loading) {
-    // Show skeleton grid during loading
-    const skeletonCount = columns.lg || columns.md || columns.sm || columns.base || 4;
+    const count = columns.lg ?? columns.md ?? columns.sm ?? columns.base ?? 4;
     return (
-      <div className={cn(getGridClasses(), className)}>
-        {Array.from({ length: skeletonCount }, (_, index) => (
-          <StatCardSkeleton key={index} />
-        ))}
+      <div className={cn(getGridClasses(columns), className)}>
+        {Array.from({ length: count }, (_, i) => <StatCardSkeleton key={i} />)}
       </div>
     );
   }
@@ -51,20 +49,12 @@ export const StatGrid: React.FC<StatGridProps> = ({
   }
 
   return (
-    <div className={cn(getGridClasses(), className)}>
-      {stats.map((stat, index) => (
-        <StatCard
-          key={`${stat.label}-${index}`}
-          icon={stat.icon}
-          label={stat.label}
-          value={stat.value}
-          trend={stat.trend}
-          color={stat.color}
-          loading={stat.loading}
-        />
+    <div className={cn(getGridClasses(columns), className)}>
+      {stats.map((stat, i) => (
+        <StatCard key={`${stat.label}-${i}`} {...stat} />
       ))}
     </div>
   );
-};
+}
 
 export default StatGrid;
