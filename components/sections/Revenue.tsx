@@ -40,7 +40,7 @@ export default function Revenue() {
               transition={{ duration: 0.8, delay: index * 0.2 }}
               viewport={{ once: true }}
             >
-              <Card className="h-full text-center group">
+              <Card hover className="h-full text-center group">
                 {/* Icon */}
                 <div className="mb-6">
                   <div className="w-16 h-16 bg-accent-orange/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-orange/30 transition-colors">
@@ -77,7 +77,7 @@ export default function Revenue() {
           viewport={{ once: true }}
           className="mt-16 text-center"
         >
-          <Card className="max-w-4xl mx-auto" gradient>
+          <Card hover className="max-w-4xl mx-auto" gradient>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
                 <div className="text-3xl font-bold text-accent-orange mb-2">🚀</div>

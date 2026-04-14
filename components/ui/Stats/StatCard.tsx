@@ -44,7 +44,7 @@ function formatValue(val: string | number): string {
 
 export function StatCardSkeleton({ className }: { className?: string }) {
   return (
-    <Card className={cn('animate-pulse', className)} hover={false}>
+    <Card className={cn('animate-pulse', className)}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
           <div className="w-20 h-4 bg-dark-surface/30 rounded mb-2"></div>
@@ -98,12 +98,12 @@ export function StatCard({
         tabIndex={0}
         onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } }}
       >
-        <Card hover={false}>{cardContent}</Card>
+        <Card>{cardContent}</Card>
       </div>
     );
   }
 
-  return <Card hover={false} className={className}>{cardContent}</Card>;
+  return <Card className={className}>{cardContent}</Card>;
 }
 
 export default StatCard;

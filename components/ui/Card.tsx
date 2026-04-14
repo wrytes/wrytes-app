@@ -8,7 +8,7 @@ interface CardProps {
   gradient?: boolean;
 }
 
-export default function Card({ children, className, hover = true, gradient = false }: CardProps) {
+export default function Card({ children, className, hover = false, gradient = false }: CardProps) {
   return (
     <div
       className={cn(

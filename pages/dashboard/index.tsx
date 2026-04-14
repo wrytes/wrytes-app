@@ -175,7 +175,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Variants */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Variants" />
               <div className="flex flex-wrap gap-3">
                 <ButtonInput label="Primary" variant="primary" />
@@ -186,7 +186,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Sizes */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-center gap-3">
                 <ButtonInput label="Small" variant="primary" size="sm" />
@@ -196,7 +196,7 @@ export default function Dashboard() {
             </Card>
 
             {/* With icons */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="With icons" />
               <div className="flex flex-wrap gap-3">
                 <ButtonInput
@@ -224,7 +224,7 @@ export default function Dashboard() {
             </Card>
 
             {/* States + second button */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="States & paired buttons" />
               <div className="space-y-3">
                 <ButtonInput label="Disabled" variant="primary" disabled />
@@ -256,7 +256,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Risk variants */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Risk levels" />
               <div className="flex flex-wrap gap-3">
                 <Badge text="Low Risk" variant="risk" riskLevel="low" />
@@ -266,7 +266,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Sizes */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-center gap-3">
                 <Badge text="Small" variant="risk" riskLevel="low" size="sm" />
@@ -276,7 +276,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Custom colors */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Custom colors" />
               <div className="flex flex-wrap gap-3">
                 <Badge
@@ -307,7 +307,7 @@ export default function Dashboard() {
             </Card>
 
             {/* In context */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="In context" />
               <div className="space-y-3 text-sm">
                 {[
@@ -350,7 +350,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* TokenInput */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="TokenInput" />
               <TokenInput
                 label="You send"
@@ -378,7 +378,7 @@ export default function Dashboard() {
             </Card>
 
             {/* NormalInput + AddressInput */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="NormalInput & AddressInput" />
               <NormalInput
                 label="Collateral amount"
@@ -402,7 +402,7 @@ export default function Dashboard() {
             </Card>
 
             {/* LiquidationSlider */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="LiquidationSlider" />
               <LiquidationSlider
                 label="Liquidation price"
@@ -421,7 +421,7 @@ export default function Dashboard() {
             </Card>
 
             {/* TabInput + PageTabInput */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="TabInput & PageTabInput" />
               <TabInput
                 tabs={['Deposit', 'Withdraw', 'Borrow']}
@@ -564,7 +564,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Sizes */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Sizes" />
               <div className="flex flex-wrap items-end gap-4">
                 <div className="flex flex-col items-center gap-2">
@@ -599,7 +599,7 @@ export default function Dashboard() {
             </Card>
 
             {/* In context */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="With icons" />
               <div className="flex flex-wrap gap-4">
                 <IconLogo
@@ -678,7 +678,7 @@ export default function Dashboard() {
         <section className="space-y-4">
           <PageTitle title="Toast Notifications" />
 
-          <Card hover={false}>
+          <Card>
             <CardTitle title="Trigger toasts" />
             <div className="flex flex-wrap gap-3">
               <ButtonInput
@@ -715,7 +715,7 @@ export default function Dashboard() {
           <PageTitle title="Breadcrumb" />
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Static path" />
               <Breadcrumb
                 items={[
@@ -726,7 +726,7 @@ export default function Dashboard() {
               />
             </Card>
 
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Deep path" />
               <Breadcrumb
                 items={[
@@ -739,7 +739,7 @@ export default function Dashboard() {
               />
             </Card>
 
-            <Card hover={false}>
+            <Card>
               <CardTitle title="With onClick" />
               <Breadcrumb
                 items={[
@@ -750,7 +750,7 @@ export default function Dashboard() {
               />
             </Card>
 
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Single item" />
               <Breadcrumb items={[{ label: 'Dashboard' }]} />
             </Card>
@@ -765,7 +765,7 @@ export default function Dashboard() {
           <Section title="Default variant" description="Children render directly with no background or card wrapper.">
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {['Alpha', 'Beta', 'Gamma'].map(name => (
-                <Card key={name} hover={false}>
+                <Card key={name}>
                   <p className="text-text-primary font-semibold">{name}</p>
                   <p className="text-sm text-text-secondary mt-1">Placeholder content block.</p>
                 </Card>
@@ -808,7 +808,7 @@ export default function Dashboard() {
           >
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               {['Position A', 'Position B'].map(name => (
-                <Card key={name} hover={false}>
+                <Card key={name}>
                   <p className="text-text-primary font-semibold">{name}</p>
                   <p className="text-sm text-text-secondary mt-1">Mock position data.</p>
                 </Card>
@@ -818,11 +818,11 @@ export default function Dashboard() {
 
           {/* Spacing variants */}
           <Section title="Spacing — sm" spacing="sm">
-            <Card hover={false}><p className="text-text-secondary text-sm">Tight spacing between header and content.</p></Card>
+            <Card><p className="text-text-secondary text-sm">Tight spacing between header and content.</p></Card>
           </Section>
 
           <Section title="Spacing — lg" spacing="lg">
-            <Card hover={false}><p className="text-text-secondary text-sm">Loose spacing between header and content.</p></Card>
+            <Card><p className="text-text-secondary text-sm">Loose spacing between header and content.</p></Card>
           </Section>
         </section>
 
@@ -832,7 +832,7 @@ export default function Dashboard() {
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             {/* Basic modal */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="Basic modal" />
               <ButtonInput
                 label="Open modal"
@@ -842,7 +842,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Modal with footer */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="With footer" />
               <ButtonInput
                 label="Open modal with footer"
@@ -852,7 +852,7 @@ export default function Dashboard() {
             </Card>
 
             {/* ConfirmModal */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="ConfirmModal" />
               <ButtonInput
                 label="Confirm action"
@@ -862,7 +862,7 @@ export default function Dashboard() {
             </Card>
 
             {/* Danger ConfirmModal */}
-            <Card hover={false}>
+            <Card>
               <CardTitle title="ConfirmModal — danger" />
               <ButtonInput
                 label="Delete position"
