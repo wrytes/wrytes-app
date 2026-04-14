@@ -226,7 +226,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Main Content */}
         <main className="flex-1 px-4 md:ml-64">
-          <div
+          {/* <div
             className={`bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-8 ${showDisclaimer ? '' : 'hidden'}`}
           >
             <p className="text-text-secondary text-sm font-medium">
@@ -236,7 +236,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 users must conduct their own due diligence.
               </strong>
             </p>
-          </div>
+          </div> */}
           <div>{children}</div>
         </main>
       </div>

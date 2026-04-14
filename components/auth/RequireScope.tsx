@@ -15,7 +15,7 @@ export function RequireScope({ scope, children, fallback }: RequireScopeProps) {
 
   if (scope) {
     const required = Array.isArray(scope) ? scope : [scope]
-    const hasScope = required.some((s) => user.scopes.includes(s))
+    const hasScope = user.scopes.includes('ADMIN') || required.some((s) => user.scopes.includes(s))
     if (!hasScope) return fallback ? <>{fallback}</> : null
   }
 

@@ -35,9 +35,9 @@ module.exports = {
         'button-disabled': '#111827',
 
         // Input component tokens
-        'card-input-border': '#374151',
+        'card-input-border': '#4B5563',
         'card-input-disabled': '#1f1f1f',
-        'card-input-hover': '#4B5563',
+        'card-input-hover': '#a0a0a0',
         'card-input-focus': '#ff6b35',
         'card-input-error': '#ef4444',
         'card-input-label': '#9CA3AF',

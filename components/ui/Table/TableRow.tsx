@@ -94,7 +94,7 @@ function TableRowMobile({
   return (
     <div className={`${className} md:hidden gap-6 grid-cols-1 flex-1`}>
       {children.map((c, idx) => (
-        <div className="mt-2 flex" key={c.key ?? `row-mobile-${tab}-${idx}`}>
+        <div className="mt-2 flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
           <div className="flex-1 text-left">
             {idx === 0 && !rawHeader ? (
               <div
