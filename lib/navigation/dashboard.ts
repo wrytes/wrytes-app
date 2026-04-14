@@ -1,7 +1,7 @@
 import {
   faLightbulb,
   faHistory,
-  faMoneyCheckDollar,
+  faRoute,
   faUser,
   faBuildingColumns,
   faWallet,
@@ -30,6 +30,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     path: '/dashboard/accounts',
     icon: faBuildingColumns,
     description: 'Bank accounts for off-ramp',
+  },
+  {
+    label: 'Routes',
+    path: '/dashboard/ramping',
+    icon: faRoute,
+    description: 'On-ramp and off-ramp conversion routes',
   },
   {
     label: 'Profile',
