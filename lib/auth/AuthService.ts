@@ -1,17 +1,19 @@
 import { type Address } from 'viem'
 import { AuthStorage } from './storage'
 import {
-  type AuthMessageRequest,
-  type AuthSignInRequest,
-  type AuthResponse,
-  type UserProfile,
+  type ChallengeResponse,
+  type SigninResponse,
+  type SessionPollResponse,
+  type LinkTokenResponse,
+  type LinkTokenStatusResponse,
+  type User,
   type ApiError,
 } from './types'
 import { CONFIG } from '@/lib/constants'
 
 export class AuthService {
   private static instance: AuthService
-  private baseURL: string
+  private readonly baseURL: string
 
   private constructor() {
     this.baseURL = CONFIG.api
@@ -24,207 +26,134 @@ export class AuthService {
     return AuthService.instance
   }
 
-  // HTTP client with error handling
-  private async makeRequest<T>(
-    endpoint: string,
-    options: RequestInit = {}
-  ): Promise<T> {
+  // ---------------------------------------------------------------------------
+  // HTTP helper
+  // ---------------------------------------------------------------------------
+
+  private async request<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
     const url = `${this.baseURL}${endpoint}`
     const token = AuthStorage.getToken()
 
-    const defaultHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
+    const headers: HeadersInit = { 'Content-Type': 'application/json' }
+    if (token) headers['Authorization'] = `Bearer ${token}`
+
+    const response = await fetch(url, { ...init, headers: { ...headers, ...init.headers } })
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}))
+      const err: ApiError = {
+        message: body.message || `HTTP ${response.status}`,
+        code: body.error || 'HTTP_ERROR',
+        statusCode: response.status,
+        details: body,
+      }
+      throw err
     }
 
-    if (token) {
-      defaultHeaders.Authorization = `Bearer ${token}`
-    }
-
-    try {
-      const response = await fetch(url, {
-        ...options,
-        headers: {
-          ...defaultHeaders,
-          ...options.headers,
-        },
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const apiError: ApiError = {
-          message: errorData.message || `HTTP ${response.status}`,
-          code: errorData.code || 'HTTP_ERROR',
-          statusCode: response.status,
-          details: errorData,
-        }
-        throw apiError
-      }
-
-      return await response.json()
-    } catch (error) {
-      if (error instanceof Error && 'statusCode' in error) {
-        throw error // Re-throw API errors
-      }
-      
-      // Handle network errors
-      const networkError: ApiError = {
-        message: 'Network error occurred',
-        code: 'NETWORK_ERROR',
-        statusCode: 0,
-        details: { originalError: error },
-      }
-      throw networkError
-    }
+    return response.json() as Promise<T>
   }
 
-  // Generate message for signing
-  async generateMessage(address: Address, valid?: number, expired?: number): Promise<string> {
-    const requestBody: AuthMessageRequest = {
-      address,
-      ...(valid && { valid }),
-      ...(expired && { expired }),
-    }
+  // ---------------------------------------------------------------------------
+  // Wallet sign-in flow (3 steps)
+  // ---------------------------------------------------------------------------
 
-    const url = `${this.baseURL}/auth/message`
-    const token = AuthStorage.getToken()
-
-    const defaultHeaders: HeadersInit = {
-      'Content-Type': 'application/json',
-    }
-
-    if (token) {
-      defaultHeaders.Authorization = `Bearer ${token}`
-    }
-
-    try {
-      const response = await fetch(url, {
-        method: 'POST',
-        headers: defaultHeaders,
-        body: JSON.stringify(requestBody),
-      })
-
-      if (!response.ok) {
-        const errorData = await response.json().catch(() => ({}))
-        const apiError: ApiError = {
-          message: errorData.message || `HTTP ${response.status}`,
-          code: errorData.code || 'HTTP_ERROR',
-          statusCode: response.status,
-          details: errorData,
-        }
-        throw apiError
-      }
-
-      // The API returns a plain string, not JSON
-      return await response.text()
-    } catch (error) {
-      if (error instanceof Error && 'statusCode' in error) {
-        throw error // Re-throw API errors
-      }
-      
-      // Handle network errors
-      const networkError: ApiError = {
-        message: 'Network error occurred',
-        code: 'NETWORK_ERROR',
-        statusCode: 0,
-        details: { originalError: error },
-      }
-      throw networkError
-    }
-  }
-
-  // Sign in with message and signature
-  async signIn(message: string, signature: `0x${string}`): Promise<AuthResponse> {
-    const requestBody: AuthSignInRequest = {
-      message,
-      signature,
-    }
-
-    const response = await this.makeRequest<AuthResponse>('/auth/signin', {
+  /** Step 1 — get a nonce-based challenge message to sign. */
+  async getChallenge(address: Address): Promise<ChallengeResponse> {
+    return this.request<ChallengeResponse>('/user-wallets/auth/challenge', {
       method: 'POST',
-      body: JSON.stringify(requestBody),
+      body: JSON.stringify({ address }),
     })
-
-    // Store the token
-    AuthStorage.setToken(response.accessToken)
-
-    return response
   }
 
-  // Get current user profile
-  async getCurrentUser(): Promise<UserProfile> {
-    const user = await this.makeRequest<UserProfile>('/auth/me', {
-      method: 'GET',
-    })
-
-    // Store user data
-    AuthStorage.setUser(user)
-
-    return user
-  }
-
-  // Refresh token
-  async refreshToken(): Promise<AuthResponse> {
-    const response = await this.makeRequest<AuthResponse>('/auth/refresh', {
+  /** Step 2 — submit the signed challenge; triggers Telegram 2FA. */
+  async submitSignin(
+    address: Address,
+    message: string,
+    signature: `0x${string}`,
+  ): Promise<SigninResponse> {
+    return this.request<SigninResponse>('/user-wallets/auth/signin', {
       method: 'POST',
+      body: JSON.stringify({ address, message, signature }),
     })
-
-    // Store the new token
-    AuthStorage.setToken(response.accessToken)
-
-    return response
   }
 
-  // Sign out
-  async signOut(): Promise<void> {
-    // this is not implemented.
-    // try {
-    //   await this.makeRequest('/auth/signout', {
-    //     method: 'POST',
-    //   })
-    // } catch (error) {
-    //   // Continue with local cleanup even if server request fails
-    //   console.warn('Sign out request failed:', error)
-    // }
+  /** Step 3 — poll until the user taps Allow/Deny in Telegram. */
+  async pollSession(sessionId: string): Promise<SessionPollResponse> {
+    return this.request<SessionPollResponse>(`/user-wallets/auth/session/${sessionId}`)
+  }
 
-    // Clear local storage
+  // ---------------------------------------------------------------------------
+  // User profile
+  // ---------------------------------------------------------------------------
+
+  async getMe(): Promise<User & { walletAddress: Address }> {
+    const data = await this.request<Omit<User, 'walletAddress'> & { wallets: { address: string; label: string | null }[] }>('/auth/me')
+    // walletAddress will be patched in by the caller from the JWT payload
+    return data as unknown as User & { walletAddress: Address }
+  }
+
+  // ---------------------------------------------------------------------------
+  // Wallet link token (reverse magic key)
+  // ---------------------------------------------------------------------------
+
+  /** Returns the ownership message the wallet must sign before creating a token. */
+  getLinkMessage(address: Address): string {
+    const issued = new Date().toISOString()
+    const expires = new Date(Date.now() + 15 * 60 * 1000).toISOString()
+    return (
+      `Link wallet to Wrytes\n\n` +
+      `Address: ${address}\n` +
+      `Issued: ${issued}\n` +
+      `Expires: ${expires}\n\n` +
+      `By signing this message you confirm ownership of this wallet.`
+    )
+  }
+
+  async createLinkToken(
+    address: Address,
+    message: string,
+    signature: `0x${string}`,
+  ): Promise<LinkTokenResponse> {
+    return this.request<LinkTokenResponse>('/user-wallets/link-token', {
+      method: 'POST',
+      body: JSON.stringify({ address, message, signature }),
+    })
+  }
+
+  async getLinkTokenStatus(token: string): Promise<LinkTokenStatusResponse> {
+    return this.request<LinkTokenStatusResponse>(`/user-wallets/link-token/${token}/status`)
+  }
+
+  // ---------------------------------------------------------------------------
+  // Storage helpers
+  // ---------------------------------------------------------------------------
+
+  storeToken(jwt: string): void {
+    AuthStorage.setToken(jwt)
+  }
+
+  clearSession(): void {
     AuthStorage.clearAll()
   }
 
-  // Token management
-  getStoredToken(): string | null {
-    return AuthStorage.getToken()
-  }
-
-  setToken(token: string): void {
-    AuthStorage.setToken(token)
-  }
-
-  clearToken(): void {
-    AuthStorage.clearToken()
-  }
-
-  // Check if user is authenticated
   isAuthenticated(): boolean {
     return AuthStorage.hasValidToken()
   }
 
-  // Get stored user
-  getStoredUser(): UserProfile | null {
-    return AuthStorage.getUser()
+  getStoredToken(): string | null {
+    return AuthStorage.getToken()
   }
 
-  // Check token expiration
   isTokenExpiringSoon(): boolean {
     return AuthStorage.isTokenExpiringSoon()
   }
 
-  // Validate address format
-  validateAddress(address: string): boolean {
-    return /^0x[a-fA-F0-9]{40}$/.test(address)
-  }
-
-  // Validate signature format
-  validateSignature(signature: string): boolean {
-    return /^0x[a-fA-F0-9]{130}$/.test(signature)
+  /** Decode JWT payload without verifying signature (browser-side). */
+  decodeToken(token: string): { sub: string; wallet: string } | null {
+    try {
+      return JSON.parse(atob(token.split('.')[1]))
+    } catch {
+      return null
+    }
   }
 }

@@ -1,19 +1,20 @@
-import React, { createContext, useContext, useReducer, useEffect, useCallback } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useReducer, useRef } from 'react'
 import { type Address } from 'viem'
 import { useAppKitAccount, useDisconnect } from '@reown/appkit-controllers/react'
 import { useSignMessage } from 'wagmi'
 import { AuthService } from '@/lib/auth/AuthService'
-import { AuthStorage } from '@/lib/auth/storage'
 import {
+  AuthStep,
   type AuthContextType,
+  type AuthFlowState,
   type AuthState,
   type User,
-  type ApiError,
-  AuthStep,
-  type AuthFlowState,
 } from '@/lib/auth/types'
 
-// Auth state management
+// ---------------------------------------------------------------------------
+// Reducer
+// ---------------------------------------------------------------------------
+
 type AuthAction =
   | { type: 'SET_LOADING'; payload: boolean }
   | { type: 'SET_USER'; payload: User | null }
@@ -22,313 +23,330 @@ type AuthAction =
   | { type: 'CLEAR_AUTH' }
   | { type: 'SET_AUTH_FLOW'; payload: Partial<AuthFlowState> }
 
-const initialAuthState: AuthState & { authFlow: AuthFlowState } = {
+const initialAuthFlow: AuthFlowState = {
+  currentStep: AuthStep.CONNECT_WALLET,
+  isLoading: false,
+  error: null,
+}
+
+const initialState: AuthState & { authFlow: AuthFlowState } = {
   user: null,
   isAuthenticated: false,
   isLoading: false,
   error: null,
   token: null,
-  authFlow: {
-    currentStep: AuthStep.CONNECT_WALLET,
-    isLoading: false,
-    error: null,
-  },
+  authFlow: initialAuthFlow,
 }
 
 function authReducer(
   state: AuthState & { authFlow: AuthFlowState },
-  action: AuthAction
+  action: AuthAction,
 ): AuthState & { authFlow: AuthFlowState } {
   switch (action.type) {
     case 'SET_LOADING':
       return { ...state, isLoading: action.payload }
     case 'SET_USER':
-      return {
-        ...state,
-        user: action.payload,
-        isAuthenticated: !!action.payload,
-        isLoading: false,
-        error: null,
-      }
+      return { ...state, user: action.payload, isAuthenticated: !!action.payload, isLoading: false }
     case 'SET_ERROR':
       return { ...state, error: action.payload, isLoading: false }
     case 'SET_TOKEN':
       return { ...state, token: action.payload }
     case 'CLEAR_AUTH':
-      return {
-        ...initialAuthState,
-        authFlow: { ...initialAuthState.authFlow },
-      }
+      return { ...initialState, authFlow: { ...initialAuthFlow } }
     case 'SET_AUTH_FLOW':
-      return {
-        ...state,
-        authFlow: { ...state.authFlow, ...action.payload },
-      }
+      return { ...state, authFlow: { ...state.authFlow, ...action.payload } }
     default:
       return state
   }
 }
 
-const AuthContext = createContext<AuthContextType | undefined>(undefined)
+// ---------------------------------------------------------------------------
+// Context
+// ---------------------------------------------------------------------------
 
+const AuthContext = createContext<AuthContextType | undefined>(undefined)
 export { AuthContext }
 
-interface AuthProviderProps {
-  children: React.ReactNode
-}
-
-export function AuthProvider({ children }: AuthProviderProps) {
-  const [state, dispatch] = useReducer(authReducer, initialAuthState)
+export function AuthProvider({ children }: { children: React.ReactNode }) {
+  const [state, dispatch] = useReducer(authReducer, initialState)
   const authService = AuthService.getInstance()
-  
-  // AppKit hooks
+
   const { address, isConnected } = useAppKitAccount()
   const { disconnect } = useDisconnect()
   const { signMessageAsync } = useSignMessage()
 
-  // Initialize auth state from storage
+  // Keep a ref to the current sessionId so the polling effect can access it
+  const sessionIdRef = useRef<string | null>(null)
+  const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+
+  // ---------------------------------------------------------------------------
+  // Init from storage
+  // ---------------------------------------------------------------------------
+
   useEffect(() => {
-    const initializeAuth = async () => {
-      dispatch({ type: 'SET_LOADING', payload: true })
-
-      try {
-        const token = authService.getStoredToken()
-        const storedUser = authService.getStoredUser()
-
-        if (token && storedUser && authService.isAuthenticated()) {
-          dispatch({ type: 'SET_TOKEN', payload: token })
-          dispatch({ type: 'SET_USER', payload: storedUser })
-          
-          // Try to refresh user data
-          try {
-            const currentUser = await authService.getCurrentUser()
-            dispatch({ type: 'SET_USER', payload: currentUser })
-          } catch (error) {
-            // If refresh fails, clear stored data
-            console.warn('Failed to refresh user data:', error)
-            authService.clearToken()
-            authService.getStoredUser() && AuthStorage.clearUser()
-            dispatch({ type: 'CLEAR_AUTH' })
-          }
-        } else {
-          dispatch({ type: 'SET_LOADING', payload: false })
-        }
-      } catch (error) {
-        console.error('Auth initialization error:', error)
-        dispatch({ type: 'SET_ERROR', payload: 'Failed to initialize authentication' })
+    const token = authService.getStoredToken()
+    if (token && authService.isAuthenticated()) {
+      const payload = authService.decodeToken(token)
+      if (payload) {
+        dispatch({ type: 'SET_TOKEN', payload: token })
+        dispatch({ type: 'SET_AUTH_FLOW', payload: { currentStep: AuthStep.AUTHENTICATED } })
+        // Fetch full profile in the background
+        authService.getMe()
+          .then((me) => {
+            dispatch({
+              type: 'SET_USER',
+              payload: { ...me, walletAddress: payload.wallet as Address },
+            })
+          })
+          .catch(() => {
+            // Fallback to minimal user from JWT if /auth/me fails
+            dispatch({
+              type: 'SET_USER',
+              payload: {
+                id: payload.sub,
+                walletAddress: payload.wallet as Address,
+                telegramHandle: null,
+                notificationsEnabled: true,
+                scopes: [],
+                wallets: [],
+                profile: null,
+              },
+            })
+          })
+      } else {
+        authService.clearSession()
       }
     }
+  }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
-    initializeAuth()
-  }, [])
+  // ---------------------------------------------------------------------------
+  // Sync wallet connection state → step
+  // ---------------------------------------------------------------------------
 
-  // Handle wallet connection state changes
   useEffect(() => {
+    if (state.isAuthenticated) return
+
     if (isConnected && address) {
       dispatch({
         type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: state.isAuthenticated ? AuthStep.AUTHENTICATED : AuthStep.GENERATE_MESSAGE,
-          error: null,
-        },
+        payload: { currentStep: AuthStep.SIGN_MESSAGE, error: null },
       })
     } else if (!isConnected) {
+      stopPolling()
       dispatch({
         type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: AuthStep.CONNECT_WALLET,
-          error: null,
-        },
+        payload: { currentStep: AuthStep.CONNECT_WALLET, error: null, sessionId: undefined },
       })
     }
-  }, [isConnected, address, state.isAuthenticated])
+  }, [isConnected, address, state.isAuthenticated]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  // Sign in function
-  const signIn = useCallback(async (walletAddress: Address) => {
-    if (!walletAddress) {
-      throw new Error('Wallet address is required')
+  // ---------------------------------------------------------------------------
+  // Session polling (runs while PENDING_TG_APPROVAL)
+  // ---------------------------------------------------------------------------
+
+  const stopPolling = useCallback(() => {
+    if (pollingRef.current) {
+      clearInterval(pollingRef.current)
+      pollingRef.current = null
     }
-
-    dispatch({ type: 'SET_LOADING', payload: true })
-    dispatch({ type: 'SET_ERROR', payload: null })
-    dispatch({
-      type: 'SET_AUTH_FLOW',
-      payload: { 
-        currentStep: AuthStep.GENERATE_MESSAGE,
-        isLoading: true,
-        error: null,
-      },
-    })
-
-    try {
-      // Step 1: Generate message
-      const message = await authService.generateMessage(walletAddress)
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: AuthStep.SIGN_MESSAGE,
-          message,
-          isLoading: false,
-        },
-      })
-
-      // Step 2: Sign message
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { isLoading: true },
-      })
-      
-      const signature = await signMessageAsync({ message }) as `0x${string}`
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: AuthStep.VERIFY_SIGNATURE,
-          signature,
-        },
-      })
-
-      // Step 3: Verify signature and get token
-      const authResponse = await authService.signIn(message, signature)
-      dispatch({ type: 'SET_TOKEN', payload: authResponse.accessToken })
-
-      // Step 4: Get user profile
-      const user = await authService.getCurrentUser()
-      dispatch({ type: 'SET_USER', payload: user })
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: AuthStep.AUTHENTICATED,
-          isLoading: false,
-        },
-      })
-
-    } catch (error) {      
-      // Handle different types of errors
-      let errorMessage = 'Authentication failed'
-      
-      if (error instanceof Error) {
-        // Handle wallet rejection errors
-        if (error.name === 'UserRejectedRequestError' || error.message.includes('User rejected')) {
-          errorMessage = 'Signature request was cancelled. Please try again.'
-        } else if (error.message.includes('Network error')) {
-          errorMessage = 'Network error occurred. Please check your connection and try again.'
-        } else {
-          errorMessage = error.message
-        }
-      } else if (typeof error === 'object' && error !== null && 'message' in error) {
-        // Handle API errors
-        const apiError = error as ApiError
-        errorMessage = apiError.message || 'Authentication failed'
-      }
-      
-      dispatch({ type: 'SET_ERROR', payload: errorMessage })
-      dispatch({
-        type: 'SET_AUTH_FLOW',
-        payload: { 
-          currentStep: AuthStep.SIGN_MESSAGE, // Stay on sign message step with error
-          isLoading: false,
-          error: errorMessage,
-        },
-      })
-    }
-  }, [authService, signMessageAsync])
-
-  // Sign out function
-  const signOut = useCallback(async () => {
-    dispatch({ type: 'SET_LOADING', payload: true })
-
-    try {
-      await authService.signOut()
-      await disconnect()
-      dispatch({ type: 'CLEAR_AUTH' })
-    } catch (error) {
-      console.warn('Sign out error:', error)
-      dispatch({ type: 'CLEAR_AUTH' })
-    }
-  }, [authService, disconnect])
-
-  // Refresh token function
-  const refreshToken = useCallback(async () => {
-    try {
-      const response = await authService.refreshToken()
-      dispatch({ type: 'SET_TOKEN', payload: response.accessToken })
-      
-      // Get updated user profile
-      const user = await authService.getCurrentUser()
-      dispatch({ type: 'SET_USER', payload: user })
-    } catch (error) {
-      console.error('Token refresh error:', error)
-      // If refresh fails, sign out
-      await signOut()
-    }
-  }, [authService, signOut])
-
-  // Check if user has specific permission
-  const hasPermission = useCallback((permission: string): boolean => {
-    if (!state.user || !state.user.roles) return false
-    
-    return state.user.roles.some(role => 
-      role.permissions?.some(p => 
-        p.name === permission || 
-        `${p.resource}.${p.action}` === permission
-      )
-    )
-  }, [state.user])
-
-  // Check if user has specific role
-  const hasRole = useCallback((role: string): boolean => {
-    if (!state.user || !state.user.roles) return false
-    return state.user.roles.some(r => r.name.toLowerCase() === role.toLowerCase())
-  }, [state.user])
-
-  // Clear error function
-  const clearError = useCallback(() => {
-    dispatch({ type: 'SET_ERROR', payload: null })
-    dispatch({
-      type: 'SET_AUTH_FLOW',
-      payload: { error: null },
-    })
   }, [])
 
-  // Auto-refresh token when it's about to expire
-  useEffect(() => {
-    if (!state.isAuthenticated || !state.token) return
+  const startPolling = useCallback((sessionId: string) => {
+    stopPolling()
+    sessionIdRef.current = sessionId
 
-    const checkTokenExpiration = () => {
-      if (authService.isTokenExpiringSoon()) {
-        refreshToken()
+    pollingRef.current = setInterval(async () => {
+      try {
+        const result = await authService.pollSession(sessionIdRef.current!)
+
+        if (result.status === 'approved' && result.jwt) {
+          stopPolling()
+          authService.storeToken(result.jwt)
+          const payload = authService.decodeToken(result.jwt)
+          if (payload) {
+            dispatch({ type: 'SET_TOKEN', payload: result.jwt })
+            dispatch({
+              type: 'SET_AUTH_FLOW',
+              payload: { currentStep: AuthStep.AUTHENTICATED, isLoading: false, error: null },
+            })
+            // Fetch full profile
+            authService.getMe()
+              .then((me) => {
+                dispatch({
+                  type: 'SET_USER',
+                  payload: { ...me, walletAddress: payload.wallet as Address },
+                })
+              })
+              .catch(() => {
+                dispatch({
+                  type: 'SET_USER',
+                  payload: {
+                    id: payload.sub,
+                    walletAddress: payload.wallet as Address,
+                    telegramHandle: null,
+                    notificationsEnabled: true,
+                    scopes: [],
+                    wallets: [],
+                    profile: null,
+                  },
+                })
+              })
+          }
+        } else if (result.status === 'denied') {
+          stopPolling()
+          dispatch({
+            type: 'SET_AUTH_FLOW',
+            payload: {
+              currentStep: AuthStep.SIGN_MESSAGE,
+              isLoading: false,
+              error: 'Sign-in request was denied in Telegram.',
+              sessionId: undefined,
+            },
+          })
+        } else if (result.status === 'expired') {
+          stopPolling()
+          dispatch({
+            type: 'SET_AUTH_FLOW',
+            payload: {
+              currentStep: AuthStep.SIGN_MESSAGE,
+              isLoading: false,
+              error: 'Telegram approval timed out. Please try again.',
+              sessionId: undefined,
+            },
+          })
+        }
+        // 'pending' → keep polling
+      } catch {
+        // Network glitch — keep polling silently
       }
-    }
+    }, 2000)
+  }, [authService, stopPolling])
 
-    // Check every 5 minutes
-    const interval = setInterval(checkTokenExpiration, 5 * 60 * 1000)
-    
-    return () => clearInterval(interval)
-  }, [authService, state.isAuthenticated, state.token, refreshToken])
+  // Cleanup on unmount
+  useEffect(() => () => stopPolling(), [stopPolling])
 
-  const contextValue: AuthContextType = {
-    ...state,
-    signIn,
-    signOut,
-    refreshToken,
-    hasPermission,
-    hasRole,
-    clearError,
-    authFlow: state.authFlow,
-  }
+  // ---------------------------------------------------------------------------
+  // signIn
+  // ---------------------------------------------------------------------------
+
+  const signIn = useCallback(
+    async (walletAddress: Address) => {
+      if (!walletAddress) throw new Error('Wallet address is required')
+
+      dispatch({ type: 'SET_ERROR', payload: null })
+      dispatch({
+        type: 'SET_AUTH_FLOW',
+        payload: { currentStep: AuthStep.SIGN_MESSAGE, isLoading: true, error: null },
+      })
+
+      try {
+        // Step 1 — get challenge (404 means wallet not linked yet)
+        let challengeResult: Awaited<ReturnType<typeof authService.getChallenge>>
+        try {
+          challengeResult = await authService.getChallenge(walletAddress)
+        } catch (err: unknown) {
+          const status = (err as { statusCode?: number }).statusCode
+          if (status === 404) {
+            // Wallet not registered — show link flow instead of generic error
+            dispatch({
+              type: 'SET_AUTH_FLOW',
+              payload: { currentStep: AuthStep.WALLET_NOT_LINKED, isLoading: false, error: null },
+            })
+            return
+          }
+          throw err
+        }
+        const { message } = challengeResult
+        dispatch({ type: 'SET_AUTH_FLOW', payload: { message, isLoading: false } })
+
+        // Step 2 — sign with wallet
+        dispatch({ type: 'SET_AUTH_FLOW', payload: { isLoading: true } })
+        const signature = await signMessageAsync({ message }) as `0x${string}`
+
+        // Step 3 — submit, trigger TG 2FA
+        const { sessionId, expiresAt } = await authService.submitSignin(
+          walletAddress,
+          message,
+          signature,
+        )
+
+        dispatch({
+          type: 'SET_AUTH_FLOW',
+          payload: {
+            currentStep: AuthStep.PENDING_TG_APPROVAL,
+            isLoading: false,
+            sessionId,
+            sessionExpiresAt: new Date(expiresAt),
+            error: null,
+          },
+        })
+
+        startPolling(sessionId)
+      } catch (err: unknown) {
+        stopPolling()
+        let message = 'Authentication failed'
+
+        if (err instanceof Error) {
+          if (err.name === 'UserRejectedRequestError' || err.message.includes('User rejected')) {
+            message = 'Signature cancelled. Please try again.'
+          } else {
+            message = err.message
+          }
+        } else if (typeof err === 'object' && err !== null && 'message' in err) {
+          message = (err as { message: string }).message
+        }
+
+        dispatch({ type: 'SET_ERROR', payload: message })
+        dispatch({
+          type: 'SET_AUTH_FLOW',
+          payload: { currentStep: AuthStep.SIGN_MESSAGE, isLoading: false, error: message },
+        })
+      }
+    },
+    [authService, signMessageAsync, startPolling, stopPolling],
+  )
+
+  // ---------------------------------------------------------------------------
+  // signOut
+  // ---------------------------------------------------------------------------
+
+  const signOut = useCallback(async () => {
+    stopPolling()
+    authService.clearSession()
+    await disconnect().catch(() => null)
+    dispatch({ type: 'CLEAR_AUTH' })
+  }, [authService, disconnect, stopPolling])
+
+  // ---------------------------------------------------------------------------
+  // clearError
+  // ---------------------------------------------------------------------------
+
+  const clearError = useCallback(() => {
+    dispatch({ type: 'SET_ERROR', payload: null })
+    dispatch({ type: 'SET_AUTH_FLOW', payload: { error: null } })
+  }, [])
+
+  // ---------------------------------------------------------------------------
+  // Context value
+  // ---------------------------------------------------------------------------
 
   return (
-    <AuthContext.Provider value={contextValue}>
+    <AuthContext.Provider
+      value={{
+        ...state,
+        signIn,
+        signOut,
+        clearError,
+        authFlow: state.authFlow,
+      }}
+    >
       {children}
     </AuthContext.Provider>
   )
 }
 
-// Custom hook to use auth context
 export function useAuth(): AuthContextType {
   const context = useContext(AuthContext)
-  if (context === undefined) {
-    throw new Error('useAuth must be used within an AuthProvider')
-  }
+  if (!context) throw new Error('useAuth must be used within an AuthProvider')
   return context
 }

@@ -1,59 +1,95 @@
 import { type Address } from 'viem'
 
-// Authentication related types
-export interface AuthMessageRequest {
+// ---------------------------------------------------------------------------
+// Auth flow steps (matches the UX: Connect → Sign → Approve in TG → Done)
+// ---------------------------------------------------------------------------
+
+export enum AuthStep {
+  CONNECT_WALLET      = 'connect_wallet',
+  SIGN_MESSAGE        = 'sign_message',
+  WALLET_NOT_LINKED   = 'wallet_not_linked',  // challenge 404 → show link flow
+  PENDING_TG_APPROVAL = 'pending_tg_approval',
+  AUTHENTICATED       = 'authenticated',
+}
+
+export interface AuthFlowState {
+  currentStep: AuthStep
+  isLoading: boolean
+  error: string | null
+  /** The challenge message returned by the API — passed to signMessageAsync */
+  message?: string
+  /** Polling handle after signature submission */
+  sessionId?: string
+  sessionExpiresAt?: Date
+}
+
+// ---------------------------------------------------------------------------
+// User — derived from JWT payload (sub + wallet)
+// ---------------------------------------------------------------------------
+
+export interface UserProfile {
+  firstName: string
+  lastName: string
+  businessName: string | null
+  isVerified: boolean
+}
+
+export interface LinkedWallet {
   address: Address
-  valid?: number
-  expired?: number
-}
-
-export interface AuthSignInRequest {
-  message: string
-  signature: `0x${string}`
-}
-
-export interface AuthResponse {
-  accessToken: string
-}
-
-export interface Permission {
-  id: string
-  name: string
-  description: string
-  resource: string
-  action: string
-}
-
-export interface Role {
-  id: string
-  name: string
-  description: string
-  permissions: Permission[]
-  isSystem?: boolean
+  label: string | null
 }
 
 export interface User {
   id: string
-  walletAddress: Address
-  username?: string
-  email?: string
-  isActive: boolean
-  profileData?: Record<string, unknown>
-  createdAt: string
-  updatedAt: string
-  lastLogin?: string
-  roles: Role[]
+  walletAddress: Address      // the wallet used to sign in (from JWT)
+  telegramHandle: string | null
+  notificationsEnabled: boolean
+  scopes: string[]
+  wallets: LinkedWallet[]
+  profile: UserProfile | null
 }
 
-export interface UserProfile extends User {
-  preferences?: {
-    theme?: 'light' | 'dark'
-    language?: string
-    notifications?: boolean
-  }
+// ---------------------------------------------------------------------------
+// API shapes
+// ---------------------------------------------------------------------------
+
+export interface ChallengeResponse {
+  nonce: string
+  message: string
+  expiresAt: string
 }
 
-// Authentication state types
+export interface SigninResponse {
+  sessionId: string
+  expiresAt: string
+  message: string
+}
+
+export type SessionStatus = 'pending' | 'approved' | 'denied' | 'expired'
+
+export interface SessionPollResponse {
+  status: SessionStatus
+  jwt?: string
+}
+
+export interface LinkTokenResponse {
+  token: string
+  expiresAt: string
+  message: string
+}
+
+export type LinkTokenStatus = 'pending' | 'linked' | 'expired' | 'invalid'
+
+export interface LinkTokenStatusResponse {
+  status: LinkTokenStatus
+  walletAddress?: string
+  linkedAt?: string
+}
+
+// ---------------------------------------------------------------------------
+// Auth state / context
+// ---------------------------------------------------------------------------
+
 export interface AuthState {
   user: User | null
   isAuthenticated: boolean
@@ -65,14 +101,14 @@ export interface AuthState {
 export interface AuthContextType extends AuthState {
   signIn: (address: Address) => Promise<void>
   signOut: () => void
-  refreshToken: () => Promise<void>
-  hasPermission: (permission: string) => boolean
-  hasRole: (role: string) => boolean
   clearError: () => void
   authFlow: AuthFlowState
 }
 
-// Wallet connection types
+// ---------------------------------------------------------------------------
+// Wallet state
+// ---------------------------------------------------------------------------
+
 export interface WalletState {
   isConnected: boolean
   isConnecting: boolean
@@ -81,45 +117,13 @@ export interface WalletState {
   error: string | null
 }
 
-// API error types
+// ---------------------------------------------------------------------------
+// API error
+// ---------------------------------------------------------------------------
+
 export interface ApiError {
   message: string
   code: string
   statusCode: number
   details?: Record<string, unknown>
-}
-
-// Authentication flow steps
-export enum AuthStep {
-  CONNECT_WALLET = 'connect_wallet',
-  GENERATE_MESSAGE = 'generate_message',
-  SIGN_MESSAGE = 'sign_message',
-  VERIFY_SIGNATURE = 'verify_signature',
-  AUTHENTICATED = 'authenticated',
-  ERROR = 'error',
-}
-
-export interface AuthFlowState {
-  currentStep: AuthStep
-  isLoading: boolean
-  error: string | null
-  message?: string
-  signature?: `0x${string}`
-}
-
-// Permission checking types
-export type PermissionAction = 'create' | 'read' | 'update' | 'delete' | 'manage'
-export type PermissionResource = 'user' | 'role' | 'permission' | 'dashboard' | 'admin' | 'moderator'
-
-export interface PermissionCheck {
-  resource: PermissionResource
-  action: PermissionAction
-}
-
-// Component prop types for conditional rendering
-export interface ConditionalRenderProps {
-  condition: 'permission' | 'role' | 'authenticated'
-  value?: string
-  fallback?: React.ReactNode
-  children: React.ReactNode
 }
