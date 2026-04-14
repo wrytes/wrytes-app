@@ -1,28 +1,40 @@
-import Head from 'next/head'
-import Link from 'next/link'
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
+import { Section, PageHeader } from '@/components/ui/Layout';
+import { ButtonInput } from '@/components/ui/Input';
+import { Card } from '@/components/ui';
 
 export default function Custom404() {
+  const router = useRouter();
+
   return (
     <>
       <Head>
-        <title>404 - Page Not Found | Wrytes AG</title>
+        <title>404 – Page Not Found</title>
       </Head>
-      
-      <div className="min-h-screen bg-dark-bg text-text-primary flex items-center justify-center">
-        <div className="text-center">
-          <h1 className="text-6xl font-bold mb-4 text-accent-orange">404</h1>
-          <h2 className="text-2xl font-semibold mb-4">Page Not Found</h2>
-          <p className="text-text-secondary mb-8">
-            The page you&apos;re looking for doesn&apos;t exist.
-          </p>
-          <Link 
-            href="/"
-            className="inline-block bg-accent-orange text-white px-6 py-3 rounded-xl hover:bg-opacity-90 transition-colors"
-          >
-            Return Home
-          </Link>
-        </div>
+
+      <div className="w-full max-w-md">
+        <Section className="flex flex-col items-center gap-4">
+          <Card>
+            <div className="space-y-4">
+              <PageHeader
+                title="404"
+                description=" This page may have been moved or removed. Check the URL or head back to a known
+                location."
+                icon={faExclamationCircle}
+              />
+
+              <ButtonInput
+                label="Return Home"
+                variant="primary"
+                onClick={() => router.push('/')}
+                className="w-full"
+              />
+            </div>
+          </Card>
+        </Section>
       </div>
     </>
-  )
+  );
 }
