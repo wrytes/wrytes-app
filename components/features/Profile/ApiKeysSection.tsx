@@ -17,19 +17,24 @@ interface ApiKey {
 
 const KEY_HEADERS = ['Key ID', 'Created', 'Last used', 'Expires', ''];
 
-export default function ApiKeysSection() {
+interface Props {
+  hasScope?: boolean;
+}
+
+export default function ApiKeysSection({ hasScope = true }: Props) {
   const [keys, setKeys] = useState<ApiKey[]>([]);
   const [revokeTarget, setRevokeTarget] = useState<ApiKey | null>(null);
   const { sortTab: kSort, sortReverse: kRev, handleSort: handleKSort } = useSort('Created');
 
   const load = useCallback(async () => {
+    if (!hasScope) return;
     try {
       const data = await apiRequest<{ keys: ApiKey[] }>('/auth/keys');
       setKeys(data.keys ?? []);
     } catch {
       /* silent */
     }
-  }, []);
+  }, [hasScope]);
 
   useEffect(() => {
     load();
@@ -75,6 +80,18 @@ export default function ApiKeysSection() {
           description="Programmatic access tokens — use /api_create in Telegram to generate one"
           icon={faKey}
         />
+        {!hasScope ? (
+          <p className="text-text-secondary text-sm">
+            API key management requires{' '}
+            <Badge
+              text="LOGIN"
+              variant="custom"
+              customColor="text-orange-400"
+              customBgColor="bg-orange-400/10"
+              size="sm"
+            />
+          </p>
+        ) : (
         <Table>
           <TableHead
             headers={KEY_HEADERS}
@@ -131,6 +148,7 @@ export default function ApiKeysSection() {
             )}
           </TableBody>
         </Table>
+        )}
       </Section>
 
       <ConfirmModal

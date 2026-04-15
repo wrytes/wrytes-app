@@ -9,7 +9,7 @@ import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import type { OffRampRoute, OffRampExecution } from './types';
 
-const EXEC_HEADERS = ['Date', 'Route', 'Token', 'Amount', 'Fiat', 'Status', 'Actions'];
+const EXEC_HEADERS = ['Date', 'Route', 'Token', 'Amount', 'Fiat', 'Status'];
 
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
   SETTLED: { color: 'text-green-400', bg: 'bg-green-400/10' },
@@ -108,8 +108,6 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
     }
   });
 
-  if (!hasScope) return null;
-
   return (
     <>
       <Section>
@@ -118,6 +116,19 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
           description="Recent off-ramp conversions and their status"
           icon={faClockRotateLeft}
         />
+        {!hasScope ? (
+          <p className="text-text-secondary text-sm">
+            Execution history requires the{' '}
+            <Badge
+              text="OFFRAMP"
+              variant="custom"
+              customColor="text-orange-400"
+              customBgColor="bg-orange-400/10"
+              size="sm"
+            />{' '}
+            scope.
+          </p>
+        ) : (
         <Table>
           <TableHead
             headers={EXEC_HEADERS}
@@ -186,6 +197,7 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
             )}
           </TableBody>
         </Table>
+        )}
       </Section>
 
       {/* Settle execution modal */}

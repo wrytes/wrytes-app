@@ -28,12 +28,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
   {
     label: 'Accounts',
     path: '/dashboard/accounts',
-    icon: faBuildingColumns,
+    icon: faWallet,
     description: 'Bank accounts for off-ramp',
   },
   {
     label: 'Routes',
-    path: '/dashboard/ramping',
+    path: '/dashboard/routes',
     icon: faRoute,
     description: 'On-ramp and off-ramp conversion routes',
   },

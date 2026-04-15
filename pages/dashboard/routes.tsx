@@ -12,6 +12,7 @@ export default function RampingPage() {
   const { user } = useAuth();
   const isAdmin = user?.scopes.includes('ADMIN') ?? false;
   const hasOfframp = isAdmin || (user?.scopes.includes('OFFRAMP') ?? false);
+  const hasOnramp = isAdmin || (user?.scopes.includes('ONRAMP') ?? false);
 
   const [routes, setRoutes] = useState<OffRampRoute[]>([]);
   const handleRoutesLoaded = useCallback((loaded: OffRampRoute[]) => setRoutes(loaded), []);
@@ -21,7 +22,7 @@ export default function RampingPage() {
       <Head>
         <title>Routes – Wrytes</title>
       </Head>
-      <OnRampSection />
+      <OnRampSection hasScope={hasOnramp} />
       <OffRampSection isAdmin={isAdmin} hasScope={hasOfframp} onRoutesLoaded={handleRoutesLoaded} />
       <ExecutionHistorySection isAdmin={isAdmin} hasScope={hasOfframp} routes={routes} />
     </>
