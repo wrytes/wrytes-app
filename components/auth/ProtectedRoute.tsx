@@ -58,10 +58,10 @@ export function ProtectedRoute({
         >
           <FontAwesomeIcon 
             icon={faSpinner} 
-            className="text-4xl text-orange-500 animate-spin mb-4" 
+            className="text-4xl text-brand animate-spin mb-4" 
           />
           <p className="text-text-primary text-lg">Loading...</p>
-          <p className="text-gray-400 text-sm mt-2">Checking authentication status</p>
+          <p className="text-text-muted text-sm mt-2">Checking authentication status</p>
         </motion.div>
       </div>
     )
@@ -83,15 +83,15 @@ export function ProtectedRoute({
         >
           <FontAwesomeIcon 
             icon={faLock} 
-            className="text-4xl text-red-500 mb-4" 
+            className="text-4xl text-error mb-4" 
           />
           <h2 className="text-text-primary text-2xl font-bold mb-2">Access Denied</h2>
-          <p className="text-gray-400 mb-6">
+          <p className="text-text-muted mb-6">
             You need to be authenticated to view this page.
           </p>
           <button
             onClick={() => router.push(redirectTo)}
-            className="px-6 py-2 bg-orange-500 hover:bg-orange-600 text-white rounded-lg transition-colors"
+            className="px-6 py-2 bg-brand hover:bg-brand/90 text-white rounded-lg transition-colors"
           >
             Go to Home
           </button>
@@ -117,10 +117,10 @@ export function ProtectedRoute({
         >
           <FontAwesomeIcon 
             icon={faLock} 
-            className="text-4xl text-orange-500 mb-4" 
+            className="text-4xl text-brand mb-4" 
           />
           <h2 className="text-text-primary text-xl font-bold mb-2">Authentication Required</h2>
-          <p className="text-gray-400">Please connect your wallet to continue</p>
+          <p className="text-text-muted">Please connect your wallet to continue</p>
         </motion.div>
       </div>
 

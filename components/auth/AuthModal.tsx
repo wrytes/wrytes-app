@@ -14,19 +14,16 @@ interface AuthModalProps {
   description?: string
 }
 
-export function AuthModal({ 
-  isOpen, 
-  onClose, 
+export function AuthModal({
+  isOpen,
+  onClose,
   title = 'Authentication Required',
   description = 'Please connect your wallet and sign a message to continue.'
 }: AuthModalProps) {
   const { isAuthenticated } = useAuth()
   const [error, setError] = useState<string | null>(null)
 
-  const handleSuccess = () => {
-    // onSuccess?.()
-    // onClose()
-  }
+  const handleSuccess = () => {}
 
   const handleError = (errorMessage: string) => {
     setError(errorMessage)
@@ -36,7 +33,6 @@ export function AuthModal({
     setError(null)
   }
 
-  // Auto-close if user becomes authenticated
   React.useEffect(() => {
     if (isAuthenticated && isOpen) {
       handleSuccess()
@@ -53,7 +49,7 @@ export function AuthModal({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           exit={{ opacity: 0 }}
-          className="fixed inset-0 bg-black/80 backdrop-blur-sm"
+          className="fixed inset-0 bg-black/40 backdrop-blur-sm"
           onClick={onClose}
         />
 
@@ -67,17 +63,17 @@ export function AuthModal({
             className="relative w-full max-w-md"
             onClick={(e) => e.stopPropagation()}
           >
-            <div className="bg-gray-900 rounded-2xl border border-gray-700 shadow-2xl overflow-hidden">
+            <div className="bg-surface rounded-2xl border border-surface shadow-card overflow-hidden">
               {/* Header */}
-              <div className="px-6 py-4 border-b border-gray-700">
+              <div className="px-6 py-4 border-b border-surface">
                 <div className="flex items-center justify-between">
                   <div>
                     <h2 className="text-xl font-bold text-text-primary">{title}</h2>
-                    <p className="text-sm text-gray-400 mt-1">{description}</p>
+                    <p className="text-sm text-text-muted mt-1">{description}</p>
                   </div>
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-text-primary transition-colors p-2 rounded-lg hover:bg-gray-800"
+                    className="text-text-muted hover:text-text-primary transition-colors p-2 rounded-lg hover:bg-surface"
                   >
                     <FontAwesomeIcon icon={faTimes} />
                   </button>
@@ -86,31 +82,25 @@ export function AuthModal({
 
               {/* Content */}
               <div className="p-6">
-                {/* Auth Stepper */}
                 <div className="mb-6">
                   <AuthStepper onComplete={onClose} />
                 </div>
 
-                {/* Wallet Connector */}
                 <WalletConnector
                   className="border-0 bg-transparent p-0 shadow-none"
                   onSuccess={handleSuccess}
                   onError={handleError}
                 />
 
-                {/* Global Error Display */}
                 {error && (
                   <motion.div
                     initial={{ opacity: 0, y: 10 }}
                     animate={{ opacity: 1, y: 0 }}
-                    className="mt-4 p-3 bg-red-900/30 border border-red-500/30 rounded-lg"
+                    className="mt-4 p-3 bg-error-bg border border-error-border rounded-lg"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-red-400 text-sm">{error}</span>
-                      <button
-                        onClick={clearError}
-                        className="text-red-400 hover:text-red-300 ml-2"
-                      >
+                      <span className="text-error text-sm">{error}</span>
+                      <button onClick={clearError} className="text-error hover:text-error ml-2">
                         <FontAwesomeIcon icon={faTimes} className="text-xs" />
                       </button>
                     </div>
@@ -119,8 +109,8 @@ export function AuthModal({
               </div>
 
               {/* Footer */}
-              <div className="px-6 py-4 bg-gray-800/50 border-t border-gray-700">
-                <div className="text-xs text-gray-500 text-center space-y-1">
+              <div className="px-6 py-4 border-t border-input-border">
+                <div className="text-xs text-text-muted text-center space-y-1">
                   <p>🔒 Secure wallet-based authentication</p>
                   <p>No passwords or personal information required</p>
                 </div>

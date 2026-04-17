@@ -13,39 +13,18 @@ import { useWallet } from '@/hooks/useWallet'
 import { AuthStep } from '@/lib/auth/types'
 
 const STEPS = [
-  {
-    id: AuthStep.CONNECT_WALLET,
-    title: 'Connect',
-    description: 'Link your wallet',
-    icon: faWallet,
-  },
-  {
-    id: AuthStep.SIGN_MESSAGE,
-    title: 'Sign',
-    description: 'Confirm ownership',
-    icon: faFileSignature,
-  },
-  {
-    id: AuthStep.PENDING_TG_APPROVAL,
-    title: 'Approve',
-    description: 'Tap Allow in Telegram',
-    icon: faPaperPlane,
-  },
-  {
-    id: AuthStep.AUTHENTICATED,
-    title: 'Done',
-    description: 'Access granted',
-    icon: faCheck,
-  },
+  { id: AuthStep.CONNECT_WALLET,     title: 'Connect', description: 'Link your wallet',    icon: faWallet },
+  { id: AuthStep.SIGN_MESSAGE,       title: 'Sign',    description: 'Confirm ownership',   icon: faFileSignature },
+  { id: AuthStep.PENDING_TG_APPROVAL,title: 'Approve', description: 'Tap Allow in Telegram',icon: faPaperPlane },
+  { id: AuthStep.AUTHENTICATED,      title: 'Done',    description: 'Access granted',      icon: faCheck },
 ]
 
-// Map each AuthStep to its visual index
 const STEP_INDEX: Record<AuthStep, number> = {
-  [AuthStep.CONNECT_WALLET]:    0,
-  [AuthStep.SIGN_MESSAGE]:      1,
-  [AuthStep.WALLET_NOT_LINKED]: 1, // sub-flow within the Sign step
+  [AuthStep.CONNECT_WALLET]:      0,
+  [AuthStep.SIGN_MESSAGE]:        1,
+  [AuthStep.WALLET_NOT_LINKED]:   1,
   [AuthStep.PENDING_TG_APPROVAL]: 2,
-  [AuthStep.AUTHENTICATED]:     3,
+  [AuthStep.AUTHENTICATED]:       3,
 }
 
 interface AuthStepperProps {
@@ -87,17 +66,17 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
           const status = getStatus(index)
 
           const iconColor =
-            status === 'completed' ? 'text-green-500' :
-            status === 'loading'   ? 'text-orange-500' :
-            status === 'error'     ? 'text-red-500' :
-            status === 'current'   ? 'text-orange-500' :
-            'text-gray-500'
+            status === 'completed' ? 'text-success' :
+            status === 'loading'   ? 'text-brand' :
+            status === 'error'     ? 'text-error' :
+            status === 'current'   ? 'text-brand' :
+            'text-text-muted'
 
           const ringClass =
-            status === 'completed' ? 'border-green-500 bg-green-500/20' :
-            status === 'loading' || status === 'current' ? 'border-orange-500 bg-orange-500/20' :
-            status === 'error'     ? 'border-red-500 bg-red-500/20' :
-            'border-gray-600 bg-gray-800'
+            status === 'completed' ? 'border-success bg-success-bg' :
+            status === 'loading' || status === 'current' ? 'border-brand bg-brand/10' :
+            status === 'error'     ? 'border-error bg-error-bg' :
+            'border-input-border bg-surface'
 
           const displayIcon =
             status === 'completed' ? faCheck :
@@ -118,11 +97,11 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
                   <p className={`text-xs font-medium ${
                     status === 'current' || status === 'completed' || status === 'loading'
                       ? 'text-text-primary'
-                      : 'text-gray-500'
+                      : 'text-text-muted'
                   }`}>
                     {step.title}
                   </p>
-                  <p className="text-[10px] text-gray-600 mt-0.5 leading-tight">
+                  <p className="text-[10px] text-text-muted mt-0.5 leading-tight">
                     {step.description}
                   </p>
                 </div>
@@ -131,9 +110,9 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
               {index < STEPS.length - 1 && (
                 <div className="flex-1 px-2 mt-5">
                   <div className={`h-0.5 rounded-full transition-colors duration-500 ${
-                    getStatus(index) === 'completed' ? 'bg-green-500' :
-                    getStatus(index) === 'error'     ? 'bg-red-500' :
-                    'bg-gray-700'
+                    getStatus(index) === 'completed' ? 'bg-success' :
+                    getStatus(index) === 'error'     ? 'bg-error' :
+                    'bg-surface'
                   }`} />
                 </div>
               )}

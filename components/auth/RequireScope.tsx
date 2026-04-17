@@ -46,7 +46,7 @@ export function UserBadge({ className = '' }: { className?: string }) {
 
   return (
     <div
-      className={`inline-flex items-center px-2 py-1 rounded-full text-xs border border-gray-600 bg-gray-800 text-gray-400 ${className}`}
+      className={`inline-flex items-center px-2 py-1 rounded-full text-xs border border-input-border bg-surface text-text-muted ${className}`}
     >
       {label}
     </div>
