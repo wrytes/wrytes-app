@@ -62,11 +62,8 @@ const components: Components = {
     );
   },
   pre: ({ node: _n, ...props }) => (
-    <div className="overflow-x-auto mb-4">
-      <pre
-        className="bg-dark-surface rounded-xl p-4 w-max min-w-full text-sm border border-white/5"
-        {...props}
-      />
+    <div className="px-1 py-2 md:p-4 mb-4 w-full min-w-0 overflow-x-auto rounded-lg border border-white/5 bg-dark-surface">
+      <pre className="text-sm" {...props} />
     </div>
   ),
   table: ({ node: _n, ...props }) => (
@@ -85,14 +82,8 @@ const components: Components = {
 
 export default function MarkdownContent({ content }: MarkdownProps) {
   return (
-    <div className="break-words min-w-0">
-      <Markdown
-        remarkPlugins={[remarkGfm]}
-        rehypePlugins={[rehypeHighlight]}
-        components={components}
-      >
-        {content ?? ''}
-      </Markdown>
-    </div>
+    <Markdown remarkPlugins={[remarkGfm]} rehypePlugins={[rehypeHighlight]} components={components}>
+      {content ?? ''}
+    </Markdown>
   );
 }

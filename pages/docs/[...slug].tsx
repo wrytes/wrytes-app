@@ -2,12 +2,10 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import * as fs from 'fs';
 import * as path from 'path';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faArrowLeft } from '@fortawesome/free-solid-svg-icons';
+import { faBook, faFile, faFileArchive } from '@fortawesome/free-solid-svg-icons';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import MarkdownContent from '@/components/ui/MarkdownContent';
-import { ButtonInput } from '@/components/ui/Input';
 
 interface DocsViewerPageProps {
   fileExists: boolean;
@@ -16,7 +14,6 @@ interface DocsViewerPageProps {
 }
 
 export default function DocsViewerPage({ fileExists, slugPath, fileContent }: DocsViewerPageProps) {
-  const router = useRouter();
   const segments = slugPath.split('/');
   const filename = segments[segments.length - 1];
   const folderSegments = segments.slice(0, -1);
@@ -46,11 +43,11 @@ export default function DocsViewerPage({ fileExists, slugPath, fileContent }: Do
         <PageHeader
           title={fileExists ? displayName : 'Document Not Found'}
           description={!fileExists ? `No document found at path: "${slugPath}"` : undefined}
-          icon={faBook}
+          icon={faFile}
           breadcrumbs={breadcrumbs}
         />
 
-        <Card className="w-full">
+        <Card>
           {fileExists ? (
             <MarkdownContent content={fileContent} />
           ) : (

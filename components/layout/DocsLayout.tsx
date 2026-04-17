@@ -109,7 +109,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         </aside>
 
         {/* Main */}
-        <main className="flex-1 px-4 md:ml-64">
+        <main className="flex-1 min-w-0 px-4 md:ml-64">
           <div>{children}</div>
         </main>
       </div>
