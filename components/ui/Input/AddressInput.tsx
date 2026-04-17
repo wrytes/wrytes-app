@@ -46,19 +46,19 @@ export default function AddressInput({
   return (
     <div className={className}>
       <div
-        className={`group border-card-input-border ${
-          disabled ? 'bg-card-input-disabled' : 'hover:border-card-input-hover'
-        } focus-within:!border-card-input-focus ${
-          error ? '!border-card-input-error' : ''
+        className={`group border-input-border ${
+          disabled ? 'bg-surface' : 'hover:border-text-secondary'
+        } focus-within:!border-brand ${
+          error ? '!border-input-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}
         onClick={handleClick}
       >
-        {label && <div className="flex text-card-input-label my-1">{label}</div>}
+        {label && <div className="flex text-input-label my-1">{label}</div>}
 
         <input
           ref={inputRef}
           className={`w-full py-2 text-lg ${isTextLeft ? 'text-left' : 'text-right'} bg-transparent outline-none ${
-            error ? 'text-card-input-error' : 'text-text-primary'
+            error ? 'text-input-error' : 'text-text-primary'
           }`}
           placeholder={placeholder}
           value={value}
@@ -79,7 +79,7 @@ export default function AddressInput({
 
             {!disabled && own != undefined && own !== value && (
               <div
-                className="text-card-input-max cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-brand cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(own);
                   onOwn();
@@ -90,7 +90,7 @@ export default function AddressInput({
             )}
             {!disabled && reset != undefined && reset !== value && reset !== own && (
               <div
-                className="text-card-input-reset cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(reset);
                   onReset();
@@ -104,7 +104,7 @@ export default function AddressInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-card-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
       ) : (
         <div className="flex my-2 px-3.5">{note}</div>
       )}

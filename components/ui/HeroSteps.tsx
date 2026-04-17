@@ -17,9 +17,9 @@ export default function HeroSteps({ steps, className }: Props) {
       {steps.map((step, i) => (
         <div
           key={i}
-          className="flex items-start gap-4 bg-dark-card rounded-lg p-4 border border-dark-surface"
+          className="flex items-start gap-4 bg-card rounded-lg p-4 border border-surface"
         >
-          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-text-primary text-dark-bg flex items-center justify-center text-sm font-bold">
+          <div className="flex-shrink-0 w-6 h-6 rounded-full bg-text-primary text-base flex items-center justify-center text-sm font-bold">
             {step.icon}
           </div>
           <div className="flex flex-col gap-1">

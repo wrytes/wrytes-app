@@ -8,7 +8,7 @@ import { COMPANY, INTEGRATIONS } from '@/lib/constants';
 
 export default function About() {
   return (
-    <section id="about" className="py-24 bg-dark-surface">
+    <section id="about" className="py-24 bg-surface">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -41,25 +41,25 @@ export default function About() {
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-accent-orange rounded-full" />
+                  <div className="w-2 h-2 bg-brand rounded-full" />
                   <span className="text-text-secondary">
                     Smart contracts, APIs, automation systems, and governance tools
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-accent-orange rounded-full" />
+                  <div className="w-2 h-2 bg-brand rounded-full" />
                   <span className="text-text-secondary">
                     Full-stack development from protocols to user interfaces
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-accent-orange rounded-full" />
+                  <div className="w-2 h-2 bg-brand rounded-full" />
                   <span className="text-text-secondary">
                     Advanced adapters, integrations, and monitoring systems
                   </span>
                 </div>
                 <div className="flex items-center gap-3">
-                  <div className="w-2 h-2 bg-accent-orange rounded-full" />
+                  <div className="w-2 h-2 bg-brand rounded-full" />
                   <span className="text-text-secondary">
                     Independent innovation funded through long-term asset management
                   </span>
@@ -77,8 +77,8 @@ export default function About() {
           >
             <Card hover gradient className="h-full text-center">
               <div className="mb-6">
-                <div className="w-16 h-16 bg-accent-orange/20 rounded-full flex items-center justify-center mx-auto mb-4">
-                  <div className="w-8 h-8 bg-accent-orange rounded-full animate-pulse" />
+                <div className="w-16 h-16 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <div className="w-8 h-8 bg-brand rounded-full animate-pulse" />
                 </div>
                 <h3 className="text-2xl font-bold text-white mb-2">{COMPANY.location}</h3>
                 <p className="text-text-secondary">Global Financial Technology Hub</p>
@@ -122,7 +122,7 @@ export default function About() {
                 <Card hover className="h-full group hover:shadow-lg transition-all duration-300">
                   {/* Icon and Title */}
                   <div className="mb-4">
-                    <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:bg-accent-orange/30 rounded-xl transition-colors overflow-hidden">
+                    <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:bg-brand/30 rounded-xl transition-colors overflow-hidden">
                       <Image
                         src={integration.icon}
                         alt={`${integration.name} logo`}
@@ -135,7 +135,7 @@ export default function About() {
                       href={integration.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-white font-semibold hover:text-accent-orange transition-colors group/link"
+                      className="flex items-center gap-2 text-white font-semibold hover:text-brand transition-colors group/link"
                     >
                       <span>{integration.name}</span>
                       <FontAwesomeIcon

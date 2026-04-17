@@ -67,19 +67,19 @@ export default function TokenInput({
   return (
     <div>
       <div
-        className={`group border-card-input-border ${
-          disabled ? 'bg-card-input-disabled' : 'hover:border-card-input-hover'
-        } focus-within:!border-card-input-focus ${
-          error ? '!border-card-input-error' : ''
+        className={`group border-input-border ${
+          disabled ? 'bg-surface' : 'hover:border-text-secondary'
+        } focus-within:!border-brand ${
+          error ? '!border-input-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}
         onClick={handleClick}
       >
-        {label && <div className="flex text-card-input-label my-1">{label}</div>}
+        {label && <div className="flex text-input-label my-1">{label}</div>}
 
         <div className="flex items-center">
           <div
             className={`flex-1 py-2 ${
-              error ? 'text-card-input-error' : value ? 'text-text-primary' : 'placeholder:text-card-input-empty'
+              error ? 'text-input-error' : value ? 'text-text-primary' : 'placeholder:text-input-empty'
             }`}
           >
             {output ? (
@@ -87,7 +87,7 @@ export default function TokenInput({
             ) : (
               <BigNumberInput
                 inputRefChild={inputRef}
-                className={`w-full px-0 py-0 text-3xl ${disabled ? 'bg-card-input-disabled' : ''}`}
+                className={`w-full px-0 py-0 text-3xl ${disabled ? 'bg-surface' : ''}`}
                 decimals={Number(digit)}
                 placeholder={placeholder}
                 value={value}
@@ -102,7 +102,7 @@ export default function TokenInput({
             <TokenLogo currency={symbol} size={6} />
           </div>
 
-          <div className="text-card-input-label text-left">{symbol}</div>
+          <div className="text-input-label text-left">{symbol}</div>
         </div>
 
         {limitLabel != undefined || max != undefined || min != undefined || reset != undefined ? (
@@ -120,7 +120,7 @@ export default function TokenInput({
 
             {canShowButtons && max != undefined && max !== safeValue && (
               <div
-                className="text-card-input-max cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(max.toString());
                   onMax();
@@ -131,7 +131,7 @@ export default function TokenInput({
             )}
             {canShowButtons && min != undefined && min !== safeValue && min !== max && (
               <div
-                className="text-card-input-min cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(min.toString());
                   onMin();
@@ -142,7 +142,7 @@ export default function TokenInput({
             )}
             {canShowButtons && reset != undefined && reset !== safeValue && reset !== min && reset !== max && (
               <div
-                className="text-card-input-reset cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(reset.toString());
                   onReset();
@@ -156,7 +156,7 @@ export default function TokenInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-card-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
       ) : warning ? (
         <div className="flex my-2 px-3.5 text-amber-500">{warning}</div>
       ) : (

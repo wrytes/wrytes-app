@@ -20,7 +20,7 @@ interface StatCardProps {
 }
 
 const COLOR_VARIANTS = {
-  orange: 'text-accent-orange bg-accent-orange/20',
+  orange: 'text-brand bg-brand/20',
   green: 'text-green-400 bg-green-400/20',
   blue: 'text-blue-400 bg-blue-400/20',
   purple: 'text-purple-400 bg-purple-400/20',
@@ -47,10 +47,10 @@ export function StatCardSkeleton({ className }: { className?: string }) {
     <Card className={cn('animate-pulse', className)}>
       <div className="flex items-center justify-between">
         <div className="flex-1">
-          <div className="w-20 h-4 bg-dark-surface/30 rounded mb-2"></div>
-          <div className="w-16 h-8 bg-dark-surface/30 rounded"></div>
+          <div className="w-20 h-4 bg-surface/30 rounded mb-2"></div>
+          <div className="w-16 h-8 bg-surface/30 rounded"></div>
         </div>
-        <div className="w-12 h-12 bg-dark-surface/30 rounded-lg flex-shrink-0"></div>
+        <div className="w-12 h-12 bg-surface/30 rounded-lg flex-shrink-0"></div>
       </div>
     </Card>
   );

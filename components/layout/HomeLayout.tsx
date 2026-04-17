@@ -39,19 +39,19 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
   };
 
   return (
-    <div className="min-h-screen bg-dark-bg text-text-primary">
+    <div className="min-h-screen bg-base text-text-primary">
       {/* Home Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-dark-card border-b border-dark-surface">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-surface">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-accent-orange rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
               <Link href="/" className="text-xl font-bold text-white">
                 {COMPANY.name.split(' ')[0]}
-                <span className="text-accent-orange">.</span>
+                <span className="text-brand">.</span>
               </Link>
             </div>
 
@@ -61,7 +61,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
                 <Link
                   key={item.name}
                   href={item.href}
-                  className="flex items-center gap-2 text-text-secondary hover:text-accent-orange transition-colors text-sm uppercase tracking-wide"
+                  className="flex items-center gap-2 text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
                 >
                   {item.icon && <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />}
                   {item.name}
@@ -74,7 +74,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
             <div className="hidden md:flex items-center gap-4 min-w-28">
               {/* <Link
                 href="/dashboard"
-                className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
               >
                 Get Started
                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 h-3" />
@@ -84,7 +84,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
             {/* Mobile Menu Button */}
             <button
               onClick={toggleMobileMenu}
-              className="md:hidden p-2 text-text-secondary hover:text-accent-orange transition-colors"
+              className="md:hidden p-2 text-text-secondary hover:text-brand transition-colors"
             >
               <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="w-5 h-5" />
             </button>
@@ -92,13 +92,13 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-dark-surface pt-4">
+            <div className="md:hidden mt-4 pb-4 border-t border-surface pt-4">
               <nav className="space-y-4">
                 {navigation.map(item => (
                   <Link
                     key={item.name}
                     href={item.href}
-                    className="flex items-center gap-3 text-text-secondary hover:text-accent-orange transition-colors text-sm uppercase tracking-wide"
+                    className="flex items-center gap-3 text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
                     onClick={closeMobileMenu}
                   >
                     {item.icon && <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />}
@@ -110,7 +110,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
                 <div></div>
                 {/* <Link
                   href="/dashboard"
-                  className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
                   onClick={closeMobileMenu}
                 >
                   Get Started

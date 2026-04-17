@@ -76,17 +76,17 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-gradient-dark text-text-primary">
       {/* Dashboard Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-dark-card border-b border-dark-surface">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-surface">
         <div className="mx-auto max-md:px-4 px-16 py-3.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-4">
-              <div className="w-8 h-8 bg-accent-orange rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
               <Link href="/" className="text-xl font-bold text-white">
                 {COMPANY.name.split(' ')[0]}
-                <span className="text-accent-orange">.</span>
+                <span className="text-brand">.</span>
               </Link>
             </div>
 
@@ -96,7 +96,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <button
                   type="button"
                   onClick={handleCTAClick}
-                  className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
                 >
                   <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
                   Connect Wallet
@@ -105,7 +105,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <button
                   type="button"
                   onClick={() => setShowAuthModal(true)}
-                  className="inline-flex items-center gap-2 text-white hover:text-accent-orange transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 text-white hover:text-brand transition-colors text-sm font-medium"
                   title="Click to manage wallet"
                 >
                   <div className="text-right">
@@ -114,14 +114,14 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                         <p className="text-white font-medium text-sm leading-tight">
                           {displayName}
                         </p>
-                        <p className="text-gray-500 font-mono text-xs hover:text-accent-orange transition-colors">
+                        <p className="text-gray-500 font-mono text-xs hover:text-brand transition-colors">
                           {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                         </p>
                       </>
                     ) : (
                       <>
                         <p className="text-sm text-gray-400">Connected as</p>
-                        <p className="text-white font-mono text-sm hover:text-accent-orange transition-colors">
+                        <p className="text-white font-mono text-sm hover:text-brand transition-colors">
                           {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
                         </p>
                       </>
@@ -135,7 +135,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             <div className="md:hidden flex items-center gap-2">
               <button
                 onClick={toggleMobileMenu}
-                className="p-2 flex items-center justify-center text-text-secondary hover:text-accent-orange transition-colors"
+                className="p-2 flex items-center justify-center text-text-secondary hover:text-brand transition-colors"
               >
                 <FontAwesomeIcon icon={isMobileMenuOpen ? faTimes : faBars} className="w-5 h-5" />
               </button>
@@ -144,7 +144,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 border-t border-dark-surface pt-4">
+            <div className="md:hidden mt-4 border-t border-surface pt-4">
               <SidebarDashboard
                 items={DASHBOARD_NAVIGATION}
                 isActive={isActive}
@@ -159,7 +159,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       handleCTAClick();
                       closeMobileMenu();
                     }}
-                    className="inline-flex items-center gap-2 bg-accent-orange text-white px-4 py-2 mt-4 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
+                    className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 mt-4 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
                   >
                     <FontAwesomeIcon icon={faWallet} className="w-3 h-3" />
                     Connect Wallet
@@ -173,7 +173,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       setShowAuthModal(true);
                       closeMobileMenu();
                     }}
-                    className="inline-flex gap-2 mt-4 text-white hover:text-accent-orange transition-colors text-sm font-medium"
+                    className="inline-flex gap-2 mt-4 text-white hover:text-brand transition-colors text-sm font-medium"
                     title="Click to manage wallet"
                   >
                     <div className="text-right">
@@ -212,7 +212,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Sidebar Navigation */}
         <aside
-          className={`fixed left-0 top-16 mt-1 w-64 h-screen bg-dark-bg border-r border-accent-orange/20 transform transition-transform duration-300 ease-in-out z-50 ${
+          className={`fixed left-0 top-16 mt-1 w-64 h-screen bg-base border-r border-brand/20 transform transition-transform duration-300 ease-in-out z-50 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >

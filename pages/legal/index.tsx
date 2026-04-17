@@ -65,11 +65,11 @@ export default function LegalIndex() {
               <Link key={page.href} href={page.href}>
                 <Card hover className="h-full group cursor-pointer">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-accent-orange/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-accent-orange/30 transition-colors">
-                      <FontAwesomeIcon icon={page.icon} className="w-5 h-5 text-accent-orange" />
+                    <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand/30 transition-colors">
+                      <FontAwesomeIcon icon={page.icon} className="w-5 h-5 text-brand" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white mb-1 group-hover:text-accent-orange transition-colors">
+                      <h3 className="text-lg font-bold text-white mb-1 group-hover:text-brand transition-colors">
                         {page.title}
                       </h3>
                       <p className="text-text-secondary text-sm leading-relaxed">

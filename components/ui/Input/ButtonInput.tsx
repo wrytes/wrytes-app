@@ -28,10 +28,10 @@ const BASE =
   'inline-flex items-center justify-center gap-2 font-medium transition-all duration-200 focus:outline-none disabled:opacity-50 disabled:cursor-not-allowed';
 
 const VARIANTS: Record<Variant, string> = {
-  primary:   'bg-accent-orange text-white hover:bg-opacity-90 shadow-md hover:shadow-lg',
-  secondary: 'bg-dark-card text-text-primary hover:bg-opacity-80 border border-text-muted',
-  outline:   'border border-accent-orange text-accent-orange hover:bg-accent-orange hover:text-white',
-  ghost:     'text-text-secondary hover:text-text-primary hover:bg-dark-card',
+  primary:   'bg-brand text-white hover:bg-opacity-90 shadow-md hover:shadow-lg',
+  secondary: 'bg-card text-text-primary hover:bg-opacity-80 border border-text-muted',
+  outline:   'border border-brand text-brand hover:bg-brand hover:text-white',
+  ghost:     'text-text-secondary hover:text-text-primary hover:bg-card',
 };
 
 const SIZES: Record<Size, string> = {

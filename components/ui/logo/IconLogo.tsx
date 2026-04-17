@@ -10,7 +10,7 @@ export function IconLogo({ icon, size = 8, className = '' }: IconLogoProps) {
   return (
     <div
       style={{ width: `${size * 4}px`, height: `${size * 4}px` }}
-      className={`flex-shrink-0 rounded-full bg-dark-card flex items-center justify-center ${className}`}
+      className={`flex-shrink-0 rounded-full bg-card flex items-center justify-center ${className}`}
     >
       {icon}
     </div>

@@ -75,7 +75,7 @@ export default function ApiKeyConfirmPage() {
               {/* Loading */}
               {state === 'loading' && (
                 <div className="flex flex-col items-center gap-3 py-6">
-                  <FontAwesomeIcon icon={faSpinner} className="text-3xl text-accent-orange animate-spin" />
+                  <FontAwesomeIcon icon={faSpinner} className="text-3xl text-brand animate-spin" />
                   <p className="text-text-secondary text-sm">Verifying token…</p>
                 </div>
               )}
@@ -92,7 +92,7 @@ export default function ApiKeyConfirmPage() {
                   </div>
                   <p className="text-text-secondary text-xs">
                     Magic links are single-use and expire after 15 minutes. Generate a new one with{' '}
-                    <code className="text-accent-orange">/api_create</code> in Telegram.
+                    <code className="text-brand">/api_create</code> in Telegram.
                   </p>
                   <ButtonInput
                     label="Go to dashboard"
@@ -130,9 +130,9 @@ export default function ApiKeyConfirmPage() {
 
                   <div
                     onClick={handleCopy}
-                    className="group flex items-center justify-between gap-3 bg-dark-surface rounded-lg px-4 py-3 cursor-pointer hover:bg-dark-surface/80 transition-colors"
+                    className="group flex items-center justify-between gap-3 bg-surface rounded-lg px-4 py-3 cursor-pointer hover:bg-surface/80 transition-colors"
                   >
-                    <code className="text-accent-orange text-sm font-mono break-all select-all flex-1">
+                    <code className="text-brand text-sm font-mono break-all select-all flex-1">
                       {result.apiKey}
                     </code>
                     <FontAwesomeIcon
@@ -146,7 +146,7 @@ export default function ApiKeyConfirmPage() {
                   <div className="space-y-2 pt-2">
                     <p className="text-text-secondary text-xs">
                       Send this key in the{' '}
-                      <code className="text-accent-orange">X-API-Key</code> request header.
+                      <code className="text-brand">X-API-Key</code> request header.
                     </p>
                     <ButtonInput
                       label="Go to dashboard"

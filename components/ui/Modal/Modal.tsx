@@ -98,7 +98,7 @@ export function Modal({
       <div
         ref={modalRef}
         className={cn(
-          'relative w-full bg-dark-card rounded-2xl border border-dark-surface shadow-2xl',
+          'relative w-full bg-card rounded-2xl border border-surface shadow-2xl',
           'animate-in zoom-in-95 slide-in-from-bottom-4',
           SIZE_VARIANTS[size],
           className,
@@ -107,14 +107,14 @@ export function Modal({
         onKeyDown={handleKeyDown}
       >
         {(title || header || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-dark-surface">
+          <div className="flex items-center justify-between p-6 border-b border-surface">
             <div className="flex-1">
               {header ?? (title && <h2 id="modal-title" className="text-xl font-bold text-white">{title}</h2>)}
             </div>
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="ml-4 p-2 text-text-secondary hover:text-white transition-colors rounded-lg hover:bg-dark-surface/50"
+                className="ml-4 p-2 text-text-secondary hover:text-white transition-colors rounded-lg hover:bg-surface/50"
                 aria-label="Close modal"
               >
                 <FontAwesomeIcon icon={faTimes} className="w-4 h-4" />
@@ -126,7 +126,7 @@ export function Modal({
         <div className="p-6">{children}</div>
 
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-dark-surface">
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-surface">
             {footer}
           </div>
         )}

@@ -6,7 +6,7 @@ import { COMPANY } from '@/lib/constants';
 
 export default function Contact() {
   return (
-    <section id="contact" className="py-24 bg-dark-surface">
+    <section id="contact" className="py-24 bg-surface">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -34,8 +34,8 @@ export default function Contact() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
               {/* Location */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-accent-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FontAwesomeIcon icon={faMapMarkerAlt} className="w-5 h-5 text-accent-orange" />
+                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FontAwesomeIcon icon={faMapMarkerAlt} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
                   <h4 className="text-white font-semibold mb-1">Location</h4>
@@ -46,8 +46,8 @@ export default function Contact() {
 
               {/* Email */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-accent-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 text-accent-orange" />
+                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
                   <h4 className="text-white font-semibold mb-1">Email</h4>
@@ -60,8 +60,8 @@ export default function Contact() {
 
               {/* Telegram Community */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-accent-orange/20 rounded-xl flex items-center justify-center flex-shrink-0">
-                  <FontAwesomeIcon icon={faPeopleGroup} className="w-5 h-5 text-accent-orange" />
+                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                  <FontAwesomeIcon icon={faPeopleGroup} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
                   <h4 className="text-white font-semibold mb-1">Telegram Community</h4>

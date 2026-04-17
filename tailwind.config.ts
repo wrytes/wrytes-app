@@ -13,46 +13,32 @@ module.exports = {
         avenir: ['Avenir', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Dark theme colors based on project specifications
-        'dark-bg': '#1a1a1a',
-        'dark-card': '#2a2a2a',
-        'dark-surface': '#1f1f1f',
-        'accent-orange': '#ff6b35',
-        'text-primary': '#ffffff',
+        // Surface hierarchy
+        'base':    '#1a1a1a',   // page / app background
+        'surface': '#1f1f1f',   // panels, inputs, code blocks
+        'card':    '#2a2a2a',   // card containers, elevated elements
+
+        // Brand
+        'brand':   '#ff6b35',   // Wrytes orange
+
+        // Text
+        'text-primary':   '#ffffff',
         'text-secondary': '#a0a0a0',
-        'text-muted': '#666666',
+        'text-muted':     '#666666',
 
-        // Table component tokens
-        'table-header-primary': '#242424',
-        'table-header-secondary': '#374151',
-        'table-row-primary': '#1f1f1f',
-        'table-row-hover': '#2a2a2a',
-        // text-active/header/subheader are used as text-text-active, text-text-header, etc.
-        'text-active': '#ff6b35',
-        'text-header': '#ffffff',
-        'text-subheader': '#a0a0a0',
-        'button-default': '#ff6b35',
-        'button-disabled': '#111827',
+        // Input
+        'input-border': '#4B5563',
+        'input-error':  '#ef4444',
+        'input-label':  '#9CA3AF',
+        'input-empty':  '#6B7280',
 
-        // Input component tokens
-        'card-input-border': '#4B5563',
-        'card-input-disabled': '#1f1f1f',
-        'card-input-hover': '#a0a0a0',
-        'card-input-focus': '#ff6b35',
-        'card-input-error': '#ef4444',
-        'card-input-label': '#9CA3AF',
-        'card-input-empty': '#6B7280',
-        'card-input-max': '#ff6b35',
-        'card-input-min': '#ffd700',
-        'card-input-reset': '#9CA3AF',
+        // Table
+        'table-header': '#242424',
+        'table-alt':    '#374151',
 
-        // Gradient colors
-        gradient: {
-          'dark-start': '#1a1a1a',
-          'dark-end': '#2d1b1b',
-          'card-start': '#2a2a2a',
-          'card-end': '#3a2a2a',
-        },
+        // Misc
+        'gold':     '#ffd700',
+        'disabled': '#111827',
       },
       backgroundImage: {
         'gradient-dark': 'linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%)',

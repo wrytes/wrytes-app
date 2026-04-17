@@ -28,7 +28,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2 className="text-xl font-bold text-white mb-3">Data Controller</h2>
                 <p className="mb-3">The data controller responsible for processing your personal data is:</p>
-                <div className="bg-dark-surface p-4 rounded-lg text-sm">
+                <div className="bg-surface p-4 rounded-lg text-sm">
                   <p><strong className="text-white">{COMPANY.name}</strong></p>
                   <p>{COMPANY.address}</p>
                   <p>Email: hello@wrytes.io</p>
@@ -182,7 +182,7 @@ export default function PrivacyPolicy() {
               <section>
                 <h2 className="text-xl font-bold text-white mb-3">Contact and Complaints</h2>
                 <p className="mb-3">For questions about this privacy policy or to exercise your rights:</p>
-                <div className="bg-dark-surface p-4 rounded-lg text-sm">
+                <div className="bg-surface p-4 rounded-lg text-sm">
                   <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
                   <p><strong className="text-white">Subject:</strong> Privacy Inquiry</p>
                 </div>
@@ -194,7 +194,7 @@ export default function PrivacyPolicy() {
                 <p>We may update this privacy policy from time to time. We will notify you of any material changes by posting the new policy on this page.</p>
               </section>
 
-              <section className="pt-6 border-t border-dark-surface">
+              <section className="pt-6 border-t border-surface">
                 <p className="text-xs">Last updated: October 26, 2025</p>
               </section>
             </div>

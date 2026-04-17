@@ -38,9 +38,9 @@ export function PageHeader({ title, description, icon, badge, actions, breadcrum
             <Fragment key={index}>
               {index > 0 && <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3 text-text-secondary" />}
               {item.href ? (
-                <Link href={item.href} className="text-text-secondary hover:text-accent-orange transition-colors">{item.label}</Link>
+                <Link href={item.href} className="text-text-secondary hover:text-brand transition-colors">{item.label}</Link>
               ) : item.onClick ? (
-                <button onClick={item.onClick} className="text-text-secondary hover:text-accent-orange transition-colors">{item.label}</button>
+                <button onClick={item.onClick} className="text-text-secondary hover:text-brand transition-colors">{item.label}</button>
               ) : (
                 <span className="text-white font-medium">{item.label}</span>
               )}
@@ -52,7 +52,7 @@ export function PageHeader({ title, description, icon, badge, actions, breadcrum
       <div className="flex items-start justify-between gap-4">
         <div className="flex-1 min-w-0">
           <div className="flex items-center gap-3 mb-2">
-            {icon && <FontAwesomeIcon icon={icon} className="text-accent-orange text-3xl flex-shrink-0" />}
+            {icon && <FontAwesomeIcon icon={icon} className="text-brand text-3xl flex-shrink-0" />}
             <h1 className="text-3xl font-bold text-white min-w-0 break-words">
               {title}
             </h1>

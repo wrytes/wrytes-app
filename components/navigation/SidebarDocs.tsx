@@ -67,8 +67,8 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
     cn(
       'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm w-full',
       active
-        ? 'text-accent-orange bg-accent-orange/20 shadow-sm'
-        : 'text-text-secondary hover:text-accent-orange hover:bg-accent-orange/20 hover:shadow-sm'
+        ? 'text-brand bg-brand/20 shadow-sm'
+        : 'text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm'
     );
 
   const rootFiles = data.entries.filter(e => e.folder === null);
@@ -104,7 +104,7 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
         href="/dashboard"
         className={cn(
           'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm mb-4',
-          'text-text-secondary hover:text-accent-orange hover:bg-accent-orange/20 border border-dark-surface hover:border-accent-orange/30'
+          'text-text-secondary hover:text-brand hover:bg-brand/20 border border-surface hover:border-brand/30'
         )}
         onClick={onItemClick}
       >
@@ -166,7 +166,7 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
                     <button
                       type="button"
                       onClick={() => toggleFolder(name)}
-                      className="flex-shrink-0 hover:text-accent-orange transition-colors"
+                      className="flex-shrink-0 hover:text-brand transition-colors"
                     >
                       <FontAwesomeIcon
                         icon={isExpanded ? faChevronDown : faChevronRight}
@@ -177,7 +177,7 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
                 </div>
 
                 {isExpanded && entries.length > 0 && (
-                  <div className="ml-4 border-l border-dark-surface pl-2 space-y-1 mt-1 mb-2">
+                  <div className="ml-4 border-l border-surface pl-2 space-y-1 mt-1 mb-2">
                     {entries.map(file => renderFile(file, true))}
                   </div>
                 )}

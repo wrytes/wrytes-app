@@ -22,7 +22,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
     <nav className={cn('flex items-center gap-2 text-sm', className)} aria-label="Breadcrumb">
       {items[0]?.href && (
         <>
-          <Link href="/" className="text-text-secondary hover:text-accent-orange transition-colors p-1 rounded" aria-label="Home">
+          <Link href="/" className="text-text-secondary hover:text-brand transition-colors p-1 rounded" aria-label="Home">
             <FontAwesomeIcon icon={faHome} className="w-4 h-4" />
           </Link>
           <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3 text-text-secondary" />
@@ -35,9 +35,9 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
           {index === items.length - 1 ? (
             <span className="text-white font-medium px-1 py-0.5 rounded" aria-current="page">{item.label}</span>
           ) : item.href ? (
-            <Link href={item.href} className="text-text-secondary hover:text-accent-orange transition-colors px-1 py-0.5 rounded hover:bg-dark-surface/30">{item.label}</Link>
+            <Link href={item.href} className="text-text-secondary hover:text-brand transition-colors px-1 py-0.5 rounded hover:bg-surface/30">{item.label}</Link>
           ) : item.onClick ? (
-            <button onClick={item.onClick} className="text-text-secondary hover:text-accent-orange transition-colors px-1 py-0.5 rounded hover:bg-dark-surface/30">{item.label}</button>
+            <button onClick={item.onClick} className="text-text-secondary hover:text-brand transition-colors px-1 py-0.5 rounded hover:bg-surface/30">{item.label}</button>
           ) : (
             <span className="text-text-secondary px-1 py-0.5">{item.label}</span>
           )}

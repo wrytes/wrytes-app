@@ -33,7 +33,7 @@ export default function LegalNotice() {
                   <p>
                     <strong className="text-white">Company ID:</strong>{' '}
                     <a href={COMPANY.registry} target="_blank" rel="noopener noreferrer"
-                      className="text-accent-orange hover:text-accent-orange/80 transition-colors underline">
+                      className="text-brand hover:text-brand/80 transition-colors underline">
                       {COMPANY.uid}
                     </a>
                   </p>
@@ -84,13 +84,13 @@ export default function LegalNotice() {
               <section>
                 <h2 className="text-xl font-bold text-white mb-3">Legal Inquiries</h2>
                 <p className="mb-3">For legal inquiries, compliance questions, or other formal communications:</p>
-                <div className="bg-dark-surface p-4 rounded-lg text-sm">
+                <div className="bg-surface p-4 rounded-lg text-sm">
                   <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
                   <p><strong className="text-white">Subject:</strong> Legal Inquiry</p>
                 </div>
               </section>
 
-              <section className="pt-6 border-t border-dark-surface">
+              <section className="pt-6 border-t border-surface">
                 <p className="text-xs text-text-secondary">Last updated: October 26, 2025</p>
               </section>
             </div>

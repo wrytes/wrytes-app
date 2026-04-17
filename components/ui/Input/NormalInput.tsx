@@ -41,19 +41,19 @@ export default function NormalInput({
   return (
     <div>
       <div
-        className={`group border-card-input-border ${
-          disabled ? 'bg-card-input-disabled' : 'hover:border-card-input-hover'
-        } focus-within:!border-card-input-focus ${
-          error ? '!border-card-input-error' : ''
+        className={`group border-input-border ${
+          disabled ? 'bg-surface' : 'hover:border-text-secondary'
+        } focus-within:!border-brand ${
+          error ? '!border-input-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}
         onClick={handleClick}
       >
-        {label && <div className="flex text-card-input-label my-1">{label}</div>}
+        {label && <div className="flex text-input-label my-1">{label}</div>}
 
         <div className="flex items-center gap-1">
           <div
             className={`flex-1 py-2 ${
-              error ? 'text-card-input-error' : value ? 'text-text-primary' : 'placeholder:text-card-input-empty'
+              error ? 'text-input-error' : value ? 'text-text-primary' : 'placeholder:text-input-empty'
             }`}
           >
             {output ? (
@@ -61,7 +61,7 @@ export default function NormalInput({
             ) : (
               <BigNumberInput
                 inputRefChild={inputRef}
-                className={`w-full px-0 py-0 text-3xl text-right ${disabled ? 'bg-card-input-disabled' : ''}`}
+                className={`w-full px-0 py-0 text-3xl text-right ${disabled ? 'bg-surface' : ''}`}
                 decimals={Number(digit)}
                 placeholder={placeholder}
                 value={value}
@@ -72,12 +72,12 @@ export default function NormalInput({
             )}
           </div>
 
-          <div className="text-card-input-label text-left">{symbol}</div>
+          <div className="text-input-label text-left">{symbol}</div>
         </div>
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-card-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
       ) : warning ? (
         <div className="flex my-2 px-3.5 text-amber-500">{warning}</div>
       ) : (

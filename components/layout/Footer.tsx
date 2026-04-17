@@ -17,7 +17,7 @@ interface FooterItemProps {
 
 export function FooterItem({ link, text, icon, external = true }: FooterItemProps) {
   const className =
-    'flex items-center gap-2 text-text-secondary hover:text-accent-orange transition-colors';
+    'flex items-center gap-2 text-text-secondary hover:text-brand transition-colors';
 
   if (external) {
     return (
@@ -41,18 +41,18 @@ export default function Footer() {
   const year = date.getFullYear();
 
   return (
-    <footer className="bg-dark-bg border-t border-dark-card py-8">
+    <footer className="bg-base border-t border-card py-8">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Logo */}
           <div className="flex flex-col items-left gap-4">
             <div className="flex flex-row gap-4">
-              <div className="w-8 h-8 bg-accent-orange rounded-lg flex items-center justify-center">
+              <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
               <Link href="/" className="text-xl font-bold text-white">
                 {COMPANY.name.split(' ')[0]}
-                <span className="text-accent-orange">.</span>
+                <span className="text-brand">.</span>
               </Link>
             </div>
           </div>
@@ -66,7 +66,7 @@ export default function Footer() {
                   href={COMPANY.registry}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="inline-flex items-center gap-1 text-text-secondary hover:text-accent-orange transition-colors text-sm"
+                  className="inline-flex items-center gap-1 text-text-secondary hover:text-brand transition-colors text-sm"
                 >
                   Company Register
                   <FontAwesomeIcon icon={faExternalLinkAlt} className="w-3 h-3" />
@@ -101,7 +101,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/notice"
-                  className="text-text-secondary hover:text-accent-orange transition-colors text-sm"
+                  className="text-text-secondary hover:text-brand transition-colors text-sm"
                 >
                   Legal Notice
                 </Link>
@@ -109,7 +109,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/privacy"
-                  className="text-text-secondary hover:text-accent-orange transition-colors text-sm"
+                  className="text-text-secondary hover:text-brand transition-colors text-sm"
                 >
                   Privacy Policy
                 </Link>
@@ -117,7 +117,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/terms"
-                  className="text-text-secondary hover:text-accent-orange transition-colors text-sm"
+                  className="text-text-secondary hover:text-brand transition-colors text-sm"
                 >
                   Terms of Service
                 </Link>
@@ -125,7 +125,7 @@ export default function Footer() {
               <li>
                 <Link
                   href="/legal/disclaimer"
-                  className="text-text-secondary hover:text-accent-orange transition-colors text-sm"
+                  className="text-text-secondary hover:text-brand transition-colors text-sm"
                 >
                   Risk Disclaimer
                 </Link>
@@ -135,7 +135,7 @@ export default function Footer() {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-dark-card pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div className="border-t border-card pt-8 flex flex-col md:flex-row justify-between items-center gap-4">
           <div className="text-text-muted text-sm">
             © {year} {COMPANY.name}. All rights reserved.
           </div>

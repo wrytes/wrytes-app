@@ -31,7 +31,7 @@ export default function TableRow({
     <div
       className={`${className ?? ''} ${
         paddingY ?? 'py-4'
-      } bg-table-row-primary md:hover:bg-table-row-hover cursor-default p-4 xl:px-6 border-t border-table-header-secondary last:rounded-b-lg duration-300`}
+      } bg-surface md:hover:bg-card cursor-default p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300`}
     >
       <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
@@ -99,14 +99,14 @@ function TableRowMobile({
             {idx === 0 && !rawHeader ? (
               <div
                 className={
-                  headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'
+                  headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'
                 }
               >
                 {c}
               </div>
             ) : subHeaders.length === 0 ? (
               <div
-                className={`text-md ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'}`}
+                className={`text-md ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'}`}
               >
                 {headers[idx]}
               </div>
@@ -114,17 +114,17 @@ function TableRowMobile({
               <div>
                 <div
                   className={`text-md ${
-                    headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'
+                    headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'
                   }`}
                 >
                   {headers[idx]}
                 </div>
-                <div className="text-sm text-text-subheader">{subHeaders[idx]}</div>
+                <div className="text-sm text-text-secondary">{subHeaders[idx]}</div>
               </div>
             )}
           </div>
           <div
-            className={`text-right ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-subheader'}`}
+            className={`text-right ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'}`}
           >
             {idx === 0 && !rawHeader ? '' : c}
           </div>

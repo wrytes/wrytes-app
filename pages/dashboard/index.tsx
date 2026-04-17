@@ -990,7 +990,7 @@ export default function Dashboard() {
             <span className="text-text-primary font-semibold">3.8 ETH</span> into the Morpho Blue
             vault.
           </p>
-          <div className="flex justify-between border-t border-dark-surface pt-4">
+          <div className="flex justify-between border-t border-surface pt-4">
             <span>You will receive</span>
             <span className="text-text-primary font-medium">≈ 11,400 ZCHF</span>
           </div>

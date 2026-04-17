@@ -10,7 +10,7 @@ export function TabInput({ tabs = [], tab = '', setTab = () => {} }: TabInputPro
   if (tabs.length === 0) return null;
 
   return (
-    <div className="bg-dark-card mb-5 rounded-lg">
+    <div className="bg-card mb-5 rounded-lg">
       <div className="flex flex-row justify-between px-6 text-text-secondary">
         {tabs.map((t) => (
           <div

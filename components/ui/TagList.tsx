@@ -43,7 +43,7 @@ export function TagList({ tags, activeTags = [], className }: TagListProps) {
       {tags.map((tag) => {
         const active = activeTags.includes(tag);
         const { bg, text, border } = active
-          ? { bg: 'bg-accent-orange/20', text: 'text-accent-orange', border: 'border-accent-orange/30' }
+          ? { bg: 'bg-brand/20', text: 'text-brand', border: 'border-brand/30' }
           : tagColor(tag);
 
         return (

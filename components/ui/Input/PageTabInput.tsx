@@ -16,7 +16,7 @@ export default function PageTabInput({ tabs, className }: Props) {
 
   return (
     <div className={className}>
-      <div className="flex gap-6 border-b-2 border-dark-card">
+      <div className="flex gap-6 border-b-2 border-card">
         {tabs.map((tab, i) => (
           <button
             key={i}

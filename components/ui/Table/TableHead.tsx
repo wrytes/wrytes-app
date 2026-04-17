@@ -32,7 +32,7 @@ export default function TableHead({
   };
 
   return (
-    <div className="items-center justify-between rounded-t-lg bg-table-header-primary p-4 xl:px-6 md:flex">
+    <div className="items-center justify-between rounded-t-lg bg-table-header p-4 xl:px-6 md:flex">
       {/* Desktop */}
       <div
         className={`max-md:hidden flex-grow md:grid`}
@@ -46,7 +46,7 @@ export default function TableHead({
           >
             <span
               className={`font-bold ${tab ? 'cursor-pointer' : ''} ${
-                tab === header ? 'text-text-active' : 'text-text-header'
+                tab === header ? 'text-brand' : 'text-text-primary'
               }`}
             >
               {header}
@@ -54,14 +54,14 @@ export default function TableHead({
             {tab === header && (
               <FontAwesomeIcon
                 icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-                className="ml-2 cursor-pointer text-text-active"
+                className="ml-2 cursor-pointer text-brand"
               />
             )}
           </div>
         ))}
         {subHeaders?.map((header, i) => (
           <div key={`table-subheader-${i}`} className={`${i > 0 ? 'text-right' : ''}`}>
-            <span className="text-text-subheader">{header}</span>
+            <span className="text-text-secondary">{header}</span>
           </div>
         ))}
       </div>
@@ -69,7 +69,7 @@ export default function TableHead({
       {actionCol && (
         <div className="max-md:hidden">
           <div
-            className={`text-text-header text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
+            className={`text-text-primary text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
           />
           {subHeaders && <span> </span>}
         </div>
@@ -106,7 +106,7 @@ function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobile
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen(prev => !prev)}
-          className="flex items-center gap-2 bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
+          className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
         >
           <span>{tab || headers[0]}</span>
           <FontAwesomeIcon
@@ -115,7 +115,7 @@ function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobile
           />
         </button>
         {open && (
-          <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-dark-card shadow-card border border-table-header-secondary py-1">
+          <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-card shadow-card border border-table-alt py-1">
             {headers.map(h => (
               <button
                 key={h}
@@ -123,15 +123,15 @@ function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobile
                   tabOnChange(h);
                   setOpen(false);
                 }}
-                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-table-row-hover"
+                className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-card"
               >
                 <span
-                  className={`flex-1 ${tab === h ? 'text-text-active font-semibold' : 'text-text-primary'}`}
+                  className={`flex-1 ${tab === h ? 'text-brand font-semibold' : 'text-text-primary'}`}
                 >
                   {h}
                 </span>
                 {tab === h && (
-                  <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-button-default" />
+                  <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />
                 )}
               </button>
             ))}

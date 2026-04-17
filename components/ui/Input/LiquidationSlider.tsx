@@ -62,12 +62,12 @@ export default function LiquidationSlider({
   return (
     <div>
       <div
-        className={`group border-card-input-border ${
-          disabled ? 'bg-card-input-disabled' : 'hover:border-card-input-hover'
-        } focus-within:!border-card-input-focus text-text-secondary border-2 rounded-lg px-3 py-1`}
+        className={`group border-input-border ${
+          disabled ? 'bg-surface' : 'hover:border-text-secondary'
+        } focus-within:!border-brand text-text-secondary border-2 rounded-lg px-3 py-1`}
       >
         <div className="flex items-center my-1">
-          <span className="flex-1 text-card-input-label">{label ?? 'Liquidation price'}</span>
+          <span className="flex-1 text-input-label">{label ?? 'Liquidation price'}</span>
           <span className="font-bold text-lg text-text-primary">
             {formatCurrency(formatUnits(value, digit))} {symbol}
           </span>
@@ -89,7 +89,7 @@ export default function LiquidationSlider({
                 className="absolute inset-0"
                 style={{ background: 'linear-gradient(to right, #22c55e 0%, #eab308 50%, #f97316 100%)' }}
               />
-              <div className="absolute top-0 bottom-0 bg-dark-surface" style={{ left: `${sourcePct}%`, right: 0 }} />
+              <div className="absolute top-0 bottom-0 bg-surface" style={{ left: `${sourcePct}%`, right: 0 }} />
               <div className="absolute top-0 bottom-0 w-0.5 bg-white/30" style={{ left: `${sourcePct}%` }} />
             </div>
 
@@ -130,7 +130,7 @@ export default function LiquidationSlider({
           <div className="flex flex-row gap-2">
             {canShowButtons && max != undefined && max !== value && (
               <div
-                className="text-card-input-max cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-brand cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(max);
                   onMax();
@@ -141,7 +141,7 @@ export default function LiquidationSlider({
             )}
             {canShowButtons && min != undefined && min !== value && min !== max && (
               <div
-                className="text-card-input-min cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-brand cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(min);
                   onMin();
@@ -152,7 +152,7 @@ export default function LiquidationSlider({
             )}
             {canShowButtons && reset != undefined && reset !== value && reset !== min && reset !== max && (
               <div
-                className="text-card-input-reset cursor-pointer hover:text-card-input-focus font-extrabold"
+                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
                 onClick={() => {
                   onChange(reset);
                   onReset();
@@ -166,7 +166,7 @@ export default function LiquidationSlider({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-card-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
       ) : warning ? (
         <div className="flex my-2 px-3.5 text-amber-500">{warning}</div>
       ) : (

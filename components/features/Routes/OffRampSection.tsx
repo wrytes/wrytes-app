@@ -364,7 +364,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
           />
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <div className="text-card-input-label text-xs mb-2">Target Currency</div>
+              <div className="text-input-label text-xs mb-2">Target Currency</div>
               <TabInput
                 tabs={['CHF', 'EUR']}
                 tab={form.targetCurrency}
@@ -375,15 +375,15 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
             </div>
             <div>
               <div
-                className={`border-2 rounded-lg px-3 py-1 transition-colors border-card-input-border hover:border-card-input-hover focus-within:!border-card-input-focus ${
-                  errors.bankAccountId ? '!border-card-input-error' : ''
+                className={`border-2 rounded-lg px-3 py-1 transition-colors border-input-border hover:border-text-secondary focus-within:!border-brand ${
+                  errors.bankAccountId ? '!border-input-error' : ''
                 }`}
               >
-                <div className="text-card-input-label text-xs mt-1 mb-0.5">Bank Account</div>
+                <div className="text-input-label text-xs mt-1 mb-0.5">Bank Account</div>
                 <select
                   value={form.bankAccountId}
                   onChange={e => set('bankAccountId')(e.target.value)}
-                  className="w-full bg-transparent text-sm py-1.5 outline-none text-text-primary placeholder:text-card-input-empty"
+                  className="w-full bg-transparent text-sm py-1.5 outline-none text-text-primary placeholder:text-input-empty"
                 >
                   <option value="" className="bg-bg-primary">
                     {filteredBankAccounts.length === 0
@@ -398,7 +398,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                 </select>
               </div>
               {errors.bankAccountId && (
-                <div className="px-3.5 mt-1 text-xs text-card-input-error">
+                <div className="px-3.5 mt-1 text-xs text-input-error">
                   {errors.bankAccountId}
                 </div>
               )}

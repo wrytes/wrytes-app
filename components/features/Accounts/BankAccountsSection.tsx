@@ -360,7 +360,7 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
               note="Unique identifier for this account"
             />
             <div>
-              <div className="text-card-input-label text-xs mb-2">Currency</div>
+              <div className="text-input-label text-xs mb-2">Currency</div>
               <TabInput
                 tabs={['CHF', 'EUR']}
                 tab={form.currency}
@@ -373,7 +373,7 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
               type="checkbox"
               checked={form.isDefault}
               onChange={e => set('isDefault')(e.target.checked)}
-              className="accent-orange-500"
+              className="brand-500"
             />
             Set as default account
           </label>

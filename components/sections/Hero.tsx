@@ -31,7 +31,7 @@ export default function Hero() {
             className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 text-white"
           >
             {COMPANY.name.split(' ')[0]}
-            <span className="text-accent-orange">.</span>
+            <span className="text-brand">.</span>
           </motion.h1>
 
           {/* Tagline */}
@@ -59,9 +59,9 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.8 }}
-            className="inline-flex items-center gap-2 bg-dark-card/50 backdrop-blur-sm px-4 py-2 rounded-full border border-dark-surface mb-12"
+            className="inline-flex items-center gap-2 bg-card/50 backdrop-blur-sm px-4 py-2 rounded-full border border-surface mb-12"
           >
-            <div className="w-2 h-2 bg-accent-orange rounded-full animate-pulse" />
+            <div className="w-2 h-2 bg-brand rounded-full animate-pulse" />
             <span className="text-text-secondary text-sm">{COMPANY.location}</span>
           </motion.div>
 

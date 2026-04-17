@@ -161,13 +161,13 @@ export default function RiskDisclaimer() {
               <section>
                 <h2 className="text-xl font-bold text-white mb-3">Questions or Concerns</h2>
                 <p className="mb-3">If you have questions about these risk disclosures:</p>
-                <div className="bg-dark-surface p-4 rounded-lg text-sm">
+                <div className="bg-surface p-4 rounded-lg text-sm">
                   <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
                   <p><strong className="text-white">Subject:</strong> Risk Disclaimer Inquiry</p>
                 </div>
               </section>
 
-              <section className="pt-6 border-t border-dark-surface">
+              <section className="pt-6 border-t border-surface">
                 <p className="text-xs">Last updated: October 26, 2025</p>
               </section>
             </div>

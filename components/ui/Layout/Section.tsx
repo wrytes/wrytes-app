@@ -71,7 +71,7 @@ export function Section({
       {variant === 'card' ? (
         <Card>{children}</Card>
       ) : variant === 'filled' ? (
-        <div className="bg-dark-surface/30 rounded-xl p-6">{children}</div>
+        <div className="bg-surface/30 rounded-xl p-6">{children}</div>
       ) : (
         children
       )}

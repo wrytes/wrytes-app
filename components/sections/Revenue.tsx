@@ -15,7 +15,7 @@ const iconMap = {
 
 export default function Revenue() {
   return (
-    <section id="revenue" className="py-24 bg-dark-bg">
+    <section id="revenue" className="py-24 bg-base">
       <div className="container mx-auto px-4">
         <motion.div
           initial={{ opacity: 0, y: 30 }}
@@ -43,10 +43,10 @@ export default function Revenue() {
               <Card hover className="h-full text-center group">
                 {/* Icon */}
                 <div className="mb-6">
-                  <div className="w-16 h-16 bg-accent-orange/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-accent-orange/30 transition-colors">
+                  <div className="w-16 h-16 bg-brand/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand/30 transition-colors">
                     <FontAwesomeIcon
                       icon={iconMap[service.id as keyof typeof iconMap]}
-                      className="w-8 h-8 text-accent-orange"
+                      className="w-8 h-8 text-brand"
                     />
                   </div>
                   <h3 className="text-xl font-bold text-white mb-3 min-h-[3.5rem] flex justify-center">
@@ -59,7 +59,7 @@ export default function Revenue() {
                 <div className="space-y-3">
                   {service.features.map((feature, featureIndex) => (
                     <div key={featureIndex} className="flex items-start gap-3 text-left">
-                      <div className="w-1.5 h-1.5 bg-accent-orange rounded-full mt-2 flex-shrink-0" />
+                      <div className="w-1.5 h-1.5 bg-brand rounded-full mt-2 flex-shrink-0" />
                       <span className="text-text-secondary text-sm leading-relaxed">{feature}</span>
                     </div>
                   ))}
@@ -80,15 +80,15 @@ export default function Revenue() {
           <Card hover className="max-w-4xl mx-auto" gradient>
             <div className="grid md:grid-cols-3 gap-8">
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-orange mb-2">🚀</div>
+                <div className="text-3xl font-bold text-brand mb-2">🚀</div>
                 <div className="text-text-secondary">Software Development</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-orange mb-2">⚙️</div>
+                <div className="text-3xl font-bold text-brand mb-2">⚙️</div>
                 <div className="text-text-secondary">Platform & Infrastructure</div>
               </div>
               <div className="text-center">
-                <div className="text-3xl font-bold text-accent-orange mb-2">₿</div>
+                <div className="text-3xl font-bold text-brand mb-2">₿</div>
                 <div className="text-text-secondary">Company-Owned Assets</div>
               </div>
             </div>

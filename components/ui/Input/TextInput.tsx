@@ -27,12 +27,12 @@ export default function TextInput({
     <div className={className}>
       <div
         className={`border-2 rounded-lg px-3 py-1 transition-colors
-          ${disabled ? 'bg-card-input-disabled border-card-input-border' : 'border-card-input-border hover:border-card-input-hover'}
-          focus-within:!border-card-input-focus
-          ${error ? '!border-card-input-error' : ''}`}
+          ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-text-secondary'}
+          focus-within:!border-brand
+          ${error ? '!border-input-error' : ''}`}
       >
         {label && (
-          <div className="text-card-input-label text-xs mt-1 mb-0.5">{label}</div>
+          <div className="text-input-label text-xs mt-1 mb-0.5">{label}</div>
         )}
         <input
           type={type}
@@ -43,13 +43,13 @@ export default function TextInput({
           maxLength={maxLength}
           className={`w-full bg-transparent text-sm py-1.5 outline-none
             ${disabled ? 'text-text-secondary cursor-not-allowed' : 'text-text-primary'}
-            ${error ? 'text-card-input-error' : ''}
-            placeholder:text-card-input-empty`}
+            ${error ? 'text-input-error' : ''}
+            placeholder:text-input-empty`}
         />
       </div>
 
       {error ? (
-        <div className="px-3.5 mt-1 text-xs text-card-input-error">{error}</div>
+        <div className="px-3.5 mt-1 text-xs text-input-error">{error}</div>
       ) : note ? (
         <div className="px-3.5 mt-1 text-xs text-text-secondary">{note}</div>
       ) : null}
