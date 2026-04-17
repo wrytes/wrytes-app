@@ -65,7 +65,7 @@ export default function LegalIndex() {
               <Link key={page.href} href={page.href}>
                 <Card hover className="h-full group cursor-pointer">
                   <div className="flex items-start gap-4">
-                    <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0 group-hover:bg-brand/30 transition-colors">
+                    <div className="w-12 h-12 bg-brand/20 rounded-lg flex items-center justify-center flex-shrink-0 group-hover:bg-brand/30 transition-colors">
                       <FontAwesomeIcon icon={page.icon} className="w-5 h-5 text-brand" />
                     </div>
                     <div>

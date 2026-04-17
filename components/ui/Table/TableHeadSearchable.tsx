@@ -161,7 +161,7 @@ export default function TableHeadSearchable({
           <div className="relative" ref={filterRef}>
             <button
               onClick={() => setFilterOpen(prev => !prev)}
-              className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border ${
+              className={`flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm transition-colors border ${
                 filterOpen || totalActiveFilters > 0
                   ? 'border-brand text-brand bg-brand/10'
                   : 'border-table-alt text-text-secondary hover:bg-disabled/30'
@@ -203,9 +203,7 @@ export default function TableHeadSearchable({
                 )}
                 {customCategories && customCategories.length > 0 && (
                   <>
-                    {filterOptions.length > 0 && (
-                      <div className="my-2 border-t border-table-alt" />
-                    )}
+                    {filterOptions.length > 0 && <div className="my-2 border-t border-table-alt" />}
                     <div className="px-4 pb-2">
                       <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
                         {customCategoriesTitle}
@@ -282,7 +280,7 @@ export default function TableHeadSearchable({
             <div className="relative" ref={sortRef}>
               <button
                 onClick={() => setSortOpen(prev => !prev)}
-                className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
+                className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-lg px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
               >
                 <span>{tab || headers[0]}</span>
                 <FontAwesomeIcon

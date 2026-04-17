@@ -106,7 +106,7 @@ function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobile
       <div className="relative" ref={ref}>
         <button
           onClick={() => setOpen(prev => !prev)}
-          className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
+          className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-lg px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
         >
           <span>{tab || headers[0]}</span>
           <FontAwesomeIcon
@@ -130,9 +130,7 @@ function TableHeadMobile({ headers, tab, reverse, tabOnChange }: TableHeadMobile
                 >
                   {h}
                 </span>
-                {tab === h && (
-                  <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />
-                )}
+                {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />}
               </button>
             ))}
           </div>

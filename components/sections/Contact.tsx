@@ -34,7 +34,7 @@ export default function Contact() {
             <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 lg:gap-12">
               {/* Location */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand/20 rounded-lg flex items-center justify-center flex-shrink-0">
                   <FontAwesomeIcon icon={faMapMarkerAlt} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
@@ -46,7 +46,7 @@ export default function Contact() {
 
               {/* Email */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand/20 rounded-lg flex items-center justify-center flex-shrink-0">
                   <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
@@ -60,7 +60,7 @@ export default function Contact() {
 
               {/* Telegram Community */}
               <div className="flex items-start gap-4">
-                <div className="w-12 h-12 bg-brand/20 rounded-xl flex items-center justify-center flex-shrink-0">
+                <div className="w-12 h-12 bg-brand/20 rounded-lg flex items-center justify-center flex-shrink-0">
                   <FontAwesomeIcon icon={faPeopleGroup} className="w-5 h-5 text-brand" />
                 </div>
                 <div>

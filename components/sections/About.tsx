@@ -17,7 +17,9 @@ export default function About() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-text-primary">About {COMPANY.name}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-text-primary">
+            About {COMPANY.name}
+          </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
             {COMPANY.description}
           </p>
@@ -32,12 +34,14 @@ export default function About() {
             viewport={{ once: true }}
           >
             <Card hover className="h-full mb-5">
-              <h3 className="text-2xl font-bold mb-4 text-text-primary">The Meaning Behind Wrytes</h3>
+              <h3 className="text-2xl font-bold mb-4 text-text-primary">
+                The Meaning Behind Wrytes
+              </h3>
               <p className="text-text-secondary mb-4 leading-relaxed">
-                Our name combines <strong className="text-text-primary">&quot;write&quot;</strong> and{' '}
-                <strong className="text-text-primary">&quot;rights&quot;</strong> - reflecting our mission to write
-                software that empowers digital ownership, transparency, and innovation through
-                Distributed Ledger Technologies.
+                Our name combines <strong className="text-text-primary">&quot;write&quot;</strong>{' '}
+                and <strong className="text-text-primary">&quot;rights&quot;</strong> - reflecting
+                our mission to write software that empowers digital ownership, transparency, and
+                innovation through Distributed Ledger Technologies.
               </p>
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -84,8 +88,8 @@ export default function About() {
                 <p className="text-text-secondary">Global Financial Technology Hub</p>
               </div>
               <p className="text-text-secondary leading-relaxed text-left">
-                Located in Switzerland&apos;s dynamic tech ecosystem, leveraging regulatory frameworks
-                for advanced Distributed-Ledger Technology business capabilities.
+                Located in Switzerland&apos;s dynamic tech ecosystem, leveraging regulatory
+                frameworks for advanced Distributed-Ledger Technology business capabilities.
               </p>
             </Card>
           </motion.div>
@@ -122,7 +126,7 @@ export default function About() {
                 <Card hover className="h-full group hover:shadow-lg transition-all duration-300">
                   {/* Icon and Title */}
                   <div className="mb-4">
-                    <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:bg-brand/30 rounded-xl transition-colors overflow-hidden">
+                    <div className="w-12 h-12 flex items-center justify-center mb-3 group-hover:bg-brand/30 rounded-lg transition-colors overflow-hidden">
                       <Image
                         src={integration.icon}
                         alt={`${integration.name} logo`}

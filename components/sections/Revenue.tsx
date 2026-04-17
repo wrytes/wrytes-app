@@ -43,7 +43,7 @@ export default function Revenue() {
               <Card hover className="h-full text-center group">
                 {/* Icon */}
                 <div className="mb-6">
-                  <div className="w-16 h-16 bg-brand/20 rounded-2xl flex items-center justify-center mx-auto mb-4 group-hover:bg-brand/30 transition-colors">
+                  <div className="w-16 h-16 bg-brand/20 rounded-lg flex items-center justify-center mx-auto mb-4 group-hover:bg-brand/30 transition-colors">
                     <FontAwesomeIcon
                       icon={iconMap[service.id as keyof typeof iconMap]}
                       className="w-8 h-8 text-brand"
