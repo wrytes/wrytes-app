@@ -13,36 +13,36 @@ module.exports = {
         avenir: ['Avenir', 'system-ui', 'sans-serif'],
       },
       colors: {
-        // Surface hierarchy
-        'base':    '#1a1a1a',   // page / app background
-        'surface': '#1f1f1f',   // panels, inputs, code blocks
-        'card':    '#2a2a2a',   // card containers, elevated elements
+        // Surface hierarchy (light theme)
+        base: '#f2f0ec', // page / app background — warm off-white
+        surface: '#f8f7f5', // panels, inputs, code blocks
+        card: '#ffffff', // card containers, elevated elements
 
         // Brand
-        'brand':   '#ff6b35',   // Wrytes orange
+        brand: '#ff6b35', // Wrytes orange
 
         // Text
-        'text-primary':   '#ffffff',
-        'text-secondary': '#a0a0a0',
-        'text-muted':     '#666666',
+        'text-primary': '#0c0c0c',
+        'text-secondary': '#374151',
+        'text-muted': '#6b7280',
 
         // Input
-        'input-border': '#4B5563',
-        'input-error':  '#ef4444',
-        'input-label':  '#9CA3AF',
-        'input-empty':  '#6B7280',
+        'input-border': '#d1d5db',
+        'input-error': '#ef4444',
+        'input-label': '#6b7280',
+        'input-empty': '#9ca3af',
 
         // Table
-        'table-header': '#242424',
-        'table-alt':    '#374151',
+        'table-header': '#f9fafb',
+        'table-alt': '#e5e7eb',
 
         // Misc
-        'gold':     '#ffd700',
-        'disabled': '#111827',
+        gold: '#ffd700',
+        disabled: '#e5e7eb',
       },
       backgroundImage: {
-        'gradient-dark': 'linear-gradient(135deg, #1a1a1a 0%, #2d1b1b 100%)',
-        'gradient-card': 'linear-gradient(135deg, #2a2a2a 0%, #3a2a2a 100%)',
+        'gradient-dark': 'linear-gradient(135deg, #f2f0ec 0%, #fde8dc 100%)',
+        'gradient-card': 'linear-gradient(135deg, #ffffff 0%, #fff4ee 100%)',
         'gradient-radial': 'radial-gradient(var(--tw-gradient-stops))',
       },
       animation: {
@@ -66,10 +66,10 @@ module.exports = {
         },
       },
       boxShadow: {
-        card: '0 4px 20px rgba(0, 0, 0, 0.3)',
-        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.4)',
-        glow: '0 0 20px rgba(255, 107, 53, 0.3)',
-        'glow-gold': '0 0 20px rgba(255, 215, 0, 0.3)',
+        card: '0 4px 20px rgba(0, 0, 0, 0.08)',
+        'card-hover': '0 8px 30px rgba(0, 0, 0, 0.12)',
+        glow: '0 0 20px rgba(255, 107, 53, 0.25)',
+        'glow-gold': '0 0 20px rgba(255, 215, 0, 0.25)',
       },
       borderRadius: {
         xl: '1rem',

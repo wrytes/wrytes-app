@@ -1,6 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;900&display=swap');
 
-@import 'highlight.js/styles/github-dark.css';
+@import 'highlight.js/styles/github.css';
 
 @tailwind base;
 @tailwind components;
@@ -24,8 +24,8 @@ body {
 }
 
 body {
-  background-color: #1a1a1a;
-  color: #ffffff;
+  background-color: #f2f0ec;
+  color: #0c0c0c;
   font-feature-settings: 'rlig' 1, 'calt' 1;
 }
 
@@ -45,16 +45,16 @@ html {
 }
 
 ::-webkit-scrollbar-track {
-  background: #2a2a2a;
+  background: #e8e6e4;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: #666666;
+  background: #9ca3af;
   border-radius: 4px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: #888888;
+  background: #6b7280;
 }
 
 /* Focus styles for accessibility — skip inputs/textareas, their
