@@ -27,13 +27,13 @@ Before using the platform, ensure you have:
 
 ## What's Inside
 
-| Section | Description |
-|---|---|
-| **Dashboard** | Overview, stats, and component library |
-| **Accounts** | Off-ramp bank account management |
-| **Routes** | On-ramp and off-ramp conversion routes |
-| **Profile** | Manage your user profile and linked wallets |
-| **Docs** | This documentation library |
+| Section       | Description                                 |
+| ------------- | ------------------------------------------- |
+| **Dashboard** | Overview, stats, and component library      |
+| **Accounts**  | Off-ramp bank account management            |
+| **Routes**    | On-ramp and off-ramp conversion routes      |
+| **Profile**   | Manage your user profile and linked wallets |
+| **Docs**      | This documentation library                  |
 
 ## Notes
 

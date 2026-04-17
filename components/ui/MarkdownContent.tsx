@@ -30,7 +30,7 @@ const components: Components = {
   strong: ({ node: _n, ...props }) => <strong className="text-white font-semibold" {...props} />,
   a: ({ node: _n, ...props }) => (
     <a
-      className="text-accent-orange hover:underline"
+      className="text-brand hover:underline"
       target="_blank"
       rel="noopener noreferrer"
       {...props}
@@ -38,11 +38,11 @@ const components: Components = {
   ),
   blockquote: ({ node: _n, ...props }) => (
     <blockquote
-      className="border-l-4 border-accent-orange/40 pl-4 my-4 text-text-secondary italic"
+      className="border-l-4 border-brand/40 pl-4 my-4 text-text-secondary italic"
       {...props}
     />
   ),
-  hr: ({ node: _n, ...props }) => <hr className="border-dark-surface my-6" {...props} />,
+  hr: ({ node: _n, ...props }) => <hr className="border-surface my-6" {...props} />,
   code: ({ node: _n, className, children, ...props }) => {
     const isBlock = /language-(\w+)/.test(className ?? '');
     if (isBlock) {
@@ -54,7 +54,7 @@ const components: Components = {
     }
     return (
       <code
-        className="bg-dark-surface text-accent-orange rounded px-1 py-0.5 text-sm font-mono"
+        className="bg-surface text-brand rounded px-1 py-0.5 text-sm font-mono"
         {...props}
       >
         {children}
@@ -62,7 +62,7 @@ const components: Components = {
     );
   },
   pre: ({ node: _n, ...props }) => (
-    <div className="px-1 py-2 md:p-4 mb-4 w-full min-w-0 overflow-x-auto rounded-lg border border-white/5 bg-dark-surface">
+    <div className="px-1 py-2 md:p-4 mb-4 w-full min-w-0 overflow-x-auto rounded-lg border border-white/5 bg-surface">
       <pre className="text-sm" {...props} />
     </div>
   ),
@@ -71,12 +71,12 @@ const components: Components = {
       <table className="w-full text-sm text-left border-collapse" {...props} />
     </div>
   ),
-  thead: ({ node: _n, ...props }) => <thead className="border-b border-dark-surface" {...props} />,
+  thead: ({ node: _n, ...props }) => <thead className="border-b border-surface" {...props} />,
   th: ({ node: _n, ...props }) => (
     <th className="px-4 py-2 text-white font-semibold text-left" {...props} />
   ),
   td: ({ node: _n, ...props }) => (
-    <td className="px-4 py-2 text-text-secondary border-b border-dark-surface/50" {...props} />
+    <td className="px-4 py-2 text-text-secondary border-b border-surface/50" {...props} />
   ),
 };
 

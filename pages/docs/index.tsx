@@ -143,7 +143,7 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
                     <button
                       type="button"
                       onClick={() => router.push(docUrl(entry))}
-                      className="flex items-center justify-end gap-2 w-full text-accent-orange hover:underline text-sm font-medium"
+                      className="flex items-center justify-end gap-2 w-full text-brand hover:underline text-sm font-medium"
                     >
                       View
                       <FontAwesomeIcon icon={faArrowRight} className="w-3 h-3" />
