@@ -28,16 +28,29 @@ module.exports = {
 
         // Input
         'input-border': '#d1d5db',
-        'input-error': '#ef4444',
-        'input-label': '#6b7280',
-        'input-empty': '#9ca3af',
+        'input-label':  '#6b7280',
+        'input-empty':  '#9ca3af',
 
         // Table
         'table-header': '#f9fafb',
-        'table-alt': '#e5e7eb',
+        'table-alt':    '#e5e7eb',
+
+        // Status — error
+        'error':          '#ef4444',
+        'error-bg':       '#fef2f2',
+        'error-border':   '#fecaca',
+
+        // Status — success
+        'success':        '#4ade80',
+        'success-bg':     '#f0fdf4',
+        'success-border': '#bbf7d0',
+
+        // Status — info / warning
+        'info':    '#60a5fa',
+        'warning': '#f59e0b',
 
         // Misc
-        gold: '#ffd700',
+        gold:     '#ffd700',
         disabled: '#e5e7eb',
       },
       backgroundImage: {
