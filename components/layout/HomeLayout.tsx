@@ -41,7 +41,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
   return (
     <div className="min-h-screen bg-base text-text-primary">
       {/* Home Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-surface">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-base">
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -49,7 +49,7 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
               <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
-              <Link href="/" className="text-xl font-bold text-white">
+              <Link href="/" className="text-xl font-bold text-text-primary">
                 {COMPANY.name.split(' ')[0]}
                 <span className="text-brand">.</span>
               </Link>

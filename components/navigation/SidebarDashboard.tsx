@@ -18,15 +18,20 @@ export function SidebarDashboard({ items, isActive, onItemClick, variant }: Side
       'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200',
       active
         ? 'text-brand bg-brand/20 shadow-sm'
-        : 'text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm',
+        : 'text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm'
     );
 
   if (isMobile) {
     return (
       <nav className="space-y-4">
         <div className="space-y-4">
-          {items.map((item) => (
-            <Link key={item.path} href={item.path} className={linkClass(isActive(item.path))} onClick={onItemClick}>
+          {items.map(item => (
+            <Link
+              key={item.path}
+              href={item.path}
+              className={linkClass(isActive(item.path))}
+              onClick={onItemClick}
+            >
               <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
               {item.label}
             </Link>
@@ -37,9 +42,9 @@ export function SidebarDashboard({ items, isActive, onItemClick, variant }: Side
   }
 
   return (
-    <nav className="p-4">
+    <nav className="px-4 py-6">
       <ul className="space-y-2">
-        {items.map((item) => (
+        {items.map(item => (
           <li key={item.path}>
             <Link href={item.path} className={linkClass(isActive(item.path))} onClick={onItemClick}>
               <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />
@@ -50,4 +55,4 @@ export function SidebarDashboard({ items, isActive, onItemClick, variant }: Side
       </ul>
     </nav>
   );
-} 
+}

@@ -7,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { AuthModal } from '@/components/auth/AuthModal';
 import { SidebarDashboard } from '@/components/navigation/SidebarDashboard';
+import FooterSimple from '@/components/layout/FooterSimple';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
 
@@ -74,9 +75,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   }, [showDisclaimer]);
 
   return (
-    <div className="min-h-screen bg-gradient-dark text-text-primary">
+    <div className="min-h-screen bg-base text-text-primary">
       {/* Dashboard Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-card border-b border-surface">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-base">
         <div className="mx-auto max-md:px-4 px-16 py-3.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -84,7 +85,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
               <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
-              <Link href="/" className="text-xl font-bold text-white">
+              <Link href="/" className="text-xl font-bold text-text-primary">
                 {COMPANY.name.split(' ')[0]}
                 <span className="text-brand">.</span>
               </Link>
@@ -105,23 +106,23 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                 <button
                   type="button"
                   onClick={() => setShowAuthModal(true)}
-                  className="inline-flex items-center gap-2 text-white hover:text-brand transition-colors text-sm font-medium"
+                  className="inline-flex items-center gap-2 text-text-primary hover:text-brand transition-colors text-sm font-medium"
                   title="Click to manage wallet"
                 >
                   <div className="text-right">
                     {displayName ? (
                       <>
-                        <p className="text-white font-medium text-sm leading-tight">
+                        <p className="text-text-secondary font-medium text-sm leading-tight">
                           {displayName}
                         </p>
-                        <p className="text-gray-500 font-mono text-xs hover:text-brand transition-colors">
+                        <p className="text-text-muted font-mono text-xs hover:text-brand transition-colors">
                           {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
                         </p>
                       </>
                     ) : (
                       <>
                         <p className="text-sm text-gray-400">Connected as</p>
-                        <p className="text-white font-mono text-sm hover:text-brand transition-colors">
+                        <p className="text-text-primary font-mono text-sm hover:text-brand transition-colors">
                           {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
                         </p>
                       </>
@@ -173,13 +174,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       setShowAuthModal(true);
                       closeMobileMenu();
                     }}
-                    className="inline-flex gap-2 mt-4 text-white hover:text-brand transition-colors text-sm font-medium"
+                    className="inline-flex gap-2 mt-4 text-text-primary hover:text-brand transition-colors text-sm font-medium"
                     title="Click to manage wallet"
                   >
                     <div className="text-right">
                       {displayName ? (
                         <>
-                          <p className="text-white font-medium text-sm leading-tight">
+                          <p className="text-text-primary font-medium text-sm leading-tight">
                             {displayName}
                           </p>
                           <p className="text-gray-500 font-mono text-xs">
@@ -189,7 +190,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       ) : (
                         <>
                           <p className="text-sm text-gray-400">Connected as</p>
-                          <p className="text-white font-mono text-sm">
+                          <p className="text-text-primary font-mono text-sm">
                             {walletAddress?.slice(0, 8)}…{walletAddress?.slice(-6)}
                           </p>
                         </>
@@ -204,7 +205,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
       </header>
 
       {/* Dashboard Content */}
-      <div className="flex pt-16">
+      <div className="flex pt-16 min-h-screen">
         {/* Sidebar Overlay */}
         {(isSidebarOpen || isMobileMenuOpen) && (
           <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={handleOverlayClick} />
@@ -212,7 +213,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Sidebar Navigation */}
         <aside
-          className={`fixed left-0 top-16 mt-1 w-64 h-screen bg-base border-r border-brand/20 transform transition-transform duration-300 ease-in-out z-50 ${
+          className={`fixed left-0 top-16 w-64 -mt-0.5 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
@@ -225,19 +226,9 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 px-4 md:ml-64">
-          {/* <div
-            className={`bg-orange-500/10 border border-orange-500/20 rounded-lg p-4 mb-8 ${showDisclaimer ? '' : 'hidden'}`}
-          >
-            <p className="text-text-secondary text-sm font-medium">
-              <strong className="text-white">
-                ⚠️ Wrytes.io focuses on providing software development tools and accurate data for
-                Distributed Ledger Technology protocols. We do not audit or endorse protocols -
-                users must conduct their own due diligence.
-              </strong>
-            </p>
-          </div> */}
-          <div>{children}</div>
+        <main className="flex-1 min-w-0 px-4 md:ml-64 flex flex-col">
+          <div className="flex-1">{children}</div>
+          <FooterSimple />
         </main>
       </div>
 

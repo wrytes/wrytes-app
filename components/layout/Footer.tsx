@@ -41,7 +41,7 @@ export default function Footer() {
   const year = date.getFullYear();
 
   return (
-    <footer className="bg-base border-t border-card py-8">
+    <footer className="bg-base py-8">
       <div className="container mx-auto px-4">
         <div className="grid md:grid-cols-4 gap-8 mb-8">
           {/* Logo */}
@@ -50,7 +50,7 @@ export default function Footer() {
               <div className="w-8 h-8 bg-brand rounded-lg flex items-center justify-center">
                 <FontAwesomeIcon icon={faLightbulb} className="w-4 h-4 text-white" />
               </div>
-              <Link href="/" className="text-xl font-bold text-white">
+              <Link href="/" className="text-xl font-bold text-text-primary">
                 {COMPANY.name.split(' ')[0]}
                 <span className="text-brand">.</span>
               </Link>
