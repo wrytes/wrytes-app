@@ -1,11 +1,8 @@
 import {
   faLightbulb,
-  faHistory,
   faRoute,
   faUser,
-  faBuildingColumns,
   faWallet,
-  faKey,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
