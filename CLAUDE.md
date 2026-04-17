@@ -49,7 +49,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 /wrytes/
 ├── components/              # 🧩 Reusable UI Components
 │   ├── ui/                 # Generic UI primitives (ALWAYS REUSE THESE)
-│   │   ├── Button.tsx      # Multi-variant button system
+│   │   ├── Input/ButtonInput.tsx  # Multi-variant button system
 │   │   ├── Card.tsx        # Flexible card component
 │   │   ├── Toast.tsx       # Flexible toast component
 │   │   ├── Modal/          # Modal system with variants
@@ -87,11 +87,16 @@ The platform combines **independent asset management funding** with **cutting-ed
 **Before building new components, check these locations:**
 
 1. **`components/ui/`** - Generic UI primitives
-   - `Button.tsx` - Supports primary, secondary, ghost variants
-   - `Card.tsx` - Flexible card with header, content, footer
+   - `Input/ButtonInput.tsx` - Variants: `primary | secondary | outline | ghost | error`
+   - `Card.tsx` - Flexible card component
+   - `Toast.tsx` + `showToast` - `success | error | info | warning | custom`
    - `Modal/` - Complete modal system with confirm variants
    - `Stats/` - Metric display with various layouts
    - `TransactionQueue/` - Generic transaction management
+
+2. **`components/layout/`** - Shared layout pieces
+   - `NavbarWallet.tsx` - Reusable wallet connect/display for navbars (used in all layouts except HomeLayout)
+   - `FooterSimple.tsx` - Minimal footer strip (copyright + version), used across all layouts
 
 2. **`components/features/[existing-feature]/`** - Feature-specific patterns
    - Reuse patterns from `Vaults/` for similar data management
@@ -218,21 +223,41 @@ const { addTransaction, clearQueue } = useTransactionQueue();
 
 ## 🎨 **Design System Philosophy**
 
-### **Dark Theme Consistency:**
-- **Professional aesthetic** - Institutional DeFi platform
+### **Light Theme — Warm Off-White Palette:**
+- **Professional aesthetic** - Clean, institutional feel with warm off-white base
 - **Accessibility first** - WCAG 2.1 AA compliance
 - **Responsive design** - Mobile-first approach
+- **Brand orange** - `#ff6b35` is the primary accent, preserved across all surfaces
+
+### **Tailwind Custom Color Tokens (`tailwind.config.ts`):**
+```
+Surfaces:      base (#f2f0ec)  surface (#f8f7f5)  card (#ffffff)
+Brand:         brand (#ff6b35)
+Text:          text-primary (#0c0c0c)  text-secondary (#374151)  text-muted (#6b7280)
+Input:         input-border  input-label  input-empty
+Table:         table-header  table-alt
+Status:        error / error-bg / error-border
+               success / success-bg / success-border
+               info (#60a5fa)  warning (#f59e0b)
+Misc:          gold  disabled
+```
+
+**Rule:** Always use custom tokens. Never use hardcoded Tailwind color classes (`red-400`, `green-500`, `gray-600`, etc.) — add a new token to `tailwind.config.ts` if a semantic one doesn't exist.
 
 ### **Component Variants:**
 ```typescript
-// Button variants
-<Button variant="primary">Primary Action</Button>
-<Button variant="secondary">Secondary Action</Button>
-<Button variant="ghost">Subtle Action</Button>
+// ButtonInput variants
+<ButtonInput variant="primary" />    // brand orange fill
+<ButtonInput variant="secondary" />  // card bg, bordered
+<ButtonInput variant="outline" />    // brand border
+<ButtonInput variant="ghost" />      // text only
+<ButtonInput variant="error" />      // error-colored outline
 
-// Card variants
-<Card variant="default">Standard Card</Card>
-<Card variant="elevated">Prominent Card</Card>
+// Toast
+showToast.success('msg')
+showToast.error('msg')
+showToast.info('msg')
+showToast.warning('msg')
 ```
 
 ## 🔧 **Development Workflow**
