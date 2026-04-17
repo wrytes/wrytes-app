@@ -3,14 +3,14 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { cn } from '@/lib/utils';
 import { NavigationItem } from '@/lib/navigation/dashboard';
 
-interface SidebarNavProps {
+interface SidebarDashboardProps {
   items: NavigationItem[];
   isActive: (path: string) => boolean;
   onItemClick: () => void;
   variant: 'desktop' | 'mobile';
 }
 
-export function SidebarNav({ items, isActive, onItemClick, variant }: SidebarNavProps) {
+export function SidebarDashboard({ items, isActive, onItemClick, variant }: SidebarDashboardProps) {
   const isMobile = variant === 'mobile';
 
   const linkClass = (active: boolean) =>

@@ -6,7 +6,7 @@ import { COMPANY } from '@/lib/constants';
 import { useAuth } from '@/hooks/useAuth';
 import { useWallet } from '@/hooks/useWallet';
 import { AuthModal } from '@/components/auth/AuthModal';
-import { SidebarNav } from '@/components/navigation/SidebarNav';
+import { SidebarDashboard } from '@/components/navigation/SidebarDashboard';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
 
@@ -145,7 +145,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 border-t border-dark-surface pt-4">
-              <SidebarNav
+              <SidebarDashboard
                 items={DASHBOARD_NAVIGATION}
                 isActive={isActive}
                 onItemClick={closeMobileMenu}
@@ -216,7 +216,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
-          <SidebarNav
+          <SidebarDashboard
             items={DASHBOARD_NAVIGATION}
             isActive={isActive}
             onItemClick={closeSidebar}

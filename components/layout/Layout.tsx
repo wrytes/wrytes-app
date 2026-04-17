@@ -2,6 +2,7 @@ import React from 'react';
 import { useRouter } from 'next/router';
 import HomeLayout from './HomeLayout';
 import DashboardLayout from './DashboardLayout';
+import DocsLayout from './DocsLayout';
 import SimpleLayout from './SimpleLayout';
 import CenterLayout from './CenterLayout';
 
@@ -18,6 +19,10 @@ export default function Layout({ children }: LayoutProps) {
 
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
     return <DashboardLayout>{children}</DashboardLayout>;
+  }
+
+  if (pathname.startsWith('/docs')) {
+    return <DocsLayout>{children}</DocsLayout>;
   }
 
   if (CENTER_LAYOUT_PATHS.some(p => pathname === p || pathname.startsWith(p + '/'))) {
