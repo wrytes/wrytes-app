@@ -128,8 +128,8 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
             <Badge
               text="LOGIN"
               variant="custom"
-              customColor="text-orange-400"
-              customBgColor="bg-orange-400/10"
+              customColor="text-brand"
+              customBgColor="bg-brand/10"
               size="sm"
             />
           </p>
@@ -158,7 +158,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
                     <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
                   </div>
                   <div className="text-right text-text-secondary text-sm">
-                    {w.label ?? <span className="text-gray-600">—</span>}
+                    {w.label ?? <span className="text-text-muted">—</span>}
                   </div>
                   <div className="text-right text-text-secondary text-sm">
                     {new Date(w.createdAt).toLocaleDateString()}
@@ -166,7 +166,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setUnlinkTarget(w)}
-                      className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                      className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
                     >
                       <FontAwesomeIcon icon={faTrash} className="text-xs" />
                       Unlink
@@ -245,7 +245,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
                 </code>
                 <button
                   onClick={handleCopyToken}
-                  className="text-text-secondary hover:text-orange-400 transition-colors flex-shrink-0"
+                  className="text-text-secondary hover:text-brand transition-colors flex-shrink-0"
                 >
                   <FontAwesomeIcon icon={copied ? faCheckCircle : faCopy} />
                 </button>
@@ -253,7 +253,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
               {secondsLeft !== null && (
                 <p className="text-xs text-text-secondary">
                   Expires in{' '}
-                  <span className={secondsLeft < 60 ? 'text-red-400' : 'text-text-primary'}>
+                  <span className={secondsLeft < 60 ? 'text-error' : 'text-text-primary'}>
                     {Math.floor(secondsLeft / 60)}:{String(secondsLeft % 60).padStart(2, '0')}
                   </span>
                 </p>
@@ -262,7 +262,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
           )}
 
           {step === 'linked' && (
-            <div className="flex items-center gap-2 text-green-400 text-sm">
+            <div className="flex items-center gap-2 text-success text-sm">
               <FontAwesomeIcon icon={faCheckCircle} />
               Wallet linked successfully.
             </div>
@@ -273,11 +273,11 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
               <Badge
                 text="Error"
                 variant="custom"
-                customColor="text-red-400"
-                customBgColor="bg-red-400/10"
+                customColor="text-error"
+                customBgColor="bg-error-bg"
                 size="sm"
               />
-              <p className="text-sm text-red-400">{error}</p>
+              <p className="text-sm text-error">{error}</p>
             </div>
           )}
         </div>

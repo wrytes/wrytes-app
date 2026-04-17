@@ -49,7 +49,7 @@ export default function AddressInput({
         className={`group border-input-border ${
           disabled ? 'bg-surface' : 'hover:border-text-secondary'
         } focus-within:!border-brand ${
-          error ? '!border-input-error' : ''
+          error ? '!border-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}
         onClick={handleClick}
       >
@@ -58,7 +58,7 @@ export default function AddressInput({
         <input
           ref={inputRef}
           className={`w-full py-2 text-lg ${isTextLeft ? 'text-left' : 'text-right'} bg-transparent outline-none ${
-            error ? 'text-input-error' : 'text-text-primary'
+            error ? 'text-error' : 'text-text-primary'
           }`}
           placeholder={placeholder}
           value={value}
@@ -104,7 +104,7 @@ export default function AddressInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-error">{error}</div>
       ) : (
         <div className="flex my-2 px-3.5">{note}</div>
       )}

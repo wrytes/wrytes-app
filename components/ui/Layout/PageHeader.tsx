@@ -23,10 +23,10 @@ interface PageHeaderProps {
 }
 
 const BADGE_VARIANTS = {
-  success: 'bg-green-400/20 text-green-400',
+  success: 'bg-success-bg text-success',
   warning: 'bg-yellow-400/20 text-yellow-400',
-  info: 'bg-blue-400/20 text-blue-400',
-  error: 'bg-red-400/20 text-red-400',
+  info: 'bg-info/20 text-info',
+  error: 'bg-error-bg text-error',
 };
 
 export function PageHeader({ title, description, icon, badge, actions, breadcrumbs, className, userInfo }: PageHeaderProps) {

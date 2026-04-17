@@ -211,8 +211,8 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
             <Badge
               text="BANK"
               variant="custom"
-              customColor="text-orange-400"
-              customBgColor="bg-orange-400/10"
+              customColor="text-brand"
+              customBgColor="bg-brand/10"
               size="sm"
             />{' '}
             scope.
@@ -247,8 +247,8 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
                     <Badge
                       text={acc.currency}
                       variant="custom"
-                      customColor={acc.currency === 'CHF' ? 'text-red-400' : 'text-blue-400'}
-                      customBgColor={acc.currency === 'CHF' ? 'bg-red-400/10' : 'bg-blue-400/10'}
+                      customColor={acc.currency === 'CHF' ? 'text-error' : 'text-info'}
+                      customBgColor={acc.currency === 'CHF' ? 'bg-error-bg' : 'bg-info/10'}
                       size="sm"
                     />
                   </div>
@@ -257,14 +257,14 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
                       <Badge
                         text="Default"
                         variant="custom"
-                        customColor="text-green-400"
-                        customBgColor="bg-green-400/10"
+                        customColor="text-success"
+                        customBgColor="bg-success-bg"
                         size="sm"
                       />
                     ) : (
                       <button
                         onClick={() => handleSetDefault(acc.id)}
-                        className="text-xs text-gray-500 hover:text-orange-400 transition-colors flex items-center gap-1"
+                        className="text-xs text-text-muted hover:text-brand transition-colors flex items-center gap-1"
                       >
                         <FontAwesomeIcon icon={faStar} className="text-xs" />
                         Set default
@@ -274,7 +274,7 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
                   <div className="flex justify-end items-center gap-3">
                     <button
                       onClick={() => openEdit(acc)}
-                      className="text-xs text-text-secondary hover:text-orange-400 transition-colors flex items-center gap-1"
+                      className="text-xs text-text-secondary hover:text-brand transition-colors flex items-center gap-1"
                     >
                       <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
                       Edit
@@ -282,7 +282,7 @@ export default function BankAccountsSection({ isAdmin, hasScope }: Props) {
                     {isAdmin && (
                       <button
                         onClick={() => setDeleteTarget(acc)}
-                        className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                        className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
                       >
                         <FontAwesomeIcon icon={faTrash} className="text-xs" />
                         Remove

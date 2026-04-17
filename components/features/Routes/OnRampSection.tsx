@@ -23,8 +23,8 @@ export default function OnRampSection({ hasScope = false }: Props) {
           <Badge
             text="ONRAMP"
             variant="custom"
-            customColor="text-orange-400"
-            customBgColor="bg-orange-400/10"
+            customColor="text-brand"
+            customBgColor="bg-brand/10"
             size="sm"
           />{' '}
           scope.

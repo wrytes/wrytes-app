@@ -214,7 +214,7 @@ export default function Dashboard() {
                 label="Delete"
                 variant="ghost"
                 icon={<FontAwesomeIcon icon={faTrash} />}
-                className="text-red-400 hover:text-red-300"
+                className="text-error hover:text-error/70"
               />
             </div>
           </Card>
@@ -276,14 +276,14 @@ export default function Dashboard() {
               <Badge
                 text="Active"
                 variant="custom"
-                customColor="text-orange-400"
-                customBgColor="bg-orange-400/20"
+                customColor="text-brand"
+                customBgColor="bg-brand/20"
               />
               <Badge
                 text="Pending"
                 variant="custom"
-                customColor="text-blue-400"
-                customBgColor="bg-blue-400/20"
+                customColor="text-info"
+                customBgColor="bg-info/20"
               />
               <Badge
                 text="Paused"
@@ -294,8 +294,8 @@ export default function Dashboard() {
               <Badge
                 text="Closed"
                 variant="custom"
-                customColor="text-gray-400"
-                customBgColor="bg-gray-400/20"
+                customColor="text-text-muted"
+                customBgColor="bg-surface"
               />
             </div>
           </Card>
@@ -325,8 +325,8 @@ export default function Dashboard() {
                     <Badge
                       text={row.chain}
                       variant="custom"
-                      customColor="text-blue-400"
-                      customBgColor="bg-blue-400/10"
+                      customColor="text-info"
+                      customBgColor="bg-info/10"
                       size="sm"
                     />
                     <Badge text={row.status} variant="risk" riskLevel={row.risk} size="sm" />
@@ -505,7 +505,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right text-text-primary">{pos.balance}</div>
                   <div className="text-right text-text-primary">{pos.value}</div>
-                  <div className="text-right text-green-400 font-medium">{pos.apy}</div>
+                  <div className="text-right text-success font-medium">{pos.apy}</div>
                 </TableRow>
               ))
             )}
@@ -552,7 +552,7 @@ export default function Dashboard() {
                   </div>
                   <div className="text-right text-text-primary">{pos.balance}</div>
                   <div className="text-right text-text-primary">{pos.value}</div>
-                  <div className="text-right text-green-400 font-medium">{pos.apy}</div>
+                  <div className="text-right text-success font-medium">{pos.apy}</div>
                 </TableRow>
               ))
             )}
@@ -589,7 +589,7 @@ export default function Dashboard() {
                   {row.chain}
                 </div>
                 <div className="text-right text-text-primary">{row.tvl}</div>
-                <div className="text-right text-green-400 font-medium">{row.yield}</div>
+                <div className="text-right text-success font-medium">{row.yield}</div>
               </TableRow>
             ))}
           </TableBody>
@@ -622,7 +622,7 @@ export default function Dashboard() {
                   {row.chain}
                 </div>
                 <div className="text-right text-text-primary">{row.tvl}</div>
-                <div className="text-right text-green-400 font-medium">{row.yield}</div>
+                <div className="text-right text-success font-medium">{row.yield}</div>
               </TableRow>
             ))}
           </TableBody>
@@ -637,28 +637,28 @@ export default function Dashboard() {
             <div className="flex flex-wrap items-end gap-4">
               <div className="flex flex-col items-center gap-2">
                 <IconLogo
-                  icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-xs" />}
+                  icon={<FontAwesomeIcon icon={faWallet} className="text-brand text-xs" />}
                   size={6}
                 />
                 <span className="text-xs text-text-secondary">size 6</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <IconLogo
-                  icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-sm" />}
+                  icon={<FontAwesomeIcon icon={faWallet} className="text-brand text-sm" />}
                   size={8}
                 />
                 <span className="text-xs text-text-secondary">size 8</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <IconLogo
-                  icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-base" />}
+                  icon={<FontAwesomeIcon icon={faWallet} className="text-brand text-base" />}
                   size={10}
                 />
                 <span className="text-xs text-text-secondary">size 10</span>
               </div>
               <div className="flex flex-col items-center gap-2">
                 <IconLogo
-                  icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400 text-xl" />}
+                  icon={<FontAwesomeIcon icon={faWallet} className="text-brand text-xl" />}
                   size={14}
                 />
                 <span className="text-xs text-text-secondary">size 14</span>
@@ -671,15 +671,15 @@ export default function Dashboard() {
             <CardTitle title="With icons" />
             <div className="flex flex-wrap gap-4">
               <IconLogo
-                icon={<FontAwesomeIcon icon={faWallet} className="text-orange-400" />}
+                icon={<FontAwesomeIcon icon={faWallet} className="text-brand" />}
                 size={10}
               />
               <IconLogo
-                icon={<FontAwesomeIcon icon={faChartLine} className="text-green-400" />}
+                icon={<FontAwesomeIcon icon={faChartLine} className="text-success" />}
                 size={10}
               />
               <IconLogo
-                icon={<FontAwesomeIcon icon={faShield} className="text-blue-400" />}
+                icon={<FontAwesomeIcon icon={faShield} className="text-info" />}
                 size={10}
               />
               <IconLogo
@@ -928,7 +928,7 @@ export default function Dashboard() {
             <ButtonInput
               label="Delete position"
               variant="ghost"
-              className="text-red-400 hover:text-red-300"
+              className="text-error hover:text-error/70"
               onClick={() => setDangerModalOpen(true)}
             />
           </Card>
@@ -957,7 +957,7 @@ export default function Dashboard() {
           </div>
           <div className="flex justify-between">
             <span>Current APY</span>
-            <span className="text-green-400 font-medium">5.4%</span>
+            <span className="text-success font-medium">5.4%</span>
           </div>
         </div>
       </Modal>
@@ -995,7 +995,7 @@ export default function Dashboard() {
           </div>
           <div className="flex justify-between">
             <span>Estimated APY</span>
-            <span className="text-green-400 font-medium">5.4%</span>
+            <span className="text-success font-medium">5.4%</span>
           </div>
         </div>
       </Modal>
@@ -1019,7 +1019,7 @@ export default function Dashboard() {
         title="Delete Position"
         message={
           <span>
-            This will <span className="text-red-400 font-semibold">permanently close</span> your
+            This will <span className="text-error font-semibold">permanently close</span> your
             position and return collateral to your wallet. Proceed?
           </span>
         }

@@ -67,8 +67,8 @@ export default function SafeWalletsSection({ hasScope }: Props) {
           <Badge
             text="SAFE"
             variant="custom"
-            customColor="text-orange-400"
-            customBgColor="bg-orange-400/10"
+            customColor="text-brand"
+            customBgColor="bg-brand/10"
             size="sm"
           />{' '}
           scope.
@@ -110,8 +110,8 @@ export default function SafeWalletsSection({ hasScope }: Props) {
                     <Badge
                       text={w.deployed ? 'Deployed' : 'Predicted'}
                       variant="custom"
-                      customColor={w.deployed ? 'text-green-400' : 'text-gray-400'}
-                      customBgColor={w.deployed ? 'bg-green-400/10' : 'bg-gray-400/10'}
+                      customColor={w.deployed ? 'text-success' : 'text-text-muted'}
+                      customBgColor={w.deployed ? 'bg-success-bg' : 'bg-surface'}
                       size="sm"
                     />
                   </div>

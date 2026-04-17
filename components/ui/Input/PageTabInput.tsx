@@ -29,7 +29,7 @@ export default function PageTabInput({ tabs, className }: Props) {
           >
             {tab.label}
             {tab.badge != null && tab.badge > 0 && (
-              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-red-500 text-white text-xs font-bold leading-none">
+              <span className="inline-flex items-center justify-center w-5 h-5 rounded-full bg-error text-white text-xs font-bold leading-none">
                 {tab.badge}
               </span>
             )}

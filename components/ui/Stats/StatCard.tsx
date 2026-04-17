@@ -21,15 +21,15 @@ interface StatCardProps {
 
 const COLOR_VARIANTS = {
   orange: 'text-brand bg-brand/20',
-  green: 'text-green-400 bg-green-400/20',
-  blue: 'text-blue-400 bg-blue-400/20',
+  green: 'text-success bg-success-bg',
+  blue: 'text-info bg-info/20',
   purple: 'text-purple-400 bg-purple-400/20',
   yellow: 'text-yellow-400 bg-yellow-400/20',
 };
 
 const TREND_COLORS = {
-  up: 'text-green-400',
-  down: 'text-red-400',
+  up: 'text-success',
+  down: 'text-error',
 };
 
 function formatValue(val: string | number): string {

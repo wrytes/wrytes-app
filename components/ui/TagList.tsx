@@ -8,14 +8,14 @@ interface TagListProps {
 
 // Full class-name strings kept as literals so Tailwind's scanner includes them.
 const TAG_PALETTE = [
-  { bg: 'bg-blue-500/10',    text: 'text-blue-300',    border: 'border-blue-500/20'    },
-  { bg: 'bg-violet-500/10',  text: 'text-violet-300',  border: 'border-violet-500/20'  },
-  { bg: 'bg-emerald-500/10', text: 'text-emerald-300', border: 'border-emerald-500/20' },
-  { bg: 'bg-teal-500/10',    text: 'text-teal-300',    border: 'border-teal-500/20'    },
-  { bg: 'bg-amber-500/10',   text: 'text-amber-300',   border: 'border-amber-500/20'   },
-  { bg: 'bg-rose-500/10',    text: 'text-rose-300',    border: 'border-rose-500/20'    },
-  { bg: 'bg-indigo-500/10',  text: 'text-indigo-300',  border: 'border-indigo-500/20'  },
-  { bg: 'bg-cyan-500/10',    text: 'text-cyan-300',    border: 'border-cyan-500/20'    },
+  { bg: 'bg-info/10',        text: 'text-info',          border: 'border-info/20'        },
+  { bg: 'bg-violet-500/10',  text: 'text-violet-600',    border: 'border-violet-500/20'  },
+  { bg: 'bg-emerald-500/10', text: 'text-emerald-600',   border: 'border-emerald-500/20' },
+  { bg: 'bg-teal-500/10',    text: 'text-teal-600',      border: 'border-teal-500/20'    },
+  { bg: 'bg-warning/10',     text: 'text-warning',       border: 'border-warning/20'     },
+  { bg: 'bg-rose-500/10',    text: 'text-rose-600',      border: 'border-rose-500/20'    },
+  { bg: 'bg-indigo-500/10',  text: 'text-indigo-600',    border: 'border-indigo-500/20'  },
+  { bg: 'bg-cyan-500/10',    text: 'text-cyan-600',      border: 'border-cyan-500/20'    },
 ];
 
 function tagColor(tag: string) {

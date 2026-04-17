@@ -9,9 +9,9 @@ interface BadgeProps {
 }
 
 const RISK_COLORS: Record<string, string> = {
-  low:    'text-green-400 bg-green-400/20',
+  low:    'text-success bg-success-bg',
   medium: 'text-yellow-400 bg-yellow-400/20',
-  high:   'text-red-400 bg-red-400/20',
+  high:   'text-error bg-error-bg',
 };
 
 const SIZES: Record<string, string> = {
@@ -33,8 +33,8 @@ export function Badge({
     variant === 'custom' && customColor && customBgColor
       ? `${customColor} ${customBgColor}`
       : variant === 'risk' && riskLevel
-        ? (RISK_COLORS[riskLevel] ?? 'text-gray-300 bg-gray-700/60')
-        : 'text-gray-300 bg-gray-700/60';
+        ? (RISK_COLORS[riskLevel] ?? 'text-text-secondary bg-surface')
+        : 'text-text-secondary bg-surface';
 
   return (
     <span

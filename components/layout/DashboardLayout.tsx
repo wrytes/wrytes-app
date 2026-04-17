@@ -121,7 +121,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                       </>
                     ) : (
                       <>
-                        <p className="text-sm text-gray-400">Connected as</p>
+                        <p className="text-sm text-text-muted">Connected as</p>
                         <p className="text-text-primary font-mono text-sm hover:text-brand transition-colors">
                           {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
                         </p>
@@ -183,13 +183,13 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
                           <p className="text-text-primary font-medium text-sm leading-tight">
                             {displayName}
                           </p>
-                          <p className="text-gray-500 font-mono text-xs">
+                          <p className="text-text-muted font-mono text-xs">
                             {walletAddress?.slice(0, 6)}…{walletAddress?.slice(-4)}
                           </p>
                         </>
                       ) : (
                         <>
-                          <p className="text-sm text-gray-400">Connected as</p>
+                          <p className="text-sm text-text-muted">Connected as</p>
                           <p className="text-text-primary font-mono text-sm">
                             {walletAddress?.slice(0, 8)}…{walletAddress?.slice(-6)}
                           </p>

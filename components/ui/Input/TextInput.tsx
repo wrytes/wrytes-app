@@ -29,7 +29,7 @@ export default function TextInput({
         className={`border-2 rounded-lg px-3 py-1 transition-colors
           ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-text-secondary'}
           focus-within:!border-brand
-          ${error ? '!border-input-error' : ''}`}
+          ${error ? '!border-error' : ''}`}
       >
         {label && (
           <div className="text-input-label text-xs mt-1 mb-0.5">{label}</div>
@@ -43,13 +43,13 @@ export default function TextInput({
           maxLength={maxLength}
           className={`w-full bg-transparent text-sm py-1.5 outline-none
             ${disabled ? 'text-text-secondary cursor-not-allowed' : 'text-text-primary'}
-            ${error ? 'text-input-error' : ''}
+            ${error ? 'text-error' : ''}
             placeholder:text-input-empty`}
         />
       </div>
 
       {error ? (
-        <div className="px-3.5 mt-1 text-xs text-input-error">{error}</div>
+        <div className="px-3.5 mt-1 text-xs text-error">{error}</div>
       ) : note ? (
         <div className="px-3.5 mt-1 text-xs text-text-secondary">{note}</div>
       ) : null}

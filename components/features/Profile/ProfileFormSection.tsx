@@ -152,8 +152,8 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
           <Badge
             text="LOGIN"
             variant="custom"
-            customColor="text-orange-400"
-            customBgColor="bg-orange-400/10"
+            customColor="text-brand"
+            customBgColor="bg-brand/10"
             size="sm"
           />
         </p>
@@ -242,7 +242,7 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
               <CardTitle title="Verification" />
               {profile?.isVerified ? (
                 <div className="flex flex-col gap-3">
-                  <div className="flex items-center gap-2 text-xs text-green-400">
+                  <div className="flex items-center gap-2 text-xs text-success">
                     <FontAwesomeIcon icon={faShieldHalved} />
                     Verified on {new Date(profile.verifiedAt!).toLocaleDateString()}
                   </div>
@@ -255,8 +255,8 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
                   <Badge
                     text="Not verified"
                     variant="custom"
-                    customColor="text-gray-400"
-                    customBgColor="bg-gray-400/10"
+                    customColor="text-text-muted"
+                    customBgColor="bg-surface"
                   />
                   <p className="text-xs text-text-secondary">
                     Identity verification is handled by the Wrytes team. Contact support to start the

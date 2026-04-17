@@ -94,8 +94,8 @@ export default function RiskDisclaimer() {
               </section>
 
               <section>
-                <div className="bg-orange-500/10 border border-orange-500/20 rounded-lg p-6">
-                  <h2 className="text-xl font-bold text-orange-500 mb-3">Protocol Disclaimer</h2>
+                <div className="bg-brand/10 border border-brand/20 rounded-lg p-6">
+                  <h2 className="text-xl font-bold text-brand mb-3">Protocol Disclaimer</h2>
                   <p className="font-medium"><strong className="text-text-primary">Wrytes.io focuses on providing software development tools and accurate data for Distributed Ledger Technology protocols. We do not audit or endorse protocols — users must conduct their own due diligence.</strong></p>
                 </div>
               </section>

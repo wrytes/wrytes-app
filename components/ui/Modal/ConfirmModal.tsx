@@ -30,7 +30,7 @@ export function ConfirmModal({
   loading = false,
   className,
 }: ConfirmModalProps) {
-  const dangerClass = confirmVariant === 'danger' ? 'bg-red-600 hover:bg-red-700 text-white border-red-600' : '';
+  const dangerClass = confirmVariant === 'danger' ? 'bg-error hover:bg-error/80 text-white border-error' : '';
 
   return (
     <Modal isOpen={isOpen} onClose={onClose} size="sm" className={className} closeOnBackdrop={!loading} closeOnEscape={!loading} showCloseButton={false}>

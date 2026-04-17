@@ -27,11 +27,11 @@ const EMPTY_ROUTE = {
 };
 
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
-  ACTIVE: { color: 'text-green-400', bg: 'bg-green-400/10' },
-  PAUSED: { color: 'text-gray-400', bg: 'bg-gray-400/10' },
+  ACTIVE: { color: 'text-success', bg: 'bg-success-bg' },
+  PAUSED: { color: 'text-text-muted', bg: 'bg-surface' },
 };
 
-const DEFAULT_STATUS_COLOR = { color: 'text-gray-400', bg: 'bg-gray-400/10' };
+const DEFAULT_STATUS_COLOR = { color: 'text-text-muted', bg: 'bg-surface' };
 
 interface Props {
   isAdmin: boolean;
@@ -233,8 +233,8 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
             <Badge
               text="OFFRAMP"
               variant="custom"
-              customColor="text-orange-400"
-              customBgColor="bg-orange-400/10"
+              customColor="text-brand"
+              customBgColor="bg-brand/10"
               size="sm"
             />{' '}
             scope.
@@ -269,9 +269,9 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                       <Badge
                         text={r.targetCurrency}
                         variant="custom"
-                        customColor={r.targetCurrency === 'CHF' ? 'text-red-400' : 'text-blue-400'}
+                        customColor={r.targetCurrency === 'CHF' ? 'text-error' : 'text-info'}
                         customBgColor={
-                          r.targetCurrency === 'CHF' ? 'bg-red-400/10' : 'bg-blue-400/10'
+                          r.targetCurrency === 'CHF' ? 'bg-error-bg' : 'bg-info/10'
                         }
                         size="sm"
                       />
@@ -301,7 +301,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                     <div className="flex justify-end items-center gap-3">
                       <button
                         onClick={() => openEdit(r)}
-                        className="text-xs text-text-secondary hover:text-orange-400 transition-colors flex items-center gap-1"
+                        className="text-xs text-text-secondary hover:text-brand transition-colors flex items-center gap-1"
                       >
                         <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
                         Edit
@@ -309,7 +309,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                       {isAdmin && (
                         <button
                           onClick={() => setDeleteTarget(r)}
-                          className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                          className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
                         >
                           <FontAwesomeIcon icon={faTrash} className="text-xs" />
                           Remove
@@ -376,7 +376,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
             <div>
               <div
                 className={`border-2 rounded-lg px-3 py-1 transition-colors border-input-border hover:border-text-secondary focus-within:!border-brand ${
-                  errors.bankAccountId ? '!border-input-error' : ''
+                  errors.bankAccountId ? '!border-error' : ''
                 }`}
               >
                 <div className="text-input-label text-xs mt-1 mb-0.5">Bank Account</div>
@@ -398,7 +398,7 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                 </select>
               </div>
               {errors.bankAccountId && (
-                <div className="px-3.5 mt-1 text-xs text-input-error">
+                <div className="px-3.5 mt-1 text-xs text-error">
                   {errors.bankAccountId}
                 </div>
               )}

@@ -83,11 +83,11 @@ export default function ApiKeyConfirmPage() {
               {/* Error */}
               {state === 'error' && (
                 <div className="space-y-4">
-                  <div className="flex items-start gap-3 p-3 bg-red-900/20 rounded-lg">
-                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-red-400 mt-0.5 flex-shrink-0" />
+                  <div className="flex items-start gap-3 p-3 bg-error-bg rounded-lg">
+                    <FontAwesomeIcon icon={faExclamationTriangle} className="text-error mt-0.5 flex-shrink-0" />
                     <div>
-                      <p className="text-red-400 text-sm font-medium">Verification failed</p>
-                      <p className="text-red-400/70 text-xs mt-1">{errorMsg}</p>
+                      <p className="text-error text-sm font-medium">Verification failed</p>
+                      <p className="text-error/70 text-xs mt-1">{errorMsg}</p>
                     </div>
                   </div>
                   <p className="text-text-secondary text-xs">
@@ -107,7 +107,7 @@ export default function ApiKeyConfirmPage() {
               {state === 'success' && result && (
                 <div className="space-y-4">
                   <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2 text-green-400 text-sm">
+                    <div className="flex items-center gap-2 text-success text-sm">
                       <FontAwesomeIcon icon={faCheckCircle} />
                       <span>Key created successfully</span>
                     </div>
@@ -115,8 +115,8 @@ export default function ApiKeyConfirmPage() {
                       <Badge
                         text={`Expires ${new Date(result.expiresAt).toLocaleDateString()}`}
                         variant="custom"
-                        customColor="text-gray-400"
-                        customBgColor="bg-gray-400/10"
+                        customColor="text-text-muted"
+                        customBgColor="bg-surface"
                         size="sm"
                       />
                     )}
@@ -138,7 +138,7 @@ export default function ApiKeyConfirmPage() {
                     <FontAwesomeIcon
                       icon={copied ? faCheckCircle : faCopy}
                       className={`flex-shrink-0 text-sm transition-colors ${
-                        copied ? 'text-green-400' : 'text-gray-500 group-hover:text-gray-300'
+                        copied ? 'text-success' : 'text-text-muted group-hover:text-text-secondary'
                       }`}
                     />
                   </div>

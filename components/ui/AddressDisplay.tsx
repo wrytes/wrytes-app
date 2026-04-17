@@ -51,12 +51,12 @@ export function AddressDisplay({
       {showCopy && (
         <button
           onClick={handleCopy}
-          className="text-gray-600 hover:text-orange-400 transition-colors focus:outline-none"
+          className="text-text-muted hover:text-brand transition-colors focus:outline-none"
           aria-label="Copy address"
         >
           <FontAwesomeIcon
             icon={copied ? faCheckCircle : faCopy}
-            className={`text-xs ${copied ? 'text-green-400' : ''}`}
+            className={`text-xs ${copied ? 'text-success' : ''}`}
           />
         </button>
       )}

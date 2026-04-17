@@ -57,7 +57,7 @@ export const showToast = {
       {
         duration: options?.duration || 5000,
         id,
-        icon: <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4 text-blue-500" />,
+        icon: <FontAwesomeIcon icon={faInfoCircle} className="w-4 h-4 text-info" />,
       },
     );
   },
@@ -69,7 +69,7 @@ export const showToast = {
       {
         duration: options?.duration || 5000,
         id,
-        icon: <FontAwesomeIcon icon={faTriangleExclamation} className="w-4 h-4 text-amber-500" />,
+        icon: <FontAwesomeIcon icon={faTriangleExclamation} className="w-4 h-4 text-warning" />,
       },
     );
   },

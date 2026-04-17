@@ -76,7 +76,7 @@ export default function LiquidationSlider({
         <div className="relative" style={{ paddingTop: '0.5rem', paddingBottom: '0.5rem' }}>
           <div
             className={`absolute -top-1 text-xs font-bold -translate-x-1/2 ${
-              sourcePct < 38 ? 'text-green-500' : 'text-orange-400'
+              sourcePct < 38 ? 'text-success' : 'text-brand'
             }`}
             style={{ left: `${sourcePct}%` }}
           >
@@ -166,9 +166,9 @@ export default function LiquidationSlider({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-error">{error}</div>
       ) : warning ? (
-        <div className="flex my-2 px-3.5 text-amber-500">{warning}</div>
+        <div className="flex my-2 px-3.5 text-warning">{warning}</div>
       ) : (
         <div className="flex my-2 px-3.5">{note}</div>
       )}

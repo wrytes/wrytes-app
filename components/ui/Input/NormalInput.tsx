@@ -44,7 +44,7 @@ export default function NormalInput({
         className={`group border-input-border ${
           disabled ? 'bg-surface' : 'hover:border-text-secondary'
         } focus-within:!border-brand ${
-          error ? '!border-input-error' : ''
+          error ? '!border-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}
         onClick={handleClick}
       >
@@ -53,7 +53,7 @@ export default function NormalInput({
         <div className="flex items-center gap-1">
           <div
             className={`flex-1 py-2 ${
-              error ? 'text-input-error' : value ? 'text-text-primary' : 'placeholder:text-input-empty'
+              error ? 'text-error' : value ? 'text-text-primary' : 'placeholder:text-input-empty'
             }`}
           >
             {output ? (
@@ -77,9 +77,9 @@ export default function NormalInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-input-error">{error}</div>
+        <div className="flex my-2 px-3.5 text-error">{error}</div>
       ) : warning ? (
-        <div className="flex my-2 px-3.5 text-amber-500">{warning}</div>
+        <div className="flex my-2 px-3.5 text-warning">{warning}</div>
       ) : (
         <div className="flex my-2 px-3.5">{note}</div>
       )}

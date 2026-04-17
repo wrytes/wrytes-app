@@ -86,8 +86,8 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
             <Badge
               text="LOGIN"
               variant="custom"
-              customColor="text-orange-400"
-              customBgColor="bg-orange-400/10"
+              customColor="text-brand"
+              customBgColor="bg-brand/10"
               size="sm"
             />
           </p>
@@ -120,16 +120,16 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
                       <Badge
                         text={fmt(k.expiresAt)}
                         variant="custom"
-                        customColor="text-gray-400"
-                        customBgColor="bg-gray-400/10"
+                        customColor="text-text-muted"
+                        customBgColor="bg-surface"
                         size="sm"
                       />
                     ) : (
                       <Badge
                         text="Never"
                         variant="custom"
-                        customColor="text-green-400"
-                        customBgColor="bg-green-400/10"
+                        customColor="text-success"
+                        customBgColor="bg-success-bg"
                         size="sm"
                       />
                     )}
@@ -137,7 +137,7 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
                   <div className="flex justify-end">
                     <button
                       onClick={() => setRevokeTarget(k)}
-                      className="text-xs text-red-500 hover:text-red-400 transition-colors flex items-center gap-1"
+                      className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
                     >
                       <FontAwesomeIcon icon={faTrash} className="text-xs" />
                       Revoke

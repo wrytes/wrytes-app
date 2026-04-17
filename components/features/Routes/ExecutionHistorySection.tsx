@@ -12,12 +12,12 @@ import type { OffRampRoute, OffRampExecution } from './types';
 const EXEC_HEADERS = ['Date', 'Route', 'Token', 'Amount', 'Fiat', 'Status'];
 
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
-  SETTLED: { color: 'text-green-400', bg: 'bg-green-400/10' },
-  FAILED: { color: 'text-red-400', bg: 'bg-red-400/10' },
+  SETTLED: { color: 'text-success', bg: 'bg-success-bg' },
+  FAILED: { color: 'text-error', bg: 'bg-error-bg' },
   PENDING_BANK_TRANSFER: { color: 'text-yellow-400', bg: 'bg-yellow-400/10' },
 };
 
-const DEFAULT_STATUS_COLOR = { color: 'text-gray-400', bg: 'bg-gray-400/10' };
+const DEFAULT_STATUS_COLOR = { color: 'text-text-muted', bg: 'bg-surface' };
 
 function formatDate(iso: string) {
   return new Date(iso).toLocaleDateString('en-CH', {
@@ -122,8 +122,8 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
             <Badge
               text="OFFRAMP"
               variant="custom"
-              customColor="text-orange-400"
-              customBgColor="bg-orange-400/10"
+              customColor="text-brand"
+              customBgColor="bg-brand/10"
               size="sm"
             />{' '}
             scope.
@@ -184,7 +184,7 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                             setSettleTarget(ex);
                             setSettleRef('');
                           }}
-                          className="text-xs text-green-500 hover:text-green-400 transition-colors flex items-center gap-1"
+                          className="text-xs text-success hover:text-success transition-colors flex items-center gap-1"
                         >
                           <FontAwesomeIcon icon={faCheck} className="text-xs" />
                           Settle
