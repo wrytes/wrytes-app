@@ -749,8 +749,7 @@ export default function Dashboard() {
             />
             <ButtonInput
               label="Error"
-              variant="outline"
-              className="text-red-400 border-red-400/40 hover:border-red-400"
+              variant="error"
               onClick={() =>
                 showToast.error('Transaction failed. Insufficient balance for gas fees.')
               }

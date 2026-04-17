@@ -291,7 +291,7 @@ export default function TableHeadSearchable({
                 />
               </button>
               {sortOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-card shadow-card border border-table-alt py-1">
+                <div className="absolute right-0 top-full mt-1 z-50 min-w-[10rem] rounded-lg bg-card shadow-card border border-table-alt py-1">
                   {headers.map(h => (
                     <button
                       key={h}

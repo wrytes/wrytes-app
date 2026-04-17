@@ -34,9 +34,9 @@ export function TagList({ tags, activeTags = [], className }: TagListProps) {
   return (
     <div
       className={cn(
-        'flex gap-1.5',
-        'flex-col items-end',
-        'md:flex-row md:flex-wrap md:justify-end',
+        'gap-1.5',
+        'grid grid-cols-2',
+        'md:flex md:flex-row md:flex-wrap md:justify-end',
         className,
       )}
     >
