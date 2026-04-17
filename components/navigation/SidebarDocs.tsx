@@ -67,7 +67,7 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
     cn(
       'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm w-full',
       active
-        ? 'text-brand bg-brand/20 shadow-sm'
+        ? 'text-brand bg-brand/20'
         : 'text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm'
     );
 

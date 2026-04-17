@@ -56,7 +56,7 @@ export function Modal({
       setTimeout(() => {
         if (modalRef.current) {
           const el = modalRef.current.querySelector<HTMLElement>(
-            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+            'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
           );
           (el ?? modalRef.current).focus();
         }
@@ -66,13 +66,15 @@ export function Modal({
       document.body.style.overflow = '';
       previousActiveElement.current?.focus();
     }
-    return () => { document.body.style.overflow = ''; };
+    return () => {
+      document.body.style.overflow = '';
+    };
   }, [isOpen]);
 
   const handleKeyDown = (e: React.KeyboardEvent) => {
     if (e.key !== 'Tab' || !modalRef.current) return;
     const focusable = modalRef.current.querySelectorAll<HTMLElement>(
-      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
+      'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])'
     );
     const first = focusable[0];
     const last = focusable[focusable.length - 1];
@@ -90,7 +92,7 @@ export function Modal({
   return createPortal(
     <div
       className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-in fade-in duration-200"
-      onClick={(e) => closeOnBackdrop && e.target === e.currentTarget && onClose()}
+      onClick={e => closeOnBackdrop && e.target === e.currentTarget && onClose()}
       role="dialog"
       aria-modal="true"
       aria-labelledby={title ? 'modal-title' : undefined}
@@ -98,18 +100,23 @@ export function Modal({
       <div
         ref={modalRef}
         className={cn(
-          'relative w-full bg-card rounded-2xl border border-surface shadow-2xl',
+          'relative w-full bg-surface rounded-lg border border-surface',
           'animate-in zoom-in-95 slide-in-from-bottom-4',
           SIZE_VARIANTS[size],
-          className,
+          className
         )}
         tabIndex={-1}
         onKeyDown={handleKeyDown}
       >
         {(title || header || showCloseButton) && (
-          <div className="flex items-center justify-between p-6 border-b border-surface">
+          <div className="flex items-center justify-between p-6 border-b border-base">
             <div className="flex-1">
-              {header ?? (title && <h2 id="modal-title" className="text-xl font-bold text-text-primary">{title}</h2>)}
+              {header ??
+                (title && (
+                  <h2 id="modal-title" className="text-xl font-bold text-text-primary">
+                    {title}
+                  </h2>
+                ))}
             </div>
             {showCloseButton && (
               <button
@@ -126,13 +133,13 @@ export function Modal({
         <div className="p-6">{children}</div>
 
         {footer && (
-          <div className="flex items-center justify-end gap-3 p-6 border-t border-surface">
+          <div className="flex items-center justify-end gap-3 p-6 border-t border-base">
             {footer}
           </div>
         )}
       </div>
     </div>,
-    document.body,
+    document.body
   );
 }
 

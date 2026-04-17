@@ -102,7 +102,7 @@ export default function LiquidationSlider({
             </div>
 
             <div
-              className="absolute w-5 h-5 rounded-full bg-white border-2 border-gray-500 shadow-md pointer-events-none -translate-x-1/2"
+              className="absolute w-5 h-5 rounded-full bg-white border-2 border-gray-500 shadow-lg pointer-events-none -translate-x-1/2"
               style={{ left: `${valuePct}%` }}
             />
 

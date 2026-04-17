@@ -17,7 +17,7 @@ export function SidebarDashboard({ items, isActive, onItemClick, variant }: Side
     cn(
       'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200',
       active
-        ? 'text-brand bg-brand/20 shadow-sm'
+        ? 'text-brand bg-brand/20'
         : 'text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm'
     );
 
