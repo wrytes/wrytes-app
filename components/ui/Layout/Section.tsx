@@ -13,7 +13,7 @@ interface SectionProps {
   /** Vertical padding on the section element — useful for filled/card variants or page sections that need breathing room */
   padding?: 'none' | 'sm' | 'md' | 'lg';
   /**
-   * 'md' (default) — bold h2, `text-xl font-bold text-white` — for major page sections
+   * 'md' (default) — bold h2, `text-xl font-bold text-text-primary` — for major page sections
    * 'sm' — compact uppercase label, `text-xs font-semibold uppercase tracking-wider` — for
    *         sub-sections within a page (equivalent to CardTitle but outside a Card)
    */
@@ -53,7 +53,7 @@ export function Section({
                   {title}
                 </p>
               ) : (
-                <h2 className="text-xl font-bold text-white mb-1">{title}</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-1">{title}</h2>
               ))}
             {description && titleSize === 'md' && (
               <p className="text-text-secondary text-sm">{description}</p>

@@ -109,12 +109,12 @@ export function Modal({
         {(title || header || showCloseButton) && (
           <div className="flex items-center justify-between p-6 border-b border-surface">
             <div className="flex-1">
-              {header ?? (title && <h2 id="modal-title" className="text-xl font-bold text-white">{title}</h2>)}
+              {header ?? (title && <h2 id="modal-title" className="text-xl font-bold text-text-primary">{title}</h2>)}
             </div>
             {showCloseButton && (
               <button
                 onClick={onClose}
-                className="ml-4 p-2 text-text-secondary hover:text-white transition-colors rounded-lg hover:bg-surface/50"
+                className="ml-4 p-2 text-text-secondary hover:text-text-primary transition-colors rounded-lg hover:bg-surface/50"
                 aria-label="Close modal"
               >
                 <FontAwesomeIcon icon={faTimes} className="w-4 h-4" />

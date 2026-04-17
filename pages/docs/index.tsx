@@ -155,7 +155,7 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
                     className="cursor-pointer text-left"
                     onClick={() => router.push(docUrl(entry))}
                   >
-                    <p className="font-semibold text-text-primary hover:text-white transition-colors">
+                    <p className="font-semibold text-text-primary hover:text-text-primary transition-colors">
                       {entry.title}
                     </p>
                     {entry.description && (

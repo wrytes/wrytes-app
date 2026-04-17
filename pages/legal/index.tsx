@@ -69,7 +69,7 @@ export default function LegalIndex() {
                       <FontAwesomeIcon icon={page.icon} className="w-5 h-5 text-brand" />
                     </div>
                     <div>
-                      <h3 className="text-lg font-bold text-white mb-1 group-hover:text-brand transition-colors">
+                      <h3 className="text-lg font-bold text-text-primary mb-1 group-hover:text-brand transition-colors">
                         {page.title}
                       </h3>
                       <p className="text-text-secondary text-sm leading-relaxed">
@@ -85,10 +85,10 @@ export default function LegalIndex() {
 
         <Section>
           <Card className="text-center">
-            <h3 className="text-lg font-bold text-white mb-3">Contact Information</h3>
+            <h3 className="text-lg font-bold text-text-primary mb-3">Contact Information</h3>
             <div className="space-y-1 text-text-secondary text-sm">
               <p>
-                <strong className="text-white">{COMPANY.name}</strong>
+                <strong className="text-text-primary">{COMPANY.name}</strong>
               </p>
               <p>{COMPANY.address}</p>
               <p>Email: hello@wrytes.io</p>

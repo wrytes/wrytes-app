@@ -60,7 +60,7 @@ export function ProtectedRoute({
             icon={faSpinner} 
             className="text-4xl text-orange-500 animate-spin mb-4" 
           />
-          <p className="text-white text-lg">Loading...</p>
+          <p className="text-text-primary text-lg">Loading...</p>
           <p className="text-gray-400 text-sm mt-2">Checking authentication status</p>
         </motion.div>
       </div>
@@ -85,7 +85,7 @@ export function ProtectedRoute({
             icon={faLock} 
             className="text-4xl text-red-500 mb-4" 
           />
-          <h2 className="text-white text-2xl font-bold mb-2">Access Denied</h2>
+          <h2 className="text-text-primary text-2xl font-bold mb-2">Access Denied</h2>
           <p className="text-gray-400 mb-6">
             You need to be authenticated to view this page.
           </p>
@@ -119,7 +119,7 @@ export function ProtectedRoute({
             icon={faLock} 
             className="text-4xl text-orange-500 mb-4" 
           />
-          <h2 className="text-white text-xl font-bold mb-2">Authentication Required</h2>
+          <h2 className="text-text-primary text-xl font-bold mb-2">Authentication Required</h2>
           <p className="text-gray-400">Please connect your wallet to continue</p>
         </motion.div>
       </div>

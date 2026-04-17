@@ -72,12 +72,12 @@ export function AuthModal({
               <div className="px-6 py-4 border-b border-gray-700">
                 <div className="flex items-center justify-between">
                   <div>
-                    <h2 className="text-xl font-bold text-white">{title}</h2>
+                    <h2 className="text-xl font-bold text-text-primary">{title}</h2>
                     <p className="text-sm text-gray-400 mt-1">{description}</p>
                   </div>
                   <button
                     onClick={onClose}
-                    className="text-gray-400 hover:text-white transition-colors p-2 rounded-lg hover:bg-gray-800"
+                    className="text-gray-400 hover:text-text-primary transition-colors p-2 rounded-lg hover:bg-gray-800"
                   >
                     <FontAwesomeIcon icon={faTimes} />
                   </button>

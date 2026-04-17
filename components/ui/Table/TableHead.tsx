@@ -32,7 +32,7 @@ export default function TableHead({
   };
 
   return (
-    <div className="items-center justify-between rounded-t-lg bg-table-header p-4 xl:px-6 md:flex">
+    <div className="items-center justify-between rounded-t-lg bg-card p-4 xl:px-6 md:flex">
       {/* Desktop */}
       <div
         className={`max-md:hidden flex-grow md:grid`}

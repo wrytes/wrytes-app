@@ -24,7 +24,7 @@ export default function Revenue() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Revenue Streams</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-text-primary">Revenue Streams</h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
             Our operations focus on advanced software development and technical services for
             Distributed Ledger Technologies, funded by independent Proprietary Asset Management.
@@ -49,7 +49,7 @@ export default function Revenue() {
                       className="w-8 h-8 text-brand"
                     />
                   </div>
-                  <h3 className="text-xl font-bold text-white mb-3 min-h-[3.5rem] flex justify-center">
+                  <h3 className="text-xl font-bold text-text-primary mb-3 min-h-[3.5rem] flex justify-center">
                     {service.title}
                   </h3>
                   <p className="text-text-secondary mb-6">{service.description}</p>

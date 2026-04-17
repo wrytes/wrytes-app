@@ -39,7 +39,7 @@ export function ConfirmModal({
           <FontAwesomeIcon icon={faExclamationTriangle} className="w-6 h-6 text-yellow-400" />
         </div>
 
-        <h3 className="text-lg font-semibold text-white mb-2">{title}</h3>
+        <h3 className="text-lg font-semibold text-text-primary mb-2">{title}</h3>
 
         <div className="text-text-secondary mb-6">
           {typeof message === 'string' ? <p>{message}</p> : message}

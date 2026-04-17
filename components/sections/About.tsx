@@ -17,7 +17,7 @@ export default function About() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">About {COMPANY.name}</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-text-primary">About {COMPANY.name}</h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
             {COMPANY.description}
           </p>
@@ -32,10 +32,10 @@ export default function About() {
             viewport={{ once: true }}
           >
             <Card hover className="h-full mb-5">
-              <h3 className="text-2xl font-bold mb-4 text-white">The Meaning Behind Wrytes</h3>
+              <h3 className="text-2xl font-bold mb-4 text-text-primary">The Meaning Behind Wrytes</h3>
               <p className="text-text-secondary mb-4 leading-relaxed">
-                Our name combines <strong className="text-white">&quot;write&quot;</strong> and{' '}
-                <strong className="text-white">&quot;rights&quot;</strong> - reflecting our mission to write
+                Our name combines <strong className="text-text-primary">&quot;write&quot;</strong> and{' '}
+                <strong className="text-text-primary">&quot;rights&quot;</strong> - reflecting our mission to write
                 software that empowers digital ownership, transparency, and innovation through
                 Distributed Ledger Technologies.
               </p>
@@ -80,7 +80,7 @@ export default function About() {
                 <div className="w-16 h-16 bg-brand/20 rounded-full flex items-center justify-center mx-auto mb-4">
                   <div className="w-8 h-8 bg-brand rounded-full animate-pulse" />
                 </div>
-                <h3 className="text-2xl font-bold text-white mb-2">{COMPANY.location}</h3>
+                <h3 className="text-2xl font-bold text-text-primary mb-2">{COMPANY.location}</h3>
                 <p className="text-text-secondary">Global Financial Technology Hub</p>
               </div>
               <p className="text-text-secondary leading-relaxed text-left">
@@ -100,7 +100,7 @@ export default function About() {
           className="mb-16"
         >
           <div className="text-center mb-12">
-            <h3 className="text-3xl font-bold text-white mb-4">
+            <h3 className="text-3xl font-bold text-text-primary mb-4">
               Technology Integrations & Protocol Adapters
             </h3>
             <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
@@ -135,7 +135,7 @@ export default function About() {
                       href={integration.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="flex items-center gap-2 text-white font-semibold hover:text-brand transition-colors group/link"
+                      className="flex items-center gap-2 text-text-primary font-semibold hover:text-brand transition-colors group/link"
                     >
                       <span>{integration.name}</span>
                       <FontAwesomeIcon

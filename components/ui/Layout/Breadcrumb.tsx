@@ -33,7 +33,7 @@ export function Breadcrumb({ items, className }: BreadcrumbProps) {
         <Fragment key={index}>
           {index > 0 && <FontAwesomeIcon icon={faChevronRight} className="w-3 h-3 text-text-secondary" />}
           {index === items.length - 1 ? (
-            <span className="text-white font-medium px-1 py-0.5 rounded" aria-current="page">{item.label}</span>
+            <span className="text-text-primary font-medium px-1 py-0.5 rounded" aria-current="page">{item.label}</span>
           ) : item.href ? (
             <Link href={item.href} className="text-text-secondary hover:text-brand transition-colors px-1 py-0.5 rounded hover:bg-surface/30">{item.label}</Link>
           ) : item.onClick ? (

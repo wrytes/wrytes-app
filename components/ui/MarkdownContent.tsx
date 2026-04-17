@@ -7,15 +7,15 @@ interface MarkdownProps {
 }
 
 const components: Components = {
-  h1: ({ node: _n, ...props }) => <h1 className="text-3xl font-bold mb-4 text-white" {...props} />,
+  h1: ({ node: _n, ...props }) => <h1 className="text-3xl font-bold mb-4 text-text-primary" {...props} />,
   h2: ({ node: _n, ...props }) => (
-    <h2 className="text-2xl font-bold mb-3 mt-6 text-white" {...props} />
+    <h2 className="text-2xl font-bold mb-3 mt-6 text-text-primary" {...props} />
   ),
   h3: ({ node: _n, ...props }) => (
-    <h3 className="text-xl font-bold mb-2 mt-4 text-white" {...props} />
+    <h3 className="text-xl font-bold mb-2 mt-4 text-text-primary" {...props} />
   ),
   h4: ({ node: _n, ...props }) => (
-    <h4 className="text-lg font-semibold mb-2 mt-3 text-white" {...props} />
+    <h4 className="text-lg font-semibold mb-2 mt-3 text-text-primary" {...props} />
   ),
   p: ({ node: _n, ...props }) => (
     <p className="mb-4 text-text-secondary leading-relaxed" {...props} />
@@ -27,7 +27,7 @@ const components: Components = {
     <ol className="list-decimal ml-6 mb-4 text-text-secondary space-y-1" {...props} />
   ),
   li: ({ node: _n, ...props }) => <li className="leading-relaxed" {...props} />,
-  strong: ({ node: _n, ...props }) => <strong className="text-white font-semibold" {...props} />,
+  strong: ({ node: _n, ...props }) => <strong className="text-text-primary font-semibold" {...props} />,
   a: ({ node: _n, ...props }) => (
     <a
       className="text-brand hover:underline"
@@ -73,7 +73,7 @@ const components: Components = {
   ),
   thead: ({ node: _n, ...props }) => <thead className="border-b border-surface" {...props} />,
   th: ({ node: _n, ...props }) => (
-    <th className="px-4 py-2 text-white font-semibold text-left" {...props} />
+    <th className="px-4 py-2 text-text-primary font-semibold text-left" {...props} />
   ),
   td: ({ node: _n, ...props }) => (
     <td className="px-4 py-2 text-text-secondary border-b border-surface/50" {...props} />

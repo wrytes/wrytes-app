@@ -175,7 +175,7 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
           >
             <div className="mb-4 p-3 bg-gray-800/50 rounded-lg text-left">
               <p className="text-xs text-gray-400 mb-1">Connected</p>
-              <p className="text-sm text-white font-mono truncate">{address}</p>
+              <p className="text-sm text-text-primary font-mono truncate">{address}</p>
             </div>
             <ButtonInput
               label={authFlow?.error ? 'Retry Sign' : 'Sign Message'}
@@ -208,7 +208,7 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
               <>
                 <div className="p-3 bg-gray-800/60 rounded-lg text-left">
                   <p className="text-xs text-gray-400 mb-1">Wallet</p>
-                  <p className="text-sm text-white font-mono truncate">{address}</p>
+                  <p className="text-sm text-text-primary font-mono truncate">{address}</p>
                 </div>
                 <p className="text-xs text-gray-500 px-1">
                   This wallet isn&apos;t linked to a Telegram account yet. Generate a link token,
@@ -285,7 +285,7 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
             {link.step === 'linked' && (
               <div className="py-4">
                 <FontAwesomeIcon icon={faCheckCircle} className="text-2xl text-green-500 mb-2" />
-                <p className="text-white text-sm font-medium">Wallet linked!</p>
+                <p className="text-text-primary text-sm font-medium">Wallet linked!</p>
                 <p className="text-gray-400 text-xs mt-1">Signing you in…</p>
               </div>
             )}
@@ -308,7 +308,7 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
             >
               <FontAwesomeIcon icon={faPaperPlane} className="text-xl text-orange-500" />
             </motion.div>
-            <p className="text-white text-sm font-medium mb-1">Approve in Telegram</p>
+            <p className="text-text-primary text-sm font-medium mb-1">Approve in Telegram</p>
             <p className="text-gray-400 text-xs mb-3">
               A sign-in request was sent to your Telegram. Tap <strong>Allow</strong> to continue.
             </p>
@@ -334,7 +334,7 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
             <div className="mb-4 p-3 bg-green-900/20 rounded-lg">
               <FontAwesomeIcon icon={faCheck} className="text-green-500 text-lg mb-2" />
               <p className="text-xs text-gray-400 mb-1">Authenticated</p>
-              <p className="text-sm text-white font-mono truncate">{address}</p>
+              <p className="text-sm text-text-primary font-mono truncate">{address}</p>
             </div>
             <ButtonInput
               label="Disconnect"

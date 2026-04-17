@@ -26,13 +26,13 @@ export default function TermsOfService() {
             <div className="space-y-8 text-text-secondary">
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Agreement to Terms</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Agreement to Terms</h2>
                 <p className="mb-2">By accessing and using the {COMPANY.name} platform and services, you agree to be bound by these Terms of Service and all applicable laws and regulations. If you do not agree with any of these terms, you are prohibited from using this platform.</p>
                 <p>These terms constitute a legally binding agreement between you and {COMPANY.name}.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Service Description</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Service Description</h2>
                 <p className="mb-3">Wrytes AG provides a software development platform specializing in Distributed Ledger Technology solutions and protocol integrations. Our services include:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Software development and Distributed Ledger Technology solutions</li>
@@ -45,7 +45,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Eligibility</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Eligibility</h2>
                 <p className="mb-3">To use our platform, you must:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Be at least 18 years of age</li>
@@ -57,7 +57,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Account and Wallet Responsibilities</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Account and Wallet Responsibilities</h2>
                 <p className="mb-3">When using our platform, you are responsible for:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Maintaining the security of your cryptocurrency wallets and private keys</li>
@@ -67,11 +67,11 @@ export default function TermsOfService() {
                   <li>Not using the platform for any illegal or unauthorized purposes</li>
                   <li>Safeguarding your authentication credentials and access methods</li>
                 </ul>
-                <p className="mt-3 font-semibold text-white">We do not store private keys or have access to your funds. You are solely responsible for the security of your cryptocurrency assets.</p>
+                <p className="mt-3 font-semibold text-text-primary">We do not store private keys or have access to your funds. You are solely responsible for the security of your cryptocurrency assets.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Acceptable Use Policy</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Acceptable Use Policy</h2>
                 <p className="mb-3">You agree not to use our platform to:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Engage in any illegal activities or violate any applicable laws</li>
@@ -86,7 +86,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Platform Availability</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Platform Availability</h2>
                 <p className="mb-3">We strive to maintain high availability but cannot guarantee uninterrupted service. The platform may be temporarily unavailable due to:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Scheduled maintenance and updates</li>
@@ -98,8 +98,8 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Financial Disclaimers</h2>
-                <p className="mb-3 font-semibold text-white">Important Financial Disclaimers:</p>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Financial Disclaimers</h2>
+                <p className="mb-3 font-semibold text-text-primary">Important Financial Disclaimers:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>We do not provide financial, investment, or trading advice</li>
                   <li>All information is for educational and informational purposes only</li>
@@ -112,7 +112,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Limitation of Liability</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Limitation of Liability</h2>
                 <p className="mb-3">To the maximum extent permitted by applicable law, {COMPANY.name} shall not be liable for:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Any direct, indirect, incidental, special, or consequential damages</li>
@@ -123,11 +123,11 @@ export default function TermsOfService() {
                   <li>Market volatility or investment losses</li>
                   <li>Unauthorized access to your wallet or accounts</li>
                 </ul>
-                <p className="mt-3 font-semibold text-white">Our total liability to you for any claims shall not exceed the amount you paid to us for services in the 12 months preceding the claim.</p>
+                <p className="mt-3 font-semibold text-text-primary">Our total liability to you for any claims shall not exceed the amount you paid to us for services in the 12 months preceding the claim.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Indemnification</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Indemnification</h2>
                 <p className="mb-3">You agree to indemnify and hold harmless {COMPANY.name}, its officers, directors, employees, and agents from any claims, damages, losses, or expenses arising from:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Your use of our platform or services</li>
@@ -139,7 +139,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Intellectual Property</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Intellectual Property</h2>
                 <p className="mb-3">All content, features, and functionality are owned by {COMPANY.name} or its licensors and are protected by intellectual property laws. You are granted a limited, non-exclusive, non-transferable license. You may not:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Copy, modify, or distribute our proprietary content</li>
@@ -150,7 +150,7 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Termination</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Termination</h2>
                 <p className="mb-3">We reserve the right to terminate or suspend your access immediately, without prior notice, for any reason, including:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Violation of these terms of service</li>
@@ -163,21 +163,21 @@ export default function TermsOfService() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Governing Law and Jurisdiction</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Governing Law and Jurisdiction</h2>
                 <p>These terms are governed by and construed in accordance with the laws of Switzerland. Any disputes shall be subject to the exclusive jurisdiction of the courts in Zug, Switzerland.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Changes to Terms</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Changes to Terms</h2>
                 <p>We reserve the right to modify these terms at any time. Material changes will be notified through our platform or via email. Your continued use after changes become effective constitutes acceptance of the updated terms.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Contact Information</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Contact Information</h2>
                 <p className="mb-3">If you have questions about these terms:</p>
                 <div className="bg-surface p-4 rounded-lg text-sm">
-                  <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
-                  <p><strong className="text-white">Subject:</strong> Terms of Service Inquiry</p>
+                  <p><strong className="text-text-primary">Email:</strong> hello@wrytes.io</p>
+                  <p><strong className="text-text-primary">Subject:</strong> Terms of Service Inquiry</p>
                 </div>
               </section>
 

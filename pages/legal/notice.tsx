@@ -27,25 +27,25 @@ export default function LegalNotice() {
             <div className="space-y-8 text-text-secondary">
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Company Information</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Company Information</h2>
                 <div className="space-y-2">
-                  <p><strong className="text-white">Company Name:</strong> {COMPANY.name}</p>
+                  <p><strong className="text-text-primary">Company Name:</strong> {COMPANY.name}</p>
                   <p>
-                    <strong className="text-white">Company ID:</strong>{' '}
+                    <strong className="text-text-primary">Company ID:</strong>{' '}
                     <a href={COMPANY.registry} target="_blank" rel="noopener noreferrer"
                       className="text-brand hover:text-brand/80 transition-colors underline">
                       {COMPANY.uid}
                     </a>
                   </p>
-                  <p><strong className="text-white">Legal Form:</strong> Aktiengesellschaft (AG)</p>
-                  <p><strong className="text-white">Registered Address:</strong> {COMPANY.address}</p>
-                  <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
-                  <p><strong className="text-white">Website:</strong> wrytes.io</p>
+                  <p><strong className="text-text-primary">Legal Form:</strong> Aktiengesellschaft (AG)</p>
+                  <p><strong className="text-text-primary">Registered Address:</strong> {COMPANY.address}</p>
+                  <p><strong className="text-text-primary">Email:</strong> hello@wrytes.io</p>
+                  <p><strong className="text-text-primary">Website:</strong> wrytes.io</p>
                 </div>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Business Activities</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Business Activities</h2>
                 <p className="mb-3">Wrytes AG is a Swiss research and development company specializing in software development for Distributed Ledger Technologies and AI. Our core business activities include:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Software development and Distributed Ledger Technology solutions</li>
@@ -59,7 +59,7 @@ export default function LegalNotice() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Regulatory Information</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Regulatory Information</h2>
                 <p className="mb-3">Wrytes AG operates in compliance with Swiss law and regulations, including:</p>
                 <ul className="list-disc list-inside space-y-1 ml-4">
                   <li>Swiss Federal Act on Unfair Competition (UCA)</li>
@@ -71,22 +71,22 @@ export default function LegalNotice() {
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Limitation of Liability</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Limitation of Liability</h2>
                 <p className="mb-2">The information provided on this website is for general informational purposes only. While we strive to keep the information accurate and up-to-date, we make no representations or warranties of any kind about the completeness, accuracy, reliability, or availability of the information.</p>
                 <p>Wrytes AG shall not be liable for any direct, indirect, incidental, special, or consequential damages arising from the use of this website or the information contained herein.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Intellectual Property</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Intellectual Property</h2>
                 <p>All content on this website, including but not limited to text, graphics, logos, images, and software, is the property of Wrytes AG or its licensors and is protected by Swiss and international copyright and trademark laws.</p>
               </section>
 
               <section>
-                <h2 className="text-xl font-bold text-white mb-3">Legal Inquiries</h2>
+                <h2 className="text-xl font-bold text-text-primary mb-3">Legal Inquiries</h2>
                 <p className="mb-3">For legal inquiries, compliance questions, or other formal communications:</p>
                 <div className="bg-surface p-4 rounded-lg text-sm">
-                  <p><strong className="text-white">Email:</strong> hello@wrytes.io</p>
-                  <p><strong className="text-white">Subject:</strong> Legal Inquiry</p>
+                  <p><strong className="text-text-primary">Email:</strong> hello@wrytes.io</p>
+                  <p><strong className="text-text-primary">Subject:</strong> Legal Inquiry</p>
                 </div>
               </section>
 

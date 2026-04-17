@@ -52,7 +52,7 @@ export default function DocsViewerPage({ fileExists, slugPath, fileContent }: Do
             <MarkdownContent content={fileContent} />
           ) : (
             <p className="text-text-secondary">
-              File <span className="text-white font-semibold">{slugPath}</span> does not exist in
+              File <span className="text-text-primary font-semibold">{slugPath}</span> does not exist in
               the docs directory.
             </p>
           )}

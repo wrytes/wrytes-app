@@ -13,7 +13,7 @@ export interface ToastProps {
 export default function Toast({ message, toastId, showCloseButton = true, className }: ToastProps) {
   return (
     <div className={cn('flex items-center gap-4 w-full', className)}>
-      <div className="flex-1 text-sm font-medium text-gray-900 dark:text-white">{message}</div>
+      <div className="flex-1 text-sm font-medium text-gray-900 dark:text-text-primary">{message}</div>
 
       {showCloseButton && (
         <button

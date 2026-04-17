@@ -31,7 +31,7 @@ export default function TableRow({
     <div
       className={`${className ?? ''} ${
         paddingY ?? 'py-4'
-      } bg-surface md:hover:bg-card cursor-default p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300`}
+      } bg-card md:hover:bg-surface cursor-default p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300`}
     >
       <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}

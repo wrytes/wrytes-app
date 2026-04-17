@@ -73,7 +73,7 @@ export function StatCard({
       <div className="flex-1">
         <p className="text-text-secondary text-sm font-medium mb-1">{label}</p>
         <div>
-          <p className="text-3xl font-bold text-white mb-1">{formatValue(value)}</p>
+          <p className="text-3xl font-bold text-text-primary mb-1">{formatValue(value)}</p>
           {trend && (
             <div className={cn('flex items-center gap-1 text-sm font-medium', TREND_COLORS[trend.direction])}>
               <FontAwesomeIcon icon={trend.direction === 'up' ? faArrowUp : faArrowDown} className="w-3 h-3" />

@@ -117,7 +117,7 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
                 <div className="text-center max-w-[72px]">
                   <p className={`text-xs font-medium ${
                     status === 'current' || status === 'completed' || status === 'loading'
-                      ? 'text-white'
+                      ? 'text-text-primary'
                       : 'text-gray-500'
                   }`}>
                     {step.title}

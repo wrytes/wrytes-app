@@ -4,7 +4,7 @@ import { COMPANY } from '@/lib/constants';
 
 export default function Hero() {
   return (
-    <section className="relative min-h-screen flex items-center justify-center bg-gradient-dark overflow-hidden">
+    <section className="relative min-h-screen flex items-center justify-center bg-base overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-50">
         <div
@@ -28,7 +28,7 @@ export default function Hero() {
             initial={{ opacity: 0, scale: 0.9 }}
             animate={{ opacity: 1, scale: 1 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 text-white"
+            className="text-7xl md:text-8xl lg:text-9xl font-bold mb-8 text-text-primary"
           >
             {COMPANY.name.split(' ')[0]}
             <span className="text-brand">.</span>

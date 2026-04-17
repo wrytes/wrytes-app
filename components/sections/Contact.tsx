@@ -15,7 +15,7 @@ export default function Contact() {
           viewport={{ once: true }}
           className="text-center mb-16"
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-white">Get in Touch</h2>
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-text-primary">Get in Touch</h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
             Interested in collaborating on blockchain research or need technical development
             services? Let&apos;s discuss how our R&D expertise can advance your project goals.
@@ -38,7 +38,7 @@ export default function Contact() {
                   <FontAwesomeIcon icon={faMapMarkerAlt} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
-                  <h4 className="text-white font-semibold mb-1">Location</h4>
+                  <h4 className="text-text-primary font-semibold mb-1">Location</h4>
                   <p className="text-text-secondary">{COMPANY.location}</p>
                   <p className="text-text-muted text-sm">Heart of European FinTech</p>
                 </div>
@@ -50,7 +50,7 @@ export default function Contact() {
                   <FontAwesomeIcon icon={faEnvelope} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
-                  <h4 className="text-white font-semibold mb-1">Email</h4>
+                  <h4 className="text-text-primary font-semibold mb-1">Email</h4>
                   <p className="text-text-secondary">hello@wrytes.io</p>
                   <p className="text-text-muted text-sm">
                     For private inquiries or collaboration requests
@@ -64,7 +64,7 @@ export default function Contact() {
                   <FontAwesomeIcon icon={faPeopleGroup} className="w-5 h-5 text-brand" />
                 </div>
                 <div>
-                  <h4 className="text-white font-semibold mb-1">Telegram Community</h4>
+                  <h4 className="text-text-primary font-semibold mb-1">Telegram Community</h4>
                   <p className="text-text-secondary">@wrytes_io</p>
                   <p className="text-text-muted text-sm">
                     Join for public discussions or general inquiries
