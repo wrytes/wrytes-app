@@ -1,4 +1,5 @@
 import {
+  faCode,
   faLightbulb,
   faRoute,
   faUser,
@@ -39,5 +40,11 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     path: '/dashboard/profile',
     icon: faUser,
     description: 'Manage your profile',
+  },
+  {
+    label: 'Components',
+    path: '/dashboard/components/display',
+    icon: faCode,
+    description: 'UI component showcase',
   },
 ];
