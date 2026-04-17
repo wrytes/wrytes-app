@@ -87,10 +87,18 @@ export default function LiquidationSlider({
             <div className="absolute inset-x-0 h-3 rounded-full overflow-hidden">
               <div
                 className="absolute inset-0"
-                style={{ background: 'linear-gradient(to right, #22c55e 0%, #eab308 50%, #f97316 100%)' }}
+                style={{
+                  background: 'linear-gradient(to right, #22c55e 0%, #eab308 50%, #f97316 100%)',
+                }}
               />
-              <div className="absolute top-0 bottom-0 bg-surface" style={{ left: `${sourcePct}%`, right: 0 }} />
-              <div className="absolute top-0 bottom-0 w-0.5 bg-white/30" style={{ left: `${sourcePct}%` }} />
+              <div
+                className="absolute top-0 bottom-0 bg-surface"
+                style={{ left: `${sourcePct}%`, right: 0 }}
+              />
+              <div
+                className="absolute top-0 bottom-0 w-0.5 bg-white/30"
+                style={{ left: `${sourcePct}%` }}
+              />
             </div>
 
             <div
@@ -106,7 +114,7 @@ export default function LiquidationSlider({
               step={(sliderMaxNum - sliderMinNum) / 1000}
               value={valueNum}
               disabled={disabled}
-              onChange={(e) => {
+              onChange={e => {
                 const raw = e.target.value;
                 const [intPart, fracPart = ''] = raw.split('.');
                 const trimmed = fracPart ? `${intPart}.${fracPart.slice(0, digit)}` : intPart;
@@ -130,7 +138,7 @@ export default function LiquidationSlider({
           <div className="flex flex-row gap-2">
             {canShowButtons && max != undefined && max !== value && (
               <div
-                className="text-brand cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(max);
                   onMax();
@@ -141,7 +149,7 @@ export default function LiquidationSlider({
             )}
             {canShowButtons && min != undefined && min !== value && min !== max && (
               <div
-                className="text-brand cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(min);
                   onMin();
@@ -150,27 +158,31 @@ export default function LiquidationSlider({
                 Min
               </div>
             )}
-            {canShowButtons && reset != undefined && reset !== value && reset !== min && reset !== max && (
-              <div
-                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
-                onClick={() => {
-                  onChange(reset);
-                  onReset();
-                }}
-              >
-                Reset
-              </div>
-            )}
+            {canShowButtons &&
+              reset != undefined &&
+              reset !== value &&
+              reset !== min &&
+              reset !== max && (
+                <div
+                  className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
+                  onClick={() => {
+                    onChange(reset);
+                    onReset();
+                  }}
+                >
+                  Reset
+                </div>
+              )}
           </div>
         </div>
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-error">{error}</div>
+        <div className="flex mt-2 px-3.5 text-error">{error}</div>
       ) : warning ? (
-        <div className="flex my-2 px-3.5 text-warning">{warning}</div>
+        <div className="flex mt-2 px-3.5 text-warning">{warning}</div>
       ) : (
-        <div className="flex my-2 px-3.5">{note}</div>
+        <div className="flex mt-2 px-3.5">{note}</div>
       )}
     </div>
   );

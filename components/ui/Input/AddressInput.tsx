@@ -12,6 +12,7 @@ interface Props {
   own?: string;
   reset?: string;
   error?: string;
+  warning?: string;
   autoFocus?: boolean;
   disabled?: boolean;
   isTextLeft?: boolean;
@@ -24,6 +25,7 @@ export default function AddressInput({
   placeholder,
   value,
   error,
+  warning,
   onChange = () => {},
   onOwn = () => {},
   onReset = () => {},
@@ -62,7 +64,7 @@ export default function AddressInput({
           }`}
           placeholder={placeholder}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
+          onChange={e => onChange(e.target.value)}
           disabled={disabled}
           autoFocus={autoFocus}
         />
@@ -79,7 +81,7 @@ export default function AddressInput({
 
             {!disabled && own != undefined && own !== value && (
               <div
-                className="text-brand cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(own);
                   onOwn();
@@ -90,7 +92,7 @@ export default function AddressInput({
             )}
             {!disabled && reset != undefined && reset !== value && reset !== own && (
               <div
-                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(reset);
                   onReset();
@@ -104,9 +106,11 @@ export default function AddressInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-error">{error}</div>
+        <div className="flex mt-2 px-3.5 text-error">{error}</div>
+      ) : warning ? (
+        <div className="flex mt-2 px-3.5 text-warning">{warning}</div>
       ) : (
-        <div className="flex my-2 px-3.5">{note}</div>
+        <div className="flex mt-2 px-3.5">{note}</div>
       )}
     </div>
   );

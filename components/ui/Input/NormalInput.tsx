@@ -77,11 +77,11 @@ export default function NormalInput({
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-error">{error}</div>
+        <div className="flex mt-2 px-3.5 text-error">{error}</div>
       ) : warning ? (
-        <div className="flex my-2 px-3.5 text-warning">{warning}</div>
+        <div className="flex mt-2 px-3.5 text-warning">{warning}</div>
       ) : (
-        <div className="flex my-2 px-3.5">{note}</div>
+        <div className="flex mt-2 px-3.5">{note}</div>
       )}
     </div>
   );

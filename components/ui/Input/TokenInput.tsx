@@ -120,7 +120,7 @@ export default function TokenInput({
 
             {canShowButtons && max != undefined && max !== safeValue && (
               <div
-                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(max.toString());
                   onMax();
@@ -131,7 +131,7 @@ export default function TokenInput({
             )}
             {canShowButtons && min != undefined && min !== safeValue && min !== max && (
               <div
-                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
+                className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
                 onClick={() => {
                   onChange(min.toString());
                   onMin();
@@ -140,27 +140,31 @@ export default function TokenInput({
                 Min
               </div>
             )}
-            {canShowButtons && reset != undefined && reset !== safeValue && reset !== min && reset !== max && (
-              <div
-                className="text-input-label cursor-pointer hover:text-brand font-extrabold"
-                onClick={() => {
-                  onChange(reset.toString());
-                  onReset();
-                }}
-              >
-                Reset
-              </div>
-            )}
+            {canShowButtons &&
+              reset != undefined &&
+              reset !== safeValue &&
+              reset !== min &&
+              reset !== max && (
+                <div
+                  className="text-input-border cursor-pointer hover:text-text-secondary font-extrabold"
+                  onClick={() => {
+                    onChange(reset.toString());
+                    onReset();
+                  }}
+                >
+                  Reset
+                </div>
+              )}
           </div>
         ) : null}
       </div>
 
       {error ? (
-        <div className="flex my-2 px-3.5 text-error">{error}</div>
+        <div className="flex mt-2 px-3.5 text-error">{error}</div>
       ) : warning ? (
-        <div className="flex my-2 px-3.5 text-warning">{warning}</div>
+        <div className="flex mt-2 px-3.5 text-warning">{warning}</div>
       ) : (
-        <div className="flex my-2 px-3.5">{note}</div>
+        <div className="flex mt-2 px-3.5">{note}</div>
       )}
     </div>
   );

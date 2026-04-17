@@ -1,14 +1,15 @@
 interface TextInputProps {
-  label?: string
-  placeholder?: string
-  value: string
-  onChange?: (value: string) => void
-  type?: 'text' | 'email' | 'date' | 'tel' | 'url'
-  error?: string
-  note?: string
-  disabled?: boolean
-  maxLength?: number
-  className?: string
+  label?: string;
+  placeholder?: string;
+  value: string;
+  onChange?: (value: string) => void;
+  type?: 'text' | 'email' | 'date' | 'tel' | 'url';
+  error?: string;
+  warning?: string;
+  note?: string;
+  disabled?: boolean;
+  maxLength?: number;
+  className?: string;
 }
 
 export default function TextInput({
@@ -18,6 +19,7 @@ export default function TextInput({
   onChange,
   type = 'text',
   error,
+  warning,
   note,
   disabled = false,
   maxLength,
@@ -31,17 +33,15 @@ export default function TextInput({
           focus-within:!border-brand
           ${error ? '!border-error' : ''}`}
       >
-        {label && (
-          <div className="text-input-label text-xs mt-1 mb-0.5">{label}</div>
-        )}
+        {label && <div className="text-input-label mt-1 mb-0.5">{label}</div>}
         <input
           type={type}
           value={value}
-          onChange={(e) => onChange?.(e.target.value)}
+          onChange={e => onChange?.(e.target.value)}
           placeholder={placeholder}
           disabled={disabled}
           maxLength={maxLength}
-          className={`w-full bg-transparent text-sm py-1.5 outline-none
+          className={`w-full bg-transparent text-lg py-1.5 outline-none
             ${disabled ? 'text-text-secondary cursor-not-allowed' : 'text-text-primary'}
             ${error ? 'text-error' : ''}
             placeholder:text-input-empty`}
@@ -49,10 +49,12 @@ export default function TextInput({
       </div>
 
       {error ? (
-        <div className="px-3.5 mt-1 text-xs text-error">{error}</div>
+        <div className="flex mt-2 px-3.5 text-error">{error}</div>
+      ) : warning ? (
+        <div className="flex mt-2 px-3.5 text-warning">{warning}</div>
       ) : note ? (
-        <div className="px-3.5 mt-1 text-xs text-text-secondary">{note}</div>
+        <div className="flex mt-2 px-3.5">{note}</div>
       ) : null}
     </div>
-  )
+  );
 }
