@@ -26,7 +26,12 @@ export default function DocsViewerPage({ fileExists, slugPath, fileContent }: Do
     { label: 'Documentation', href: '/docs' },
     ...folderSegments.map((f, i) => ({
       label: f.charAt(0).toUpperCase() + f.slice(1),
-      href: '/docs?folder=' + segments.slice(0, i + 1).map(encodeURIComponent).join('/'),
+      href:
+        '/docs?folder=' +
+        segments
+          .slice(0, i + 1)
+          .map(encodeURIComponent)
+          .join('/'),
     })),
     { label: displayName },
   ];
@@ -43,17 +48,9 @@ export default function DocsViewerPage({ fileExists, slugPath, fileContent }: Do
           description={!fileExists ? `No document found at path: "${slugPath}"` : undefined}
           icon={faBook}
           breadcrumbs={breadcrumbs}
-          actions={
-            <ButtonInput
-              label="Browse Docs"
-              variant="secondary"
-              icon={<FontAwesomeIcon icon={faArrowLeft} />}
-              onClick={() => router.push('/docs')}
-            />
-          }
         />
 
-        <Card className="w-full overflow-x-auto">
+        <Card className="w-full">
           {fileExists ? (
             <MarkdownContent content={fileContent} />
           ) : (

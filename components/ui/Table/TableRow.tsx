@@ -31,9 +31,9 @@ export default function TableRow({
     <div
       className={`${className ?? ''} ${
         paddingY ?? 'py-4'
-      } bg-table-row-primary md:hover:bg-table-row-hover cursor-default px-8 xl:px-12 border-t border-table-header-secondary last:rounded-b-lg duration-300`}
+      } bg-table-row-primary md:hover:bg-table-row-hover cursor-default p-4 xl:px-6 border-t border-table-header-secondary last:rounded-b-lg duration-300`}
     >
-      <div className="flex sm:pl-8 flex-col justify-between gap-y-5 md:flex-row">
+      <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
         <div
           className="max-md:hidden text-right grid flex-grow items-center"
@@ -94,7 +94,7 @@ function TableRowMobile({
   return (
     <div className={`${className} md:hidden gap-6 grid-cols-1 flex-1`}>
       {children.map((c, idx) => (
-        <div className="mt-2 flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
+        <div className="py-0.5 flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
           <div className="flex-1 text-left">
             {idx === 0 && !rawHeader ? (
               <div

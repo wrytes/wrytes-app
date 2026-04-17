@@ -42,6 +42,7 @@ interface Props {
   colSpan?: number;
   tab?: string;
   reverse?: boolean;
+  logoPadding?: boolean;
   tabOnChange?: (tab: string) => void;
 }
 
@@ -65,6 +66,7 @@ export default function TableHeadSearchable({
   colSpan,
   tab = '',
   reverse = false,
+  logoPadding = false,
   tabOnChange,
 }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -96,7 +98,7 @@ export default function TableHeadSearchable({
 
   const toggleFilter = (value: string) => {
     if (activeFilters.includes(value)) {
-      onFiltersChange(activeFilters.filter((f) => f !== value));
+      onFiltersChange(activeFilters.filter(f => f !== value));
     } else {
       onFiltersChange([...activeFilters, value]);
     }
@@ -105,7 +107,7 @@ export default function TableHeadSearchable({
   const toggleCustomCategory = (value: string) => {
     if (!onCustomCategoriesChange) return;
     if (activeCustomCategories.includes(value)) {
-      onCustomCategoriesChange(activeCustomCategories.filter((f) => f !== value));
+      onCustomCategoriesChange(activeCustomCategories.filter(f => f !== value));
     } else {
       onCustomCategoriesChange([...activeCustomCategories, value]);
     }
@@ -116,18 +118,21 @@ export default function TableHeadSearchable({
   return (
     <div className="rounded-t-lg bg-table-header-primary">
       {/* Search / toggle / filter bar */}
-      <div className="grid grid-cols-1 md:flex md:items-center md:justify-between px-7 xl:px-11 py-4 border-b border-table-header-secondary gap-3">
+      <div className="grid grid-cols-1 md:flex md:items-center md:justify-between p-4 xl:px-6 border-b border-table-header-secondary gap-3">
         {/* Search */}
-        <div className="flex flex-1 items-center gap-2 text-text-secondary">
+        <div className="flex flex-1 items-center gap-2 text-text-secondary py-2">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="w-4 h-4 text-text-secondary" />
           <input
             type="text"
             value={searchValue}
-            onChange={(e) => onSearchChange(e.target.value)}
+            onChange={e => onSearchChange(e.target.value)}
             placeholder={searchPlaceholder}
             className="bg-transparent outline-none text-sm text-text-primary placeholder:text-text-secondary w-full"
           />
         </div>
+
+        {/* Divider between search and controls — mobile only */}
+        <div className="md:hidden border-t border-table-header-secondary -mx-4" />
 
         {/* Right controls */}
         <div className="flex items-center justify-end gap-5">
@@ -155,7 +160,7 @@ export default function TableHeadSearchable({
           {/* Filter button + dropdown */}
           <div className="relative" ref={filterRef}>
             <button
-              onClick={() => setFilterOpen((prev) => !prev)}
+              onClick={() => setFilterOpen(prev => !prev)}
               className={`flex items-center gap-2 px-3 py-1.5 rounded-md text-sm transition-colors border ${
                 filterOpen || totalActiveFilters > 0
                   ? 'border-button-default text-text-active bg-button-default/10'
@@ -180,7 +185,7 @@ export default function TableHeadSearchable({
                         Asset Categories
                       </span>
                     </div>
-                    {filterOptions.map((opt) => (
+                    {filterOptions.map(opt => (
                       <label
                         key={opt.value}
                         className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-table-row-hover"
@@ -206,7 +211,7 @@ export default function TableHeadSearchable({
                         {customCategoriesTitle}
                       </span>
                     </div>
-                    {customCategories.map((category) => (
+                    {customCategories.map(category => (
                       <label
                         key={category}
                         className="flex items-center gap-3 px-4 py-2 cursor-pointer hover:bg-table-row-hover"
@@ -229,12 +234,14 @@ export default function TableHeadSearchable({
       </div>
 
       {/* Column headers — desktop */}
-      <div className="items-center justify-between py-4 px-8 md:flex xl:px-12">
-        <div className={`max-md:hidden pl-8 flex-grow grid-cols-2 md:grid md:grid-cols-${colSpan || headers.length}`}>
+      <div className="items-center justify-between p-4 xl:px-6 md:flex">
+        <div
+          className={`max-md:hidden flex-grow grid-cols-2 md:grid md:grid-cols-${colSpan || headers.length}`}
+        >
           {headers.map((header, i) => (
             <div
               key={`th-${i}`}
-              className={`${i > 0 ? 'text-right' : ''}`}
+              className={`${i > 0 ? 'text-right' : logoPadding ? 'pl-8' : ''} `}
               onClick={() => handleTabClick(header)}
             >
               <span
@@ -261,7 +268,9 @@ export default function TableHeadSearchable({
 
         {actionCol && (
           <div className="max-md:hidden">
-            <div className={`text-text-header text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`} />
+            <div
+              className={`text-text-header text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
+            />
             {subHeaders && <span> </span>}
           </div>
         )}
@@ -272,22 +281,34 @@ export default function TableHeadSearchable({
           <div className="flex items-center gap-2">
             <div className="relative" ref={sortRef}>
               <button
-                onClick={() => setSortOpen((prev) => !prev)}
+                onClick={() => setSortOpen(prev => !prev)}
                 className="flex items-center gap-2 bg-dark-card text-text-primary text-sm rounded-md px-2 py-1.5 border border-table-header-secondary outline-none cursor-pointer"
               >
                 <span>{tab || headers[0]}</span>
-                <FontAwesomeIcon icon={reverse ? faArrowUpShortWide : faArrowDownWideShort} className="w-3 h-3 text-text-secondary" />
+                <FontAwesomeIcon
+                  icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
+                  className="w-3 h-3 text-text-secondary"
+                />
               </button>
               {sortOpen && (
                 <div className="absolute right-0 top-full mt-1 z-50 min-w-full rounded-lg bg-dark-card shadow-card border border-table-header-secondary py-1">
-                  {headers.map((h) => (
+                  {headers.map(h => (
                     <button
                       key={h}
-                      onClick={() => { handleTabClick(h); setSortOpen(false); }}
+                      onClick={() => {
+                        handleTabClick(h);
+                        setSortOpen(false);
+                      }}
                       className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-table-row-hover"
                     >
-                      <span className={`flex-1 ${tab === h ? 'text-text-active font-semibold' : 'text-text-primary'}`}>{h}</span>
-                      {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-button-default" />}
+                      <span
+                        className={`flex-1 ${tab === h ? 'text-text-active font-semibold' : 'text-text-primary'}`}
+                      >
+                        {h}
+                      </span>
+                      {tab === h && (
+                        <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-button-default" />
+                      )}
                     </button>
                   ))}
                 </div>

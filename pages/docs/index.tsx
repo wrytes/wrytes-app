@@ -93,7 +93,7 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
 
       <Section>
         <PageHeader
-          title={folderLabel ? `${folderLabel}` : 'Documentation Library'}
+          title={folderLabel ? `${folderLabel}` : 'Document Library'}
           description={
             folderLabel
               ? `Browsing folder: ${folderLabel}`
@@ -199,7 +199,10 @@ function parseFrontmatter(content: string): { tags: string[]; description: strin
     const val = line.slice(colonIdx + 1).trim();
     if (key === 'tags') {
       const inner = val.startsWith('[') && val.endsWith(']') ? val.slice(1, -1) : val;
-      result.tags = inner.split(',').map((t) => t.trim()).filter(Boolean);
+      result.tags = inner
+        .split(',')
+        .map(t => t.trim())
+        .filter(Boolean);
     } else if (key === 'description') {
       result.description = val.replace(/^["']|["']$/g, '');
     }
@@ -215,7 +218,7 @@ function scanRecursive(
   dirPath: string,
   docsRoot: string,
   entries: DocEntry[],
-  folders: Set<string>,
+  folders: Set<string>
 ) {
   if (!fs.existsSync(dirPath)) return;
   for (const item of fs.readdirSync(dirPath, { withFileTypes: true })) {
@@ -227,7 +230,14 @@ function scanRecursive(
       const filename = item.name.slice(0, -3);
       const relPath = relDir === '' ? filename : `${relDir}/${filename}`;
       const { tags, description } = parseFrontmatter(fs.readFileSync(fullPath, 'utf-8'));
-      entries.push({ filename, folder, path: relPath, title: titleFromFilename(filename), tags, description });
+      entries.push({
+        filename,
+        folder,
+        path: relPath,
+        title: titleFromFilename(filename),
+        tags,
+        description,
+      });
     }
 
     if (item.isDirectory()) {

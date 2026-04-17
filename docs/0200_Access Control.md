@@ -34,7 +34,7 @@ Your current scopes are visible on the **Profile** page after logging in.
 Wraps any UI element. Children are only rendered if the authenticated user holds the required scope (or `ADMIN`).
 
 ```tsx
-<RequireScope scope="ACCOUNTS_WRITE">
+<RequireScope scope="ACCOUNTS_WRITE" active={true}>
   <AddAccountButton />
 </RequireScope>
 ```

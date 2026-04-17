@@ -7,9 +7,7 @@ interface MarkdownProps {
 }
 
 const components: Components = {
-  h1: ({ node: _n, ...props }) => (
-    <h1 className="text-3xl font-bold mb-4 text-white" {...props} />
-  ),
+  h1: ({ node: _n, ...props }) => <h1 className="text-3xl font-bold mb-4 text-white" {...props} />,
   h2: ({ node: _n, ...props }) => (
     <h2 className="text-2xl font-bold mb-3 mt-6 text-white" {...props} />
   ),
@@ -29,9 +27,7 @@ const components: Components = {
     <ol className="list-decimal ml-6 mb-4 text-text-secondary space-y-1" {...props} />
   ),
   li: ({ node: _n, ...props }) => <li className="leading-relaxed" {...props} />,
-  strong: ({ node: _n, ...props }) => (
-    <strong className="text-white font-semibold" {...props} />
-  ),
+  strong: ({ node: _n, ...props }) => <strong className="text-white font-semibold" {...props} />,
   a: ({ node: _n, ...props }) => (
     <a
       className="text-accent-orange hover:underline"
@@ -58,7 +54,7 @@ const components: Components = {
     }
     return (
       <code
-        className="bg-dark-surface text-accent-orange rounded px-1.5 py-0.5 text-sm font-mono"
+        className="bg-dark-surface text-accent-orange rounded px-1 py-0.5 text-sm font-mono"
         {...props}
       >
         {children}
@@ -66,19 +62,19 @@ const components: Components = {
     );
   },
   pre: ({ node: _n, ...props }) => (
-    <pre
-      className="bg-dark-surface rounded-xl p-4 mb-4 overflow-x-auto text-sm border border-white/5"
-      {...props}
-    />
+    <div className="overflow-x-auto mb-4">
+      <pre
+        className="bg-dark-surface rounded-xl p-4 w-max min-w-full text-sm border border-white/5"
+        {...props}
+      />
+    </div>
   ),
   table: ({ node: _n, ...props }) => (
     <div className="overflow-x-auto mb-4">
       <table className="w-full text-sm text-left border-collapse" {...props} />
     </div>
   ),
-  thead: ({ node: _n, ...props }) => (
-    <thead className="border-b border-dark-surface" {...props} />
-  ),
+  thead: ({ node: _n, ...props }) => <thead className="border-b border-dark-surface" {...props} />,
   th: ({ node: _n, ...props }) => (
     <th className="px-4 py-2 text-white font-semibold text-left" {...props} />
   ),
@@ -89,7 +85,7 @@ const components: Components = {
 
 export default function MarkdownContent({ content }: MarkdownProps) {
   return (
-    <div className="lg:p-2">
+    <div className="break-words min-w-0">
       <Markdown
         remarkPlugins={[remarkGfm]}
         rehypePlugins={[rehypeHighlight]}
