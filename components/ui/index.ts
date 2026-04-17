@@ -5,6 +5,7 @@ export { CardTitle } from './CardTitle';
 export { default as Toast, showToast } from './Toast';
 export type { ToastProps } from './Toast';
 export { Badge } from './Badge';
+export { TagList } from './TagList';
 export { TokenLogo, ChainLogo, IconLogo } from './logo';
 
 // Layout Components
