@@ -75,7 +75,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
 
         {/* Sidebar */}
         <aside
-          className={`fixed left-0 top-16 mt-1 w-64 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
+          className={`fixed left-0 top-16 mt-1 w-52 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 overflow-y-auto ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
@@ -83,7 +83,7 @@ export default function DocsLayout({ children }: DocsLayoutProps) {
         </aside>
 
         {/* Main */}
-        <main className="flex-1 min-w-0 px-4 md:ml-64 flex flex-col">
+        <main className="flex-1 min-w-0 px-4 md:ml-52 flex flex-col">
           <div className="flex-1">{children}</div>
           <FooterSimple />
         </main>
