@@ -99,21 +99,6 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
 
   const navContent = (
     <>
-      {/* Back */}
-      <Link
-        href="/dashboard"
-        className={cn(
-          'flex items-center gap-3 px-4 py-2 rounded-lg transition-all duration-200 text-sm mb-4',
-          'text-text-secondary hover:text-brand hover:bg-brand/20 border border-text-muted hover:border-brand/30'
-        )}
-        onClick={onItemClick}
-      >
-        <FontAwesomeIcon icon={faArrowLeft} className="w-4 h-4" />
-        <span>Back to Dashboard</span>
-      </Link>
-
-      <div className="pt-2" />
-
       {/* All docs */}
       <Link
         href="/docs"
@@ -190,5 +175,5 @@ export function SidebarDocs({ onItemClick, variant }: SidebarDocsProps) {
   );
 
   if (variant === 'mobile') return <nav className="space-y-2">{navContent}</nav>;
-  return <nav className="pl-4 py-6 space-y-2">{navContent}</nav>;
+  return <nav className="px-4 py-6 space-y-2">{navContent}</nav>;
 }

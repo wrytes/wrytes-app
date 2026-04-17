@@ -78,7 +78,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
     <div className="min-h-screen bg-base text-text-primary">
       {/* Dashboard Header */}
       <header className="fixed top-0 left-0 right-0 z-50 bg-base">
-        <div className="mx-auto max-md:px-4 px-16 py-3.5">
+        <div className="mx-auto max-md:px-4 px-5 py-3.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
             <div className="flex items-center gap-4">

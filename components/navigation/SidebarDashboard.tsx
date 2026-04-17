@@ -42,7 +42,7 @@ export function SidebarDashboard({ items, isActive, onItemClick, variant }: Side
   }
 
   return (
-    <nav className="pl-4 py-6">
+    <nav className="px-4 py-6">
       <ul className="space-y-2">
         {items.map(item => (
           <li key={item.path}>
