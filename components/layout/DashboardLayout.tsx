@@ -213,7 +213,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Sidebar Navigation */}
         <aside
-          className={`fixed left-0 top-16 w-52 -mt-0.5 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 ${
+          className={`fixed left-0 top-16 w-64 -mt-0.5 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
@@ -226,7 +226,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 px-4 md:ml-52 flex flex-col">
+        <main className="flex-1 min-w-0 px-4 xl:px-12 md:ml-64 flex flex-col">
           <div className="flex-1">{children}</div>
           <FooterSimple />
         </main>

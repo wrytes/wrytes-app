@@ -74,7 +74,7 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
 
           const ringClass =
             status === 'completed' ? 'border-success bg-success-bg' :
-            status === 'loading' || status === 'current' ? 'border-brand bg-brand/10' :
+            status === 'loading' || status === 'current' ? 'border-brand bg-card' :
             status === 'error'     ? 'border-error bg-error-bg' :
             'border-input-border bg-surface'
 

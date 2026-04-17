@@ -1,45 +1,45 @@
-import React, { useState } from 'react'
-import { motion, AnimatePresence } from 'framer-motion'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
-import { faTimes } from '@fortawesome/free-solid-svg-icons'
-import { WalletConnector } from './WalletConnector'
-import { AuthStepper } from './AuthStepper'
-import { useAuth } from '@/hooks/useAuth'
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import { faTimes } from '@fortawesome/free-solid-svg-icons';
+import { WalletConnector } from './WalletConnector';
+import { AuthStepper } from './AuthStepper';
+import { useAuth } from '@/hooks/useAuth';
 
 interface AuthModalProps {
-  isOpen: boolean
-  onClose: () => void
-  onSuccess?: () => void
-  title?: string
-  description?: string
+  isOpen: boolean;
+  onClose: () => void;
+  onSuccess?: () => void;
+  title?: string;
+  description?: string;
 }
 
 export function AuthModal({
   isOpen,
   onClose,
   title = 'Authentication Required',
-  description = 'Please connect your wallet and sign a message to continue.'
+  description = 'Please connect your wallet and sign a message to continue.',
 }: AuthModalProps) {
-  const { isAuthenticated } = useAuth()
-  const [error, setError] = useState<string | null>(null)
+  const { isAuthenticated } = useAuth();
+  const [error, setError] = useState<string | null>(null);
 
-  const handleSuccess = () => {}
+  const handleSuccess = () => {};
 
   const handleError = (errorMessage: string) => {
-    setError(errorMessage)
-  }
+    setError(errorMessage);
+  };
 
   const clearError = () => {
-    setError(null)
-  }
+    setError(null);
+  };
 
   React.useEffect(() => {
     if (isAuthenticated && isOpen) {
-      handleSuccess()
+      handleSuccess();
     }
-  }, [isAuthenticated, isOpen])
+  }, [isAuthenticated, isOpen]);
 
-  if (!isOpen) return null
+  if (!isOpen) return null;
 
   return (
     <AnimatePresence>
@@ -61,9 +61,9 @@ export function AuthModal({
             exit={{ opacity: 0, scale: 0.95, y: 20 }}
             transition={{ type: 'spring', damping: 25, stiffness: 300 }}
             className="relative w-full max-w-md"
-            onClick={(e) => e.stopPropagation()}
+            onClick={e => e.stopPropagation()}
           >
-            <div className="bg-surface rounded-2xl border border-surface shadow-card overflow-hidden">
+            <div className="bg-surface rounded-lg border border-surface overflow-hidden">
               {/* Header */}
               <div className="px-6 py-4 border-b border-surface">
                 <div className="flex items-center justify-between">
@@ -120,5 +120,5 @@ export function AuthModal({
         </div>
       </div>
     </AnimatePresence>
-  )
+  );
 }
