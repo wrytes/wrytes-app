@@ -34,7 +34,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
 
   const { address } = useAppKitAccount();
   const { step, token, secondsLeft, error, generateToken, reset } = useWalletLink(
-    address as Address | undefined,
+    address as Address | undefined
   );
 
   const load = useCallback(async () => {
@@ -84,7 +84,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
 
   const handleCopyToken = async () => {
     if (!token) return;
-    await navigator.clipboard.writeText(token);
+    await navigator.clipboard.writeText(`/link ${token}`);
     setCopied(true);
     setTimeout(() => setCopied(false), 2000);
   };
@@ -134,49 +134,49 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
             />
           </p>
         ) : (
-        <Table>
-          <TableHead
-            headers={WALLET_HEADERS}
-            colSpan={WALLET_HEADERS.length}
-            tab={wSort}
-            reverse={wRev}
-            tabOnChange={handleWSort}
-          />
-          <TableBody>
-            {sorted.length === 0 ? (
-              <TableRowEmpty>No wallets linked yet.</TableRowEmpty>
-            ) : (
-              sorted.map(w => (
-                <TableRow
-                  key={w.id}
-                  headers={WALLET_HEADERS}
-                  colSpan={WALLET_HEADERS.length}
-                  tab={wSort}
-                  rawHeader
-                >
-                  <div className="text-left">
-                    <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
-                  </div>
-                  <div className="text-right text-text-secondary text-sm">
-                    {w.label ?? <span className="text-text-muted">—</span>}
-                  </div>
-                  <div className="text-right text-text-secondary text-sm">
-                    {new Date(w.createdAt).toLocaleDateString()}
-                  </div>
-                  <div className="flex justify-end">
-                    <button
-                      onClick={() => setUnlinkTarget(w)}
-                      className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
-                    >
-                      <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                      Unlink
-                    </button>
-                  </div>
-                </TableRow>
-              ))
-            )}
-          </TableBody>
-        </Table>
+          <Table>
+            <TableHead
+              headers={WALLET_HEADERS}
+              colSpan={WALLET_HEADERS.length}
+              tab={wSort}
+              reverse={wRev}
+              tabOnChange={handleWSort}
+            />
+            <TableBody>
+              {sorted.length === 0 ? (
+                <TableRowEmpty>No wallets linked yet.</TableRowEmpty>
+              ) : (
+                sorted.map(w => (
+                  <TableRow
+                    key={w.id}
+                    headers={WALLET_HEADERS}
+                    colSpan={WALLET_HEADERS.length}
+                    tab={wSort}
+                    rawHeader
+                  >
+                    <div className="text-left">
+                      <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
+                    </div>
+                    <div className="text-right text-text-secondary text-sm">
+                      {w.label ?? <span className="text-text-muted">—</span>}
+                    </div>
+                    <div className="text-right text-text-secondary text-sm">
+                      {new Date(w.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="flex justify-end">
+                      <button
+                        onClick={() => setUnlinkTarget(w)}
+                        className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
+                      >
+                        <FontAwesomeIcon icon={faTrash} className="text-xs" />
+                        Unlink
+                      </button>
+                    </div>
+                  </TableRow>
+                ))
+              )}
+            </TableBody>
+          </Table>
         )}
       </Section>
 
@@ -187,8 +187,11 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
         title="Unlink Wallet"
         message={
           <span>
-            Unlink <strong>{unlinkTarget?.address.slice(0, 8)}…{unlinkTarget?.address.slice(-6)}</strong>?
-            You will no longer be able to sign in with this wallet.
+            Unlink{' '}
+            <strong>
+              {unlinkTarget?.address.slice(0, 8)}…{unlinkTarget?.address.slice(-6)}
+            </strong>
+            ? You will no longer be able to sign in with this wallet.
           </span>
         }
         confirmText="Unlink"
@@ -237,11 +240,11 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
           {step === 'pending' && token && (
             <div className="space-y-3">
               <p className="text-sm text-text-secondary">
-                Send this token to the Telegram bot to complete linking:
+                Send this message to the Telegram bot to complete linking:
               </p>
               <div className="flex items-center gap-2 bg-bg-secondary rounded-lg p-3">
                 <code className="flex-1 text-sm text-text-primary break-all font-mono">
-                  {token}
+                  /link {token}
                 </code>
                 <button
                   onClick={handleCopyToken}

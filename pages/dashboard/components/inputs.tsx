@@ -89,241 +89,239 @@ export default function InputsComponentPage() {
         <title>Input Components – Wrytes</title>
       </Head>
 
-      <div className="px-6 py-8 max-w-screen-xl">
-        <ComponentsSubNav />
-        <div className="mb-8">
-          <h1 className="text-text-primary text-2xl font-bold">Input Components</h1>
-          <p className="text-text-muted mt-1">
-            All input variants — default, error, warning, disabled, and with notes.
-          </p>
-        </div>
-
-        {/* TextInput */}
-        <Section title="TextInput">
-          <Example label="Default">
-            <TextInput
-              label="Email"
-              placeholder="you@example.com"
-              value={textDefault}
-              onChange={setTextDefault}
-            />
-          </Example>
-          <Example label="With value + error">
-            <TextInput
-              label="Email"
-              value={textFilled}
-              onChange={setTextFilled}
-              error="Please enter a valid email address."
-            />
-          </Example>
-          <Example label="Warning">
-            <TextInput
-              label="Email"
-              value={textWarning}
-              onChange={setTextWarning}
-              warning="Looks like the domain is incomplete."
-            />
-          </Example>
-          <Example label="Disabled + note">
-            <TextInput
-              label="Username"
-              value="sam.wrytes"
-              disabled
-              note="Username cannot be changed."
-            />
-          </Example>
-        </Section>
-
-        {/* AddressInput */}
-        <Section title="AddressInput">
-          <Example label="Default">
-            <AddressInput
-              label="Recipient"
-              placeholder="0x..."
-              value={addressDefault}
-              onChange={setAddressDefault}
-              isTextLeft
-            />
-          </Example>
-          <Example label="With value + error">
-            <AddressInput
-              label="Recipient"
-              value={addressFilled}
-              onChange={setAddressFilled}
-              isTextLeft
-              own="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-              limitLabel="0xd8dA6BF...96045"
-              error="Address does not match expected owner."
-            />
-          </Example>
-          <Example label="Warning">
-            <AddressInput
-              label="Recipient"
-              value={addressWarning}
-              onChange={setAddressWarning}
-              isTextLeft
-              warning="This does not look like a full EVM address."
-            />
-          </Example>
-          <Example label="Disabled + note">
-            <AddressInput
-              label="Recipient"
-              value="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
-              disabled
-              isTextLeft
-              note="Address is locked to contract owner."
-            />
-          </Example>
-        </Section>
-
-        {/* NormalInput */}
-        <Section title="NormalInput">
-          <Example label="Default">
-            <NormalInput
-              label="Amount"
-              symbol="ZCHF"
-              value={normalDefault}
-              onChange={setNormalDefault}
-            />
-          </Example>
-          <Example label="With value + error">
-            <NormalInput
-              label="Amount"
-              symbol="ZCHF"
-              value={normalFilled}
-              onChange={setNormalFilled}
-              error="Amount exceeds available balance."
-            />
-          </Example>
-          <Example label="Warning">
-            <NormalInput
-              label="Amount"
-              symbol="ZCHF"
-              value={normalWarning}
-              onChange={setNormalWarning}
-              warning="Amount is above the recommended limit."
-            />
-          </Example>
-          <Example label="Disabled + output">
-            <NormalInput
-              label="You receive"
-              symbol="USDC"
-              value=""
-              output="1,500.00"
-              disabled
-              note="Estimated value, subject to slippage."
-            />
-          </Example>
-        </Section>
-
-        {/* TokenInput */}
-        <Section title="TokenInput">
-          <Example label="Default">
-            <TokenInput
-              label="Deposit"
-              symbol="WETH"
-              value={tokenDefault}
-              onChange={setTokenDefault}
-              limitLabel="Balance"
-              limit={parseUnits('2.5', 18)}
-              max={parseUnits('2.5', 18)}
-              digit={18n}
-            />
-          </Example>
-          <Example label="With value + error">
-            <TokenInput
-              label="Deposit"
-              symbol="WETH"
-              value={tokenFilled}
-              onChange={setTokenFilled}
-              limitLabel="Balance"
-              limit={parseUnits('2.5', 18)}
-              max={parseUnits('2.5', 18)}
-              digit={18n}
-              error="Exceeds your wallet balance."
-            />
-          </Example>
-          <Example label="Warning">
-            <TokenInput
-              label="Deposit"
-              symbol="WETH"
-              value={tokenWarning}
-              onChange={setTokenWarning}
-              limitLabel="Balance"
-              limit={parseUnits('2.5', 18)}
-              max={parseUnits('2.5', 18)}
-              digit={18n}
-              warning="Amount is very large — double check before submitting."
-            />
-          </Example>
-          <Example label="Disabled + output">
-            <TokenInput
-              label="You receive"
-              symbol="ZCHF"
-              output="500.00"
-              value=""
-              disabled
-              note="Calculated from current exchange rate."
-            />
-          </Example>
-        </Section>
-
-        {/* LiquidationSlider */}
-        <Section title="LiquidationSlider">
-          <Example label="Default">
-            <LiquidationSlider
-              label="Liquidation price"
-              value={sliderDefault}
-              onChange={setSliderDefault}
-              sliderMin={sliderMin}
-              sliderMax={sliderMax}
-              sliderSource={sliderSource}
-              min={sliderMin}
-              max={sliderMax}
-              limitLabel="Current price"
-              limit={sliderSource}
-              symbol="ZCHF"
-            />
-          </Example>
-          <Example label="With error">
-            <LiquidationSlider
-              label="Liquidation price"
-              value={sliderMin}
-              onChange={() => {}}
-              sliderMin={sliderMin}
-              sliderMax={sliderMax}
-              sliderSource={sliderSource}
-              symbol="ZCHF"
-              error="Liquidation price is at or below the minimum."
-            />
-          </Example>
-          <Example label="Warning">
-            <LiquidationSlider
-              label="Liquidation price"
-              value={sliderWarning}
-              onChange={setSliderWarning}
-              sliderMin={sliderMin}
-              sliderMax={sliderMax}
-              sliderSource={sliderSource}
-              symbol="ZCHF"
-              warning="Price is very close to the liquidation threshold."
-            />
-          </Example>
-          <Example label="Disabled + note">
-            <LiquidationSlider
-              label="Liquidation price"
-              value={sliderDisabled}
-              onChange={() => {}}
-              sliderMin={sliderMin}
-              sliderMax={sliderMax}
-              sliderSource={sliderSource}
-              symbol="ZCHF"
-              disabled
-              note="Locked while position is active."
-            />
-          </Example>
-        </Section>
+      <ComponentsSubNav />
+      <div className="mb-8">
+        <h1 className="text-text-primary text-2xl font-bold">Input Components</h1>
+        <p className="text-text-muted mt-1">
+          All input variants — default, error, warning, disabled, and with notes.
+        </p>
       </div>
+
+      {/* TextInput */}
+      <Section title="TextInput">
+        <Example label="Default">
+          <TextInput
+            label="Email"
+            placeholder="you@example.com"
+            value={textDefault}
+            onChange={setTextDefault}
+          />
+        </Example>
+        <Example label="With value + error">
+          <TextInput
+            label="Email"
+            value={textFilled}
+            onChange={setTextFilled}
+            error="Please enter a valid email address."
+          />
+        </Example>
+        <Example label="Warning">
+          <TextInput
+            label="Email"
+            value={textWarning}
+            onChange={setTextWarning}
+            warning="Looks like the domain is incomplete."
+          />
+        </Example>
+        <Example label="Disabled + note">
+          <TextInput
+            label="Username"
+            value="sam.wrytes"
+            disabled
+            note="Username cannot be changed."
+          />
+        </Example>
+      </Section>
+
+      {/* AddressInput */}
+      <Section title="AddressInput">
+        <Example label="Default">
+          <AddressInput
+            label="Recipient"
+            placeholder="0x..."
+            value={addressDefault}
+            onChange={setAddressDefault}
+            isTextLeft
+          />
+        </Example>
+        <Example label="With value + error">
+          <AddressInput
+            label="Recipient"
+            value={addressFilled}
+            onChange={setAddressFilled}
+            isTextLeft
+            own="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+            limitLabel="0xd8dA6BF...96045"
+            error="Address does not match expected owner."
+          />
+        </Example>
+        <Example label="Warning">
+          <AddressInput
+            label="Recipient"
+            value={addressWarning}
+            onChange={setAddressWarning}
+            isTextLeft
+            warning="This does not look like a full EVM address."
+          />
+        </Example>
+        <Example label="Disabled + note">
+          <AddressInput
+            label="Recipient"
+            value="0xd8dA6BF26964aF9D7eEd9e03E53415D37aA96045"
+            disabled
+            isTextLeft
+            note="Address is locked to contract owner."
+          />
+        </Example>
+      </Section>
+
+      {/* NormalInput */}
+      <Section title="NormalInput">
+        <Example label="Default">
+          <NormalInput
+            label="Amount"
+            symbol="ZCHF"
+            value={normalDefault}
+            onChange={setNormalDefault}
+          />
+        </Example>
+        <Example label="With value + error">
+          <NormalInput
+            label="Amount"
+            symbol="ZCHF"
+            value={normalFilled}
+            onChange={setNormalFilled}
+            error="Amount exceeds available balance."
+          />
+        </Example>
+        <Example label="Warning">
+          <NormalInput
+            label="Amount"
+            symbol="ZCHF"
+            value={normalWarning}
+            onChange={setNormalWarning}
+            warning="Amount is above the recommended limit."
+          />
+        </Example>
+        <Example label="Disabled + output">
+          <NormalInput
+            label="You receive"
+            symbol="USDC"
+            value=""
+            output="1,500.00"
+            disabled
+            note="Estimated value, subject to slippage."
+          />
+        </Example>
+      </Section>
+
+      {/* TokenInput */}
+      <Section title="TokenInput">
+        <Example label="Default">
+          <TokenInput
+            label="Deposit"
+            symbol="WETH"
+            value={tokenDefault}
+            onChange={setTokenDefault}
+            limitLabel="Balance"
+            limit={parseUnits('2.5', 18)}
+            max={parseUnits('2.5', 18)}
+            digit={18n}
+          />
+        </Example>
+        <Example label="With value + error">
+          <TokenInput
+            label="Deposit"
+            symbol="WETH"
+            value={tokenFilled}
+            onChange={setTokenFilled}
+            limitLabel="Balance"
+            limit={parseUnits('2.5', 18)}
+            max={parseUnits('2.5', 18)}
+            digit={18n}
+            error="Exceeds your wallet balance."
+          />
+        </Example>
+        <Example label="Warning">
+          <TokenInput
+            label="Deposit"
+            symbol="WETH"
+            value={tokenWarning}
+            onChange={setTokenWarning}
+            limitLabel="Balance"
+            limit={parseUnits('2.5', 18)}
+            max={parseUnits('2.5', 18)}
+            digit={18n}
+            warning="Amount is very large — double check before submitting."
+          />
+        </Example>
+        <Example label="Disabled + output">
+          <TokenInput
+            label="You receive"
+            symbol="ZCHF"
+            output="500.00"
+            value=""
+            disabled
+            note="Calculated from current exchange rate."
+          />
+        </Example>
+      </Section>
+
+      {/* LiquidationSlider */}
+      <Section title="LiquidationSlider">
+        <Example label="Default">
+          <LiquidationSlider
+            label="Liquidation price"
+            value={sliderDefault}
+            onChange={setSliderDefault}
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            sliderSource={sliderSource}
+            min={sliderMin}
+            max={sliderMax}
+            limitLabel="Current price"
+            limit={sliderSource}
+            symbol="ZCHF"
+          />
+        </Example>
+        <Example label="With error">
+          <LiquidationSlider
+            label="Liquidation price"
+            value={sliderMin}
+            onChange={() => {}}
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            sliderSource={sliderSource}
+            symbol="ZCHF"
+            error="Liquidation price is at or below the minimum."
+          />
+        </Example>
+        <Example label="Warning">
+          <LiquidationSlider
+            label="Liquidation price"
+            value={sliderWarning}
+            onChange={setSliderWarning}
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            sliderSource={sliderSource}
+            symbol="ZCHF"
+            warning="Price is very close to the liquidation threshold."
+          />
+        </Example>
+        <Example label="Disabled + note">
+          <LiquidationSlider
+            label="Liquidation price"
+            value={sliderDisabled}
+            onChange={() => {}}
+            sliderMin={sliderMin}
+            sliderMax={sliderMax}
+            sliderSource={sliderSource}
+            symbol="ZCHF"
+            disabled
+            note="Locked while position is active."
+          />
+        </Example>
+      </Section>
     </>
   );
 }

@@ -78,10 +78,9 @@ export default function Hero() {
             <ButtonInput
               label="Explore Docs"
               size="lg"
-              href="/dashboard"
+              href="/docs"
               icon={<FontAwesomeIcon icon={faArrowRight} className="w-4 h-4" />}
             />
-            <ButtonInput variant="outline" size="lg" href="#about" label="Learn More" />
           </motion.div>
         </motion.div>
       </div>
