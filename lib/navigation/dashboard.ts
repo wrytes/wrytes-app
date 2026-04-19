@@ -1,5 +1,6 @@
 import {
   faCode,
+  faFileInvoice,
   faLightbulb,
   faRoute,
   faShield,
@@ -36,6 +37,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     path: '/dashboard/routes',
     icon: faRoute,
     description: 'On-ramp and off-ramp conversion routes',
+  },
+  {
+    label: 'Invoices',
+    path: '/dashboard/invoices',
+    icon: faFileInvoice,
+    description: 'Upload and manage invoices',
   },
   {
     label: 'Profile',

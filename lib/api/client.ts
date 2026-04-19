@@ -9,7 +9,10 @@ export interface ApiError {
 
 export async function apiRequest<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
   const token = AuthStorage.getToken()
-  const headers: HeadersInit = { 'Content-Type': 'application/json' }
+  // Skip Content-Type for FormData — browser sets it with the correct multipart boundary.
+  const headers: HeadersInit = init.body instanceof FormData
+    ? {}
+    : { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
 
   const res = await fetch(`${CONFIG.api}${endpoint}`, {
