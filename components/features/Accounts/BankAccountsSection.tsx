@@ -4,7 +4,15 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
 import { Badge, Modal, showToast } from '@/components/ui';
-import { Table, TableBody, TableHead, TableRow, TableRowEmpty, EditableCell } from '@/components/ui/Table';
+import { FIAT_CURRENCY_TABS, FIAT_CURRENCY_BADGE, type FiatCurrency } from '@/lib/currencies';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableRowEmpty,
+  EditableCell,
+} from '@/components/ui/Table';
 import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import type { BankAccount } from './types';
@@ -14,7 +22,7 @@ const HEADERS = ['IBAN', 'Currency', 'Label'];
 const EMPTY_FORM = {
   iban: '',
   bic: '',
-  currency: 'CHF' as 'CHF' | 'EUR',
+  currency: 'CHF' as FiatCurrency,
   label: '',
 };
 
@@ -35,7 +43,10 @@ export default function BankAccountsSection({ hasScope }: Props) {
   const { sortTab: accSort, sortReverse: accRev, handleSort: handleAccSort } = useSort('IBAN');
 
   const load = useCallback(async () => {
-    if (!hasScope) { setLoading(false); return; }
+    if (!hasScope) {
+      setLoading(false);
+      return;
+    }
     setLoading(true);
     try {
       const data = await apiRequest<BankAccount[]>('/bank-accounts');
@@ -47,7 +58,9 @@ export default function BankAccountsSection({ hasScope }: Props) {
     }
   }, [hasScope]);
 
-  useEffect(() => { load(); }, [load]);
+  useEffect(() => {
+    load();
+  }, [load]);
 
   const set = (field: keyof typeof EMPTY_FORM) => (value: string) =>
     setForm(f => ({ ...f, [field]: value }));
@@ -84,17 +97,23 @@ export default function BankAccountsSection({ hasScope }: Props) {
     setEditValue(acc.label);
   };
 
-  const cancelEdit = () => { setEditingId(null); setEditValue(''); };
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
 
   const saveLabel = async (acc: BankAccount) => {
     const trimmed = editValue.trim();
-    if (!trimmed || trimmed === acc.label) { cancelEdit(); return; }
+    if (!trimmed || trimmed === acc.label) {
+      cancelEdit();
+      return;
+    }
     try {
       await apiRequest(`/bank-accounts/${acc.id}`, {
         method: 'PUT',
         body: JSON.stringify({ label: trimmed }),
       });
-      setAccounts(prev => prev.map(a => a.id === acc.id ? { ...a, label: trimmed } : a));
+      setAccounts(prev => prev.map(a => (a.id === acc.id ? { ...a, label: trimmed } : a)));
       showToast.success('Label updated');
     } catch (err: unknown) {
       const msg = (err as { message?: string }).message;
@@ -175,8 +194,8 @@ export default function BankAccountsSection({ hasScope }: Props) {
                       <Badge
                         text={acc.currency}
                         variant="custom"
-                        customColor={acc.currency === 'CHF' ? 'text-error' : 'text-info'}
-                        customBgColor={acc.currency === 'CHF' ? 'bg-error-bg' : 'bg-info/10'}
+                        customColor={FIAT_CURRENCY_BADGE[acc.currency]?.color ?? 'text-text-muted'}
+                        customBgColor={FIAT_CURRENCY_BADGE[acc.currency]?.bg ?? 'bg-surface'}
                         size="sm"
                       />
                     </div>
@@ -201,7 +220,11 @@ export default function BankAccountsSection({ hasScope }: Props) {
       {/* Add modal */}
       <Modal
         isOpen={addOpen}
-        onClose={() => { setAddOpen(false); setForm(EMPTY_FORM); setErrors({}); }}
+        onClose={() => {
+          setAddOpen(false);
+          setForm(EMPTY_FORM);
+          setErrors({});
+        }}
         title="Add Bank Account"
         size="md"
         footer={
@@ -214,12 +237,32 @@ export default function BankAccountsSection({ hasScope }: Props) {
             second={{
               label: 'Cancel',
               variant: 'secondary',
-              onClick: () => { setAddOpen(false); setForm(EMPTY_FORM); setErrors({}); },
+              onClick: () => {
+                setAddOpen(false);
+                setForm(EMPTY_FORM);
+                setErrors({});
+              },
             }}
           />
         }
       >
         <div className="space-y-3">
+          <div>
+            <div className="text-input-label text-xs mb-2">Currency</div>
+            <TabInput
+              tabs={FIAT_CURRENCY_TABS}
+              tab={form.currency}
+              setTab={v => set('currency')(v as FiatCurrency)}
+            />
+          </div>
+
+          <TextInput
+            label="Label"
+            value={form.label}
+            onChange={set('label')}
+            placeholder="main"
+            error={errors.label}
+          />
           <TextInput
             label="IBAN"
             value={form.iban}
@@ -227,34 +270,15 @@ export default function BankAccountsSection({ hasScope }: Props) {
             placeholder="CH5604835012345678009"
             error={errors.iban}
           />
-          <div className="grid grid-cols-2 gap-3">
-            <TextInput
-              label="BIC / SWIFT"
-              value={form.bic}
-              onChange={v => set('bic')(v.toUpperCase())}
-              placeholder="CRESCHZZ80A"
-              error={errors.bic}
-            />
-            <TextInput
-              label="Label"
-              value={form.label}
-              onChange={set('label')}
-              placeholder="main"
-              error={errors.label}
-              note="Unique identifier for this account"
-            />
-          </div>
-          <div>
-            <div className="text-input-label text-xs mb-2">Currency</div>
-            <TabInput
-              tabs={['CHF', 'EUR']}
-              tab={form.currency}
-              setTab={v => set('currency')(v as 'CHF' | 'EUR')}
-            />
-          </div>
+          <TextInput
+            label="BIC / SWIFT"
+            value={form.bic}
+            onChange={v => set('bic')(v.toUpperCase())}
+            placeholder="CRESCHZZ80A"
+            error={errors.bic}
+          />
         </div>
       </Modal>
-
     </>
   );
 }

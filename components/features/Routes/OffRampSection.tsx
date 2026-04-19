@@ -2,7 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { faArrowTrendDown, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
-import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
+import { ButtonInput, TextInput, TabInput, SelectInput } from '@/components/ui/Input';
 import { Badge, Modal, AddressDisplay, showToast } from '@/components/ui';
 import {
   Table,
@@ -14,13 +14,14 @@ import {
 } from '@/components/ui/Table';
 import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
+import { FIAT_CURRENCY_TABS, type FiatCurrency } from '@/lib/currencies';
 import type { OffRampRoute, BankAccountRef } from './types';
 
 const ROUTE_HEADERS = ['Deposit Address', 'Bank Account', 'Label', 'Status'];
 
 const EMPTY_ROUTE = {
   label: '',
-  targetCurrency: 'CHF' as 'CHF' | 'EUR',
+  targetCurrency: 'CHF' as FiatCurrency,
   bankAccountId: '',
 };
 
@@ -281,54 +282,37 @@ export default function OffRampSection({ hasScope, onRoutesLoaded }: Props) {
         }
       >
         <div className="space-y-3">
+          <div>
+            <div className="text-input-label text-xs mb-2">Target Currency</div>
+            <TabInput
+              tabs={FIAT_CURRENCY_TABS}
+              tab={form.targetCurrency}
+              setTab={v => {
+                setForm(f => ({ ...f, targetCurrency: v as FiatCurrency, bankAccountId: '' }));
+              }}
+            />
+          </div>
+
           <TextInput
             label="Label"
             value={form.label}
             onChange={set('label')}
             placeholder="e.g. main-chf"
             error={errors.label}
-            note="Unique name for this route"
           />
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <div className="text-input-label text-xs mb-2">Target Currency</div>
-              <TabInput
-                tabs={['CHF', 'EUR']}
-                tab={form.targetCurrency}
-                setTab={v => {
-                  setForm(f => ({ ...f, targetCurrency: v as 'CHF' | 'EUR', bankAccountId: '' }));
-                }}
-              />
-            </div>
-            <div>
-              <div
-                className={`border-2 rounded-lg px-3 py-1 transition-colors border-input-border hover:border-text-secondary focus-within:!border-brand ${
-                  errors.bankAccountId ? '!border-error' : ''
-                }`}
-              >
-                <div className="text-input-label text-xs mt-1 mb-0.5">Bank Account</div>
-                <select
-                  value={form.bankAccountId}
-                  onChange={e => set('bankAccountId')(e.target.value)}
-                  className="w-full bg-transparent text-sm py-1.5 outline-none text-text-primary placeholder:text-input-empty"
-                >
-                  <option value="" className="bg-bg-primary">
-                    {filteredBankAccounts.length === 0
-                      ? `No ${form.targetCurrency} accounts`
-                      : 'Select account…'}
-                  </option>
-                  {filteredBankAccounts.map(a => (
-                    <option key={a.id} value={a.id} className="bg-bg-primary">
-                      {a.label}
-                    </option>
-                  ))}
-                </select>
-              </div>
-              {errors.bankAccountId && (
-                <div className="px-3.5 mt-1 text-xs text-error">{errors.bankAccountId}</div>
-              )}
-            </div>
-          </div>
+          <SelectInput
+            label="Bank Account"
+            options={filteredBankAccounts.map(a => ({ value: a.id, label: a.label }))}
+            value={form.bankAccountId}
+            onChange={v => set('bankAccountId')(v)}
+            placeholder={
+              filteredBankAccounts.length === 0
+                ? `No ${form.targetCurrency} accounts`
+                : 'Select account…'
+            }
+            error={errors.bankAccountId}
+            disabled={filteredBankAccounts.length === 0}
+          />
         </div>
       </Modal>
     </>

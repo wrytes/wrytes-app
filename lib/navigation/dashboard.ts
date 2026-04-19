@@ -25,12 +25,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     icon: faLightbulb,
     description: 'Dashboard overview and stats',
   },
-  {
-    label: 'Accounts',
-    path: '/dashboard/accounts',
-    icon: faWallet,
-    description: 'Bank accounts for off-ramp',
-  },
+  // {
+  //   label: 'Accounts',
+  //   path: '/dashboard/accounts',
+  //   icon: faWallet,
+  //   description: 'Bank accounts for off-ramp',
+  // },
   {
     label: 'Routes',
     path: '/dashboard/routes',
@@ -43,12 +43,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     icon: faUser,
     description: 'Manage your profile',
   },
-  {
-    label: 'Components',
-    path: '/dashboard/components/display',
-    icon: faCode,
-    description: 'UI component showcase',
-  },
+  // {
+  //   label: 'Components',
+  //   path: '/dashboard/components/display',
+  //   icon: faCode,
+  //   description: 'UI component showcase',
+  // },
   {
     label: 'Admin',
     path: '/dashboard/admin',

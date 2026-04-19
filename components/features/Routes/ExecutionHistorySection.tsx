@@ -10,6 +10,7 @@ import { AssetCell, Table, TableBody, TableHead, TableRow, TableRowEmpty } from 
 import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency, FormatType } from '@/lib/utils/format-handling';
+import { DEFAULT_FIAT_CURRENCY } from '@/lib/currencies';
 import type { OffRampRoute, OffRampExecution } from './types';
 
 const EXEC_HEADERS = ['Date', 'Route', 'Input', 'Output', 'Status'];
@@ -149,7 +150,7 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                 sortedExec.map(ex => {
                   const sc = STATUS_COLORS[ex.status] ?? DEFAULT_STATUS_COLOR;
                   const route = routeMap[ex.routeId];
-                  const fiatCurrency = route?.targetCurrency ?? 'CHF';
+                  const fiatCurrency = route?.targetCurrency ?? DEFAULT_FIAT_CURRENCY;
                   return (
                     <TableRow
                       key={ex.id}
@@ -215,7 +216,7 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
       {/* Detail modal */}
       {detailTarget && (() => {
         const dr = routeMap[detailTarget.routeId];
-        const fiatCcy = dr?.targetCurrency ?? 'CHF';
+        const fiatCcy = dr?.targetCurrency ?? DEFAULT_FIAT_CURRENCY;
         const sc = STATUS_COLORS[detailTarget.status] ?? DEFAULT_STATUS_COLOR;
         return (
           <Modal
