@@ -2,6 +2,7 @@ import {
   faCode,
   faLightbulb,
   faRoute,
+  faShield,
   faUser,
   faWallet,
   IconDefinition,
@@ -14,6 +15,7 @@ export interface NavigationItem {
   description?: string;
   badge?: string;
   disabled?: boolean;
+  adminOnly?: boolean;
 }
 
 export const DASHBOARD_NAVIGATION: NavigationItem[] = [
@@ -46,5 +48,12 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     path: '/dashboard/components/display',
     icon: faCode,
     description: 'UI component showcase',
+  },
+  {
+    label: 'Admin',
+    path: '/dashboard/admin',
+    icon: faShield,
+    description: 'Admin settings',
+    adminOnly: true,
   },
 ];

@@ -13,7 +13,7 @@ export default function AccountsPage() {
       <Head>
         <title>Accounts – Wrytes</title>
       </Head>
-      <BankAccountsSection isAdmin={isAdmin} hasScope={hasBankScope} />
+      <BankAccountsSection hasScope={hasBankScope} />
       <SafeWalletsSection hasScope={hasSafeScope} />
     </>
   );

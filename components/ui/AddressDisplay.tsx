@@ -44,7 +44,7 @@ export function AddressDisplay({
 
   return (
     <span
-      className={`inline-flex items-center gap-1.5 font-mono text-sm text-text-primary ${className}`}
+      className={`inline-flex items-center gap-1.5 font-mono text-sm ${className}`}
       title={address}
     >
       {short}

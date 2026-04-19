@@ -3,7 +3,7 @@ import { PageHeader, Section } from '@/components/ui/Layout';
 import { Badge } from '@/components/ui';
 import { Table, TableBody, TableHead, TableRowEmpty } from '@/components/ui/Table';
 
-const ONRAMP_HEADERS = ['Label', 'Source', 'Currency', 'Deposit Address', 'Status'];
+const ONRAMP_HEADERS = ['Tag', 'Target', 'Label', 'Status'];
 
 interface Props {
   hasScope?: boolean;
@@ -34,7 +34,7 @@ export default function OnRampSection({ hasScope = false }: Props) {
           <TableHead
             headers={ONRAMP_HEADERS}
             colSpan={ONRAMP_HEADERS.length}
-            tab="Label"
+            tab="Tags"
             reverse={false}
             tabOnChange={() => {}}
           />

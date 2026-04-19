@@ -3,7 +3,6 @@ export interface OffRampRoute {
   label: string;
   targetCurrency: 'CHF' | 'EUR';
   bankAccountId: string;
-  minTriggerAmount: string;
   status: 'ACTIVE' | 'PAUSED';
   depositAddress: string;
   safeWallet: { address: string; deployed: boolean };

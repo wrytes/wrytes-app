@@ -1,29 +1,27 @@
 import { useEffect, useState, useCallback } from 'react';
-import { faArrowTrendDown, faPlus, faTrash, faPenToSquare } from '@fortawesome/free-solid-svg-icons';
+import { faArrowTrendDown, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
-import { Badge, Modal, ConfirmModal, AddressDisplay, showToast } from '@/components/ui';
-import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import { Badge, Modal, AddressDisplay, showToast } from '@/components/ui';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableRowEmpty,
+  EditableCell,
+} from '@/components/ui/Table';
 import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import type { OffRampRoute, BankAccountRef } from './types';
 
-const ROUTE_HEADERS = [
-  'Label',
-  'Currency',
-  'Bank Account',
-  'Deposit Address',
-  'Min Amount',
-  'Status',
-  'Actions',
-];
+const ROUTE_HEADERS = ['Deposit Address', 'Bank Account', 'Label', 'Status'];
 
 const EMPTY_ROUTE = {
   label: '',
   targetCurrency: 'CHF' as 'CHF' | 'EUR',
   bankAccountId: '',
-  minTriggerAmount: '',
 };
 
 const STATUS_COLORS: Record<string, { color: string; bg: string }> = {
@@ -39,24 +37,20 @@ interface Props {
   onRoutesLoaded?: (routes: OffRampRoute[]) => void;
 }
 
-export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Props) {
+export default function OffRampSection({ hasScope, onRoutesLoaded }: Props) {
   const [routes, setRoutes] = useState<OffRampRoute[]>([]);
   const [loadingRoutes, setLoadingRoutes] = useState(true);
   const [bankAccounts, setBankAccounts] = useState<BankAccountRef[]>([]);
 
-  const { sortTab: rSort, sortReverse: rRev, handleSort: handleRSort } = useSort('Label');
+  const { sortTab: rSort, sortReverse: rRev, handleSort: handleRSort } = useSort('Deposit Address');
 
   const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_ROUTE);
   const [errors, setErrors] = useState<Partial<typeof EMPTY_ROUTE>>({});
 
-  const [editTarget, setEditTarget] = useState<OffRampRoute | null>(null);
-  const [editForm, setEditForm] = useState({ label: '', minTriggerAmount: '' });
-  const [editErrors, setEditErrors] = useState<Partial<typeof editForm>>({});
-  const [editSaving, setEditSaving] = useState(false);
-
-  const [deleteTarget, setDeleteTarget] = useState<OffRampRoute | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
 
   const loadRoutes = useCallback(async () => {
     if (!hasScope) {
@@ -107,15 +101,13 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
     if (!validate()) return;
     setSaving(true);
     try {
-      const body: Record<string, string> = {
-        label: form.label.trim(),
-        targetCurrency: form.targetCurrency,
-        bankAccountId: form.bankAccountId,
-      };
-      if (form.minTriggerAmount.trim()) body.minTriggerAmount = form.minTriggerAmount.trim();
       await apiRequest('/offramp/routes', {
         method: 'POST',
-        body: JSON.stringify(body),
+        body: JSON.stringify({
+          label: form.label.trim(),
+          targetCurrency: form.targetCurrency,
+          bankAccountId: form.bankAccountId,
+        }),
       });
       showToast.success('Off-ramp route created');
       setAddOpen(false);
@@ -130,78 +122,33 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
     }
   };
 
-  const openEdit = (r: OffRampRoute) => {
-    setEditTarget(r);
-    setEditForm({
-      label: r.label,
-      minTriggerAmount: r.minTriggerAmount === '0' ? '' : String(r.minTriggerAmount),
-    });
-    setEditErrors({});
-  };
-
-  const setEdit = (field: keyof typeof editForm) => (value: string) =>
-    setEditForm(f => ({ ...f, [field]: value }));
-
-  const handleEdit = async () => {
-    if (!editTarget) return;
-    const e: Partial<typeof editForm> = {};
-    if (!editForm.label.trim()) e.label = 'Required';
-    setEditErrors(e);
-    if (Object.keys(e).length > 0) return;
-
-    const body: Record<string, string> = {};
-    if (editForm.label.trim() !== editTarget.label) body.label = editForm.label.trim();
-    const origMin = editTarget.minTriggerAmount === '0' ? '' : String(editTarget.minTriggerAmount);
-    if (editForm.minTriggerAmount.trim() !== origMin) {
-      body.minTriggerAmount = editForm.minTriggerAmount.trim() || '0';
-    }
-
-    if (Object.keys(body).length === 0) {
-      setEditTarget(null);
+  const handleLabelSave = async (route: OffRampRoute) => {
+    const trimmed = editValue.trim();
+    if (trimmed === route.label) {
+      setEditingId(null);
       return;
     }
-
-    setEditSaving(true);
     try {
-      await apiRequest(`/offramp/routes/${editTarget.id}`, {
+      await apiRequest(`/offramp/routes/${route.id}`, {
         method: 'PATCH',
-        body: JSON.stringify(body),
+        body: JSON.stringify({ label: trimmed }),
       });
-      showToast.success('Route updated');
-      setEditTarget(null);
+      showToast.success('Label updated');
+      setEditingId(null);
       loadRoutes();
     } catch (err: unknown) {
       const msg = (err as { message?: string }).message;
-      showToast.error(msg || 'Failed to update route');
-    } finally {
-      setEditSaving(false);
-    }
-  };
-
-  const handleDelete = async () => {
-    if (!deleteTarget) return;
-    try {
-      await apiRequest(`/offramp/routes/${deleteTarget.id}`, { method: 'DELETE' });
-      showToast.success('Route removed');
-      setDeleteTarget(null);
-      loadRoutes();
-    } catch (err: unknown) {
-      const msg = (err as { message?: string }).message;
-      showToast.error(msg || 'Failed to remove route');
+      showToast.error(msg || 'Failed to update label');
     }
   };
 
   const sortedRoutes = [...routes].sort((a, b) => {
     const m = rRev ? -1 : 1;
     switch (rSort) {
-      case 'Currency':
-        return m * a.targetCurrency.localeCompare(b.targetCurrency);
       case 'Bank Account':
         return m * a.bankAccount.label.localeCompare(b.bankAccount.label);
       case 'Status':
         return m * a.status.localeCompare(b.status);
-      case 'Min Amount':
-        return m * (Number(a.minTriggerAmount) - Number(b.minTriggerAmount));
       default:
         return m * a.label.localeCompare(b.label);
     }
@@ -264,31 +211,29 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                     tab={rSort}
                     rawHeader
                   >
-                    <div className="text-left font-medium text-text-primary">{r.label}</div>
-                    <div className="flex justify-end">
-                      <Badge
-                        text={r.targetCurrency}
-                        variant="custom"
-                        customColor={r.targetCurrency === 'CHF' ? 'text-error' : 'text-info'}
-                        customBgColor={
-                          r.targetCurrency === 'CHF' ? 'bg-error-bg' : 'bg-info/10'
-                        }
-                        size="sm"
-                      />
-                    </div>
-                    <div className="text-right text-text-secondary text-sm">
-                      {r.bankAccount.label}
-                    </div>
-                    <div className="text-right">
+                    <div className="text-left">
                       <AddressDisplay
                         address={r.depositAddress}
                         prefixLength={6}
                         suffixLength={4}
                       />
                     </div>
-                    <div className="text-right text-text-secondary text-sm font-mono">
-                      {Number(r.minTriggerAmount) > 0 ? r.minTriggerAmount : '—'}
-                    </div>
+                    <div className="text-right text-sm">{r.bankAccount.label}</div>
+                    <EditableCell
+                      value={r.label}
+                      isEditing={editingId === r.id}
+                      editValue={editValue}
+                      onEdit={() => {
+                        setEditingId(r.id);
+                        setEditValue(r.label);
+                      }}
+                      onSave={() => handleLabelSave(r)}
+                      onCancel={() => setEditingId(null)}
+                      onChange={setEditValue}
+                      placeholder="Add label…"
+                      emptyText="—"
+                      maxLength={64}
+                    />
                     <div className="flex justify-end">
                       <Badge
                         text={r.status}
@@ -297,24 +242,6 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                         customBgColor={(STATUS_COLORS[r.status] ?? DEFAULT_STATUS_COLOR).bg}
                         size="sm"
                       />
-                    </div>
-                    <div className="flex justify-end items-center gap-3">
-                      <button
-                        onClick={() => openEdit(r)}
-                        className="text-xs text-text-secondary hover:text-brand transition-colors flex items-center gap-1"
-                      >
-                        <FontAwesomeIcon icon={faPenToSquare} className="text-xs" />
-                        Edit
-                      </button>
-                      {isAdmin && (
-                        <button
-                          onClick={() => setDeleteTarget(r)}
-                          className="text-xs text-error hover:text-error transition-colors flex items-center gap-1"
-                        >
-                          <FontAwesomeIcon icon={faTrash} className="text-xs" />
-                          Remove
-                        </button>
-                      )}
                     </div>
                   </TableRow>
                 ))
@@ -398,78 +325,12 @@ export default function OffRampSection({ isAdmin, hasScope, onRoutesLoaded }: Pr
                 </select>
               </div>
               {errors.bankAccountId && (
-                <div className="px-3.5 mt-1 text-xs text-error">
-                  {errors.bankAccountId}
-                </div>
+                <div className="px-3.5 mt-1 text-xs text-error">{errors.bankAccountId}</div>
               )}
             </div>
           </div>
-          <TextInput
-            label="Min Trigger Amount"
-            value={form.minTriggerAmount}
-            onChange={set('minTriggerAmount')}
-            placeholder="0"
-            note="Minimum deposit amount to trigger conversion (optional)"
-          />
         </div>
       </Modal>
-
-      {/* Edit route modal */}
-      <Modal
-        isOpen={!!editTarget}
-        onClose={() => setEditTarget(null)}
-        title="Edit Route"
-        size="sm"
-        footer={
-          <ButtonInput
-            label={editSaving ? 'Saving…' : 'Save'}
-            variant="primary"
-            onClick={handleEdit}
-            loading={editSaving}
-            disabled={editSaving}
-            second={{
-              label: 'Cancel',
-              variant: 'secondary',
-              onClick: () => setEditTarget(null),
-            }}
-          />
-        }
-      >
-        <div className="space-y-3">
-          <TextInput
-            label="Label"
-            value={editForm.label}
-            onChange={setEdit('label')}
-            placeholder="e.g. main-chf"
-            error={editErrors.label}
-            note="Unique name for this route"
-          />
-          <TextInput
-            label="Min Trigger Amount"
-            value={editForm.minTriggerAmount}
-            onChange={setEdit('minTriggerAmount')}
-            placeholder="0"
-            note="Minimum deposit amount to trigger conversion"
-          />
-        </div>
-      </Modal>
-
-      {/* Delete confirm */}
-      <ConfirmModal
-        isOpen={!!deleteTarget}
-        onClose={() => setDeleteTarget(null)}
-        title="Remove Off-Ramp Route"
-        message={
-          <span>
-            Remove route <strong>{deleteTarget?.label}</strong>? This will stop monitoring the
-            deposit address.
-          </span>
-        }
-        confirmText="Remove"
-        cancelText="Cancel"
-        confirmVariant="danger"
-        onConfirm={handleDelete}
-      />
     </>
   );
 }
