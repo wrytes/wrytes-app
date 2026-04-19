@@ -50,6 +50,7 @@ interface EditState {
   id: string;
   field: EditKey;
   value: string;
+  currency?: string;
 }
 
 interface Props {
@@ -66,9 +67,7 @@ export default function InvoiceListSection({ isAdmin }: Props) {
   const [activeStatuses, setActiveStatuses] = useState<string[]>([]);
 
   const handleUpload = async (files: File[]) => {
-    const results = await Promise.all(files.map(f => upload(f)));
-    const last = results.filter(Boolean).pop();
-    if (last) setSelected(last);
+    await Promise.all(files.map(f => upload(f)));
   };
 
   const startEdit = (id: string, field: EditKey, current: string) =>
@@ -77,16 +76,15 @@ export default function InvoiceListSection({ isAdmin }: Props) {
 
   const saveEdit = () => {
     if (!editState) return;
-    const { id, field, value } = editState;
-    const payload =
-      field === 'itemTags'
-        ? {
-            itemTags: value
-              .split(',')
-              .map(t => t.trim())
-              .filter(Boolean),
-          }
-        : { [field]: value || null };
+    const { id, field, value, currency } = editState;
+    let payload: Parameters<typeof updateField>[1];
+    if (field === 'itemTags') {
+      payload = { itemTags: value.split(',').map(t => t.trim()).filter(Boolean) };
+    } else if (field === 'amount') {
+      payload = { amount: value || null, currency: currency ?? null };
+    } else {
+      payload = { [field]: value || null };
+    }
     void updateField(id, payload);
     setEditState(null);
   };
@@ -206,24 +204,41 @@ export default function InvoiceListSection({ isAdmin }: Props) {
 
                     {/* Amount — editable (number only, currency shown as suffix) */}
                     <div onClick={e => e.stopPropagation()}>
-                      <EditableCell
-                        value={
-                          inv.amount
-                            ? `${inv.amount}${inv.currency ? ` ${inv.currency}` : ''}`
-                            : null
-                        }
-                        isEditing={isEditing(inv.id, 'amount')}
-                        editValue={
-                          isEditing(inv.id, 'amount') ? editState!.value : (inv.amount ?? '')
-                        }
-                        onEdit={() => startEdit(inv.id, 'amount', inv.amount ?? '')}
-                        onChange={v => setEditState(s => (s ? { ...s, value: v } : s))}
-                        onSave={saveEdit}
-                        onCancel={cancelEdit}
-                        placeholder="0.00"
-                        emptyText="Add amount"
-                        maxLength={20}
-                      />
+                      {isEditing(inv.id, 'amount') ? (
+                        <div className="flex items-center gap-1 justify-end" onClick={e => e.stopPropagation()}>
+                          <input
+                            autoFocus
+                            type="text"
+                            value={editState!.value}
+                            onChange={e => setEditState(s => s ? { ...s, value: e.target.value } : s)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                            placeholder="0.00"
+                            maxLength={20}
+                            className="w-24 text-right text-sm bg-transparent border-b border-brand outline-none text-text-primary"
+                          />
+                          <input
+                            type="text"
+                            value={editState!.currency ?? ''}
+                            onChange={e => setEditState(s => s ? { ...s, currency: e.target.value.toUpperCase() } : s)}
+                            onKeyDown={e => { if (e.key === 'Enter') saveEdit(); if (e.key === 'Escape') cancelEdit(); }}
+                            placeholder="CHF"
+                            maxLength={5}
+                            className="w-12 text-right text-sm bg-transparent border-b border-brand outline-none text-text-muted uppercase"
+                          />
+                        </div>
+                      ) : (
+                        <EditableCell
+                          value={inv.amount ? `${inv.amount}${inv.currency ? ` ${inv.currency}` : ''}` : null}
+                          isEditing={false}
+                          editValue={inv.amount ?? ''}
+                          onEdit={() => setEditState({ id: inv.id, field: 'amount', value: inv.amount ?? '', currency: inv.currency ?? '' })}
+                          onChange={() => {}}
+                          onSave={saveEdit}
+                          onCancel={cancelEdit}
+                          placeholder="0.00"
+                          emptyText="Add amount"
+                        />
+                      )}
                     </div>
 
                     {/* Items — comma-separated edit, plain list display */}

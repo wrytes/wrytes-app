@@ -63,7 +63,7 @@ export function useInvoices() {
   );
 
   const updateField = useCallback(
-    async (id: string, data: { fromName?: string | null; amount?: string | null; itemTags?: string[] }): Promise<boolean> => {
+    async (id: string, data: { fromName?: string | null; amount?: string | null; currency?: string | null; itemTags?: string[] }): Promise<boolean> => {
       try {
         const updated = await apiRequest<Invoice>(`/invoices/${id}`, {
           method: 'PATCH',
