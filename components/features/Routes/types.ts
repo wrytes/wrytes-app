@@ -1,13 +1,14 @@
+import type { FiatCurrency } from '@/lib/currencies';
+
 export interface OffRampRoute {
   id: string;
   label: string;
-  targetCurrency: 'CHF' | 'EUR';
+  targetCurrency: FiatCurrency;
   bankAccountId: string;
-  minTriggerAmount: string;
   status: 'ACTIVE' | 'PAUSED';
   depositAddress: string;
   safeWallet: { address: string; deployed: boolean };
-  bankAccount: { currency: 'CHF' | 'EUR'; label: string };
+  bankAccount: { currency: FiatCurrency; label: string };
   createdAt: string;
 }
 
@@ -25,6 +26,6 @@ export interface OffRampExecution {
 
 export interface BankAccountRef {
   id: string;
-  currency: 'CHF' | 'EUR';
+  currency: FiatCurrency;
   label: string;
 }

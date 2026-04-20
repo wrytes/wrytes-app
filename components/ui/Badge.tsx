@@ -9,14 +9,14 @@ interface BadgeProps {
 }
 
 const RISK_COLORS: Record<string, string> = {
-  low:    'text-success bg-success-bg',
+  low: 'text-success bg-success-bg',
   medium: 'text-yellow-400 bg-yellow-400/20',
-  high:   'text-error bg-error-bg',
+  high: 'text-error bg-error-bg',
 };
 
 const SIZES: Record<string, string> = {
-  sm: 'px-2 py-1 text-xs',
-  md: 'px-3 py-1.5 text-sm',
+  sm: 'px-1 py-0 text-xs',
+  md: 'px-2 py-1 text-sm',
   lg: 'px-4 py-2 text-base',
 };
 
@@ -38,7 +38,7 @@ export function Badge({
 
   return (
     <span
-      className={`inline-flex items-center justify-center rounded-full font-medium border border-transparent ${SIZES[size] ?? SIZES.sm} ${color} ${className}`}
+      className={`inline-flex items-center justify-center rounded-lg font-medium border border-transparent ${SIZES[size] ?? SIZES.sm} ${color} ${className}`}
     >
       {text}
     </span>

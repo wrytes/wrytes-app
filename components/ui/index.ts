@@ -32,5 +32,5 @@ export {
 export type { BigNumberInputProps, TabInputProps } from './Input';
 
 // Table Components
-export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty } from './Table';
+export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty, EditableCell } from './Table';
 export type { FilterOption } from './Table';

@@ -1,11 +1,11 @@
+import type { FiatCurrency } from '@/lib/currencies';
+
 export interface BankAccount {
   id: string;
   iban: string; // masked
   bic: string;
-  holderName: string;
-  currency: 'CHF' | 'EUR';
+  currency: FiatCurrency;
   label: string;
-  isDefault: boolean;
   createdAt: string;
 }
 

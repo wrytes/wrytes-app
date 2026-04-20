@@ -10,3 +10,5 @@ export type { TabInputProps } from './TabInput';
 export { default as PageTabInput } from './PageTabInput';
 export { default as LiquidationSlider } from './LiquidationSlider';
 export { default as TextInput } from './TextInput';
+export { SelectInput } from './SelectInput';
+export type { SelectOption } from './SelectInput';

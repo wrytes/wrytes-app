@@ -21,6 +21,8 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   const [showDisclaimer, setShowDisclaimer] = useState(true);
   const [showAuthModal, setShowAuthModal] = useState(false);
   const { isAuthenticated, signOut, user } = useAuth();
+  const isAdmin = user?.scopes?.includes('ADMIN') ?? false;
+  const visibleNav = DASHBOARD_NAVIGATION.filter(item => !item.adminOnly || isAdmin);
   const { address: walletAddress, isConnected } = useWallet();
   const { isActive } = useActiveNavigation();
 
@@ -147,7 +149,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 border-t border-surface pt-4">
               <SidebarDashboard
-                items={DASHBOARD_NAVIGATION}
+                items={visibleNav}
                 isActive={isActive}
                 onItemClick={closeMobileMenu}
                 variant="mobile"

@@ -6,7 +6,14 @@ import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput } from '@/components/ui/Input';
 import { AddressDisplay, Badge, ConfirmModal, Modal, showToast } from '@/components/ui';
 
-import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import {
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableRowEmpty,
+  EditableCell,
+} from '@/components/ui/Table';
 import { useSort } from '@/hooks/useSort';
 import { useWalletLink } from '@/hooks/useWalletLink';
 import { apiRequest } from '@/lib/api/client';
@@ -19,7 +26,7 @@ interface LinkedWallet {
   createdAt: string;
 }
 
-const WALLET_HEADERS = ['Address', 'Label', 'Linked', ''];
+const WALLET_HEADERS = ['Address', 'Linked', 'Label', ''];
 
 interface Props {
   hasScope?: boolean;
@@ -30,7 +37,9 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
   const [unlinkTarget, setUnlinkTarget] = useState<LinkedWallet | null>(null);
   const [linkOpen, setLinkOpen] = useState(false);
   const [copied, setCopied] = useState(false);
-  const { sortTab: wSort, sortReverse: wRev, handleSort: handleWSort } = useSort('Linked');
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editValue, setEditValue] = useState('');
+  const { sortTab: wSort, sortReverse: wRev, handleSort: handleWSort } = useSort('Address');
 
   const { address } = useAppKitAccount();
   const { step, token, secondsLeft, error, generateToken, reset } = useWalletLink(
@@ -57,6 +66,38 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
       load();
     }
   }, [step, load]);
+
+  const startEdit = (w: LinkedWallet) => {
+    setEditingId(w.id);
+    setEditValue(w.label ?? '');
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const saveLabel = async (w: LinkedWallet) => {
+    const trimmed = editValue.trim() || null;
+    if (trimmed === w.label) {
+      cancelEdit();
+      return;
+    }
+    try {
+      await apiRequest(`/user-wallets/${w.address}/label`, {
+        method: 'PATCH',
+        body: JSON.stringify({ label: trimmed }),
+      });
+      setWallets(prev =>
+        prev.map(wallet => (wallet.id === w.id ? { ...wallet, label: trimmed } : wallet))
+      );
+      showToast.success('Label updated');
+    } catch (err: unknown) {
+      const msg = (err as { message?: string }).message;
+      showToast.error(msg || 'Failed to update label');
+    }
+    cancelEdit();
+  };
 
   const handleUnlink = async () => {
     if (!unlinkTarget) return;
@@ -157,11 +198,20 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
                     <div className="text-left">
                       <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
                     </div>
-                    <div className="text-right text-text-secondary text-sm">
-                      {w.label ?? <span className="text-text-muted">—</span>}
-                    </div>
-                    <div className="text-right text-text-secondary text-sm">
+                    <div className="text-right text-sm">
                       {new Date(w.createdAt).toLocaleDateString()}
+                    </div>
+                    <div className="text-right">
+                      <EditableCell
+                        value={w.label}
+                        isEditing={editingId === w.id}
+                        editValue={editValue}
+                        onEdit={() => startEdit(w)}
+                        onSave={() => saveLabel(w)}
+                        onCancel={cancelEdit}
+                        onChange={setEditValue}
+                        align="right"
+                      />
                     </div>
                     <div className="flex justify-end">
                       <button

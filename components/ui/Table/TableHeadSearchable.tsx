@@ -25,6 +25,7 @@ interface Props {
   onInMyWalletChange: (value: boolean) => void;
 
   // Category filter
+  filterOptionsTitle?: string;
   filterOptions: FilterOption[];
   activeFilters: string[];
   onFiltersChange: (filters: string[]) => void;
@@ -53,6 +54,7 @@ export default function TableHeadSearchable({
   hideMyWallet,
   inMyWallet,
   onInMyWalletChange,
+  filterOptionsTitle = 'Asset Categories',
   filterOptions,
   activeFilters,
   onFiltersChange,
@@ -182,7 +184,7 @@ export default function TableHeadSearchable({
                   <>
                     <div className="px-4 pb-2">
                       <span className="text-xs font-semibold uppercase tracking-wider text-text-secondary">
-                        Asset Categories
+                        {filterOptionsTitle}
                       </span>
                     </div>
                     {filterOptions.map(opt => (
@@ -234,7 +236,8 @@ export default function TableHeadSearchable({
       {/* Column headers — desktop */}
       <div className="items-center justify-between p-4 xl:px-6 md:flex">
         <div
-          className={`max-md:hidden flex-grow grid-cols-2 md:grid md:grid-cols-${colSpan || headers.length}`}
+          className="max-md:hidden flex-grow md:grid"
+          style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
         >
           {headers.map((header, i) => (
             <div

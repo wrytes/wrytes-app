@@ -11,6 +11,7 @@ interface Props {
   tab?: string;
   rawHeader?: boolean;
   paddingY?: string;
+  onClick?: () => void;
 }
 
 export default function TableRow({
@@ -24,6 +25,7 @@ export default function TableRow({
   classNameMobile = '',
   rawHeader = false,
   paddingY,
+  onClick,
 }: Props) {
   const childArray = React.Children.toArray(children) as React.ReactElement[];
 
@@ -31,7 +33,10 @@ export default function TableRow({
     <div
       className={`${className ?? ''} ${
         paddingY ?? 'py-4'
-      } bg-card md:hover:bg-surface cursor-default p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300`}
+      } bg-card md:hover:bg-surface p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300 ${
+        onClick ? 'cursor-pointer' : 'cursor-default'
+      }`}
+      onClick={onClick}
     >
       <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
@@ -39,7 +44,14 @@ export default function TableRow({
           className="max-md:hidden text-right grid flex-grow items-center"
           style={{ gridTemplateColumns: `repeat(${colSpan || childArray.length}, minmax(0, 1fr))` }}
         >
-          {children}
+          {childArray.map((child, idx) => (
+            <div
+              key={child.key ?? `row-desktop-${idx}`}
+              className={headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'}
+            >
+              {child}
+            </div>
+          ))}
         </div>
 
         {/* Mobile */}

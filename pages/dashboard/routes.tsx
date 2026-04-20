@@ -7,6 +7,16 @@ import {
   ExecutionHistorySection,
 } from '@/components/features/Routes';
 import type { OffRampRoute } from '@/components/features/Routes';
+import PageTabInput from '@/components/ui/Input/PageTabInput';
+import { Section } from '@/components/ui/Layout';
+
+function ComingSoon({ label }: { label: string }) {
+  return (
+    <Section>
+      <p className="text-text-secondary text-sm">{label} — coming soon.</p>
+    </Section>
+  );
+}
 
 export default function RampingPage() {
   const { user } = useAuth();
@@ -22,9 +32,31 @@ export default function RampingPage() {
       <Head>
         <title>Routes – Wrytes</title>
       </Head>
-      <OnRampSection hasScope={hasOnramp} />
-      <OffRampSection isAdmin={isAdmin} hasScope={hasOfframp} onRoutesLoaded={handleRoutesLoaded} />
-      <ExecutionHistorySection isAdmin={isAdmin} hasScope={hasOfframp} routes={routes} />
+      <PageTabInput
+        tabs={[
+          {
+            label: 'On-Ramp',
+            content: <OnRampSection hasScope={hasOnramp} />,
+          },
+          {
+            label: 'Off-Ramp',
+            content: (
+              <>
+                <OffRampSection
+                  isAdmin={isAdmin}
+                  hasScope={hasOfframp}
+                  onRoutesLoaded={handleRoutesLoaded}
+                />
+                <ExecutionHistorySection isAdmin={isAdmin} hasScope={hasOfframp} routes={routes} />
+              </>
+            ),
+          },
+          {
+            label: 'Bridge',
+            content: <ComingSoon label="Bridge" />,
+          },
+        ]}
+      />
     </>
   );
 }

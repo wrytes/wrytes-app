@@ -99,11 +99,11 @@ export default function SafeWalletsSection({ hasScope }: Props) {
                   <div className="text-left">
                     <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />
                   </div>
-                  <div className="flex justify-end items-center gap-2 text-text-secondary text-sm">
+                  <div className="flex justify-end items-center gap-2 text-sm">
                     <ChainLogo chain={CHAIN_NAMES[w.chainId] ?? 'Ethereum'} size={4} />
                     {CHAIN_NAMES[w.chainId] ?? `Chain ${w.chainId}`}
                   </div>
-                  <div className="text-right text-text-secondary text-sm">
+                  <div className="text-right text-sm">
                     <AddressDisplay address={w.label} prefixLength={8} suffixLength={6} />
                   </div>
                   <div className="flex justify-end">
