@@ -43,7 +43,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'Frankencoin',
     decimals: 18,
     chainId: 1,
-    logoURI: '/tokens/zchf.svg',
+    logoURI: '/coin/zchf.svg',
   },
   USDU: {
     address: '0xdde3eC717f220Fc6A29D6a4Be73F91DA5b718e55',
@@ -51,7 +51,7 @@ export const TOKENS: Record<string, TokenConfig> = {
     name: 'USDU',
     decimals: 18,
     chainId: 1,
-    logoURI: '/tokens/usdu.png',
+    logoURI: '/coin/usdu.png',
   },
 
   // Crypto
@@ -79,21 +79,13 @@ export const TOKENS: Record<string, TokenConfig> = {
     chainId: 1,
     logoURI: '/tokens/wbtc.svg',
   },
-  cbBTC: {
-    address: '0xcbB7C0000aB88B473b1f5aFd9ef808440eed33Bf',
-    symbol: 'cbBTC',
-    name: 'Coinbase Wrapped BTC',
-    decimals: 8,
-    chainId: 1,
-    logoURI: '/tokens/cbbtc.png',
-  },
   FPS: {
     address: '0x1bA26788dfDe592fec8bcB0Eaff472a42BE341B2',
     symbol: 'FPS',
     name: 'Frankencoin Pool Share',
     decimals: 18,
     chainId: 1,
-    logoURI: '/tokens/fps.png',
+    logoURI: '/coin/fps.png',
   },
 };
 

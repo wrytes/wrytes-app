@@ -20,6 +20,7 @@ import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { CorrectionsTable } from './CorrectionsTable';
 import { TransfersTable } from './TransfersTable';
+import { TokenLogo } from './TokenLogo';
 import type {
   WalletAddress,
   Transfer,
@@ -470,7 +471,12 @@ function TokenOverviewSection({
                     const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
                     return (
                       <tr key={key} className="border-b border-table-alt/50 last:border-0">
-                        <td className="px-4 py-3 font-semibold text-text-primary text-left">{t.tokenSymbol ?? 'Unknown'}</td>
+                        <td className="px-4 py-3 text-left">
+                          <div className="flex items-center gap-2">
+                            <TokenLogo symbol={t.tokenSymbol} />
+                            <span className="font-semibold text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
+                          </div>
+                        </td>
                         <td className={`px-4 py-3 tabular-nums text-right font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
                           {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
                         </td>
@@ -534,6 +540,7 @@ function TokenOverviewSection({
                     return (
                       <TableRow key={key} headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
                         <div className="group flex items-center gap-2 text-left">
+                          <TokenLogo symbol={t.tokenSymbol} />
                           <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
                           <button onClick={() => onAddCorrection(t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
                             <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
