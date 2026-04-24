@@ -2,7 +2,6 @@ import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
 import generatePDF, { Margin } from 'react-to-pdf';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faCoins,
   faPlus,
   faSync,
   faTrash,
@@ -13,7 +12,6 @@ import {
   faBan,
   faPrint,
 } from '@fortawesome/free-solid-svg-icons';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
@@ -160,6 +158,7 @@ function AddressBar({
   onSync,
   onRemove,
   onSelect,
+  onUpdateLabel,
 }: {
   addresses: WalletAddress[];
   selectedId: string | null;
@@ -168,22 +167,25 @@ function AddressBar({
   onSync: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
   onSelect: (id: string) => void;
+  onUpdateLabel: (id: string, label: string | null) => Promise<void>;
 }) {
+  const [open, setOpen] = useState(true);
   const [showAdd, setShowAdd] = useState(false);
   const [address, setAddress] = useState('');
   const [chain, setChain] = useState('eth-mainnet');
-  const [label, setLabel] = useState('');
+  const [newLabel, setNewLabel] = useState('');
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
+  const [labelEditing, setLabelEditing] = useState<{ id: string; value: string } | null>(null);
 
   const handleAdd = async () => {
     if (!address.trim()) return;
     setAdding(true);
     setError('');
     try {
-      await onAdd(address.trim(), chain, label.trim());
+      await onAdd(address.trim(), chain, newLabel.trim());
       setAddress('');
-      setLabel('');
+      setNewLabel('');
       setShowAdd(false);
     } catch (e: any) {
       setError(e?.message ?? 'Failed to add address');
@@ -192,44 +194,29 @@ function AddressBar({
     }
   };
 
+  const handleSaveLabel = async (id: string) => {
+    if (!labelEditing) return;
+    await onUpdateLabel(id, labelEditing.value.trim() || null);
+    setLabelEditing(null);
+  };
+
   return (
-    <div className="mb-6 space-y-3 print:hidden">
-      <div className="flex items-center gap-2 flex-wrap">
-        {addresses.map(a => (
-          <div key={a.id} className="flex items-center gap-1">
-            <button
-              onClick={() => onSelect(a.id)}
-              className={`px-3 py-1.5 rounded-lg text-sm transition-colors ${
-                selectedId === a.id
-                  ? 'bg-brand text-white'
-                  : 'bg-card border border-table-alt text-text-secondary hover:text-brand'
-              }`}
-            >
-              {a.label ?? `${a.address.slice(0, 6)}…${a.address.slice(-4)}`}
-              <span className="ml-1.5 text-xs opacity-60">{a.chain.split('-')[0]}</span>
-            </button>
-            <button
-              onClick={() => onSync(a.id)}
-              disabled={syncing === a.id}
-              className="text-text-muted hover:text-brand transition-colors p-1 disabled:opacity-50"
-              title="Sync"
-            >
-              <FontAwesomeIcon
-                icon={faSync}
-                className={`w-3 h-3 ${syncing === a.id ? 'animate-spin' : ''}`}
-              />
-            </button>
-            <button
-              onClick={() => onRemove(a.id)}
-              className="text-text-muted hover:text-error transition-colors p-1"
-              title="Remove"
-            >
-              <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
-            </button>
-          </div>
-        ))}
+    <div className="mb-6 print:hidden">
+      <div className="flex items-center justify-between mb-2">
         <button
-          onClick={() => setShowAdd(o => !o)}
+          onClick={() => setOpen(o => !o)}
+          className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors"
+        >
+          <span className="font-semibold uppercase tracking-wider">Tracked Addresses</span>
+          {addresses.length > 0 && (
+            <span className="bg-surface border border-table-alt rounded px-1.5 py-0.5 tabular-nums">
+              {addresses.length}
+            </span>
+          )}
+          <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="w-2.5 h-2.5" />
+        </button>
+        <button
+          onClick={() => { setShowAdd(o => !o); setOpen(true); }}
           className="flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
         >
           <FontAwesomeIcon icon={showAdd ? faChevronUp : faPlus} className="w-3 h-3" />
@@ -237,45 +224,102 @@ function AddressBar({
         </button>
       </div>
 
-      {showAdd && (
-        <div className="bg-card rounded-lg p-4 border border-table-alt space-y-2">
-          <div className="flex flex-col sm:flex-row gap-2">
-            <input
-              type="text"
-              value={address}
-              onChange={e => setAddress(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && handleAdd()}
-              placeholder="0x…"
-              className="flex-1 bg-transparent border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
-            />
-            <select
-              value={chain}
-              onChange={e => setChain(e.target.value)}
-              className="bg-card border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary outline-none focus:border-brand"
-            >
-              {SUPPORTED_CHAINS.map(c => (
-                <option key={c.value} value={c.value}>
-                  {c.label}
-                </option>
-              ))}
-            </select>
-            <input
-              type="text"
-              value={label}
-              onChange={e => setLabel(e.target.value)}
-              placeholder="Label (optional)"
-              className="w-36 bg-transparent border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
-            />
-            <button
-              onClick={handleAdd}
-              disabled={adding || !address.trim()}
-              className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
-            >
-              <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
-              Add
-            </button>
-          </div>
-          {error && <p className="text-error text-xs">{error}</p>}
+      {open && (
+        <div className="bg-card border border-table-alt rounded-lg overflow-hidden">
+          {addresses.length === 0 && !showAdd ? (
+            <p className="text-center text-text-muted text-sm py-4">No addresses tracked yet.</p>
+          ) : (
+            addresses.map(a => {
+              const isSelected = selectedId === a.id;
+              const isEditingLabel = labelEditing?.id === a.id;
+              return (
+                <div
+                  key={a.id}
+                  className={`flex items-center gap-3 px-4 py-2.5 border-b border-table-alt/50 last:border-0 cursor-pointer transition-colors ${
+                    isSelected ? 'bg-brand/5' : 'hover:bg-surface/50'
+                  }`}
+                  onClick={() => onSelect(a.id)}
+                >
+                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-brand' : 'bg-table-alt'}`} />
+                  <div className="flex-1 min-w-0" onClick={e => e.stopPropagation()}>
+                    <EditableCell
+                      value={a.label}
+                      isEditing={isEditingLabel}
+                      editValue={isEditingLabel ? labelEditing!.value : ''}
+                      onEdit={() => setLabelEditing({ id: a.id, value: a.label ?? '' })}
+                      onSave={() => handleSaveLabel(a.id)}
+                      onCancel={() => setLabelEditing(null)}
+                      onChange={v => setLabelEditing({ id: a.id, value: v })}
+                      emptyText={`${a.address.slice(0, 6)}…${a.address.slice(-4)}`}
+                      placeholder="Add label…"
+                      align="left"
+                    />
+                    <p className="text-xs text-text-muted font-mono mt-0.5 truncate">{a.address}</p>
+                  </div>
+                  <span className="text-xs text-text-muted bg-surface border border-table-alt rounded px-1.5 py-0.5 flex-shrink-0">
+                    {a.chain.split('-')[0]}
+                  </span>
+                  <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => onSync(a.id)}
+                      disabled={syncing === a.id}
+                      className="text-text-muted hover:text-brand transition-colors p-1 disabled:opacity-50"
+                      title="Sync"
+                    >
+                      <FontAwesomeIcon icon={faSync} className={`w-3 h-3 ${syncing === a.id ? 'animate-spin' : ''}`} />
+                    </button>
+                    <button
+                      onClick={() => onRemove(a.id)}
+                      className="text-text-muted hover:text-error transition-colors p-1"
+                      title="Remove"
+                    >
+                      <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              );
+            })
+          )}
+
+          {showAdd && (
+            <div className="px-4 py-3 border-t border-table-alt bg-surface/30 space-y-2">
+              <div className="flex flex-col sm:flex-row gap-2">
+                <input
+                  type="text"
+                  value={address}
+                  onChange={e => setAddress(e.target.value)}
+                  onKeyDown={e => e.key === 'Enter' && handleAdd()}
+                  placeholder="0x…"
+                  className="flex-1 bg-transparent border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
+                />
+                <select
+                  value={chain}
+                  onChange={e => setChain(e.target.value)}
+                  className="bg-card border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary outline-none focus:border-brand"
+                >
+                  {SUPPORTED_CHAINS.map(c => (
+                    <option key={c.value} value={c.value}>{c.label}</option>
+                  ))}
+                </select>
+                <input
+                  type="text"
+                  value={newLabel}
+                  onChange={e => setNewLabel(e.target.value)}
+                  placeholder="Label (optional)"
+                  className="w-36 bg-transparent border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
+                />
+                <button
+                  onClick={handleAdd}
+                  disabled={adding || !address.trim()}
+                  className="flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
+                >
+                  <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+                  Add
+                </button>
+              </div>
+              {error && <p className="text-error text-xs">{error}</p>}
+            </div>
+          )}
         </div>
       )}
     </div>
@@ -641,8 +685,10 @@ export function TokenTransfersSection() {
   const [syncing, setSyncing] = useState<string | null>(null);
   const [prices, setPrices] = useState<PriceMap>({});
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
-  const [selectedYear, setSelectedYear] = useState<number | null>(null);
-  const [selectedQuarter, setSelectedQuarter] = useState<number | null>(null);
+  const [selectedYear, setSelectedYear] = useState<number | null>(() => new Date().getFullYear());
+  const [selectedQuarter, setSelectedQuarter] = useState<number | null>(
+    () => Math.ceil((new Date().getMonth() + 1) / 3)
+  );
   const [prefillToken, setPrefillToken] = useState<string | null>(null);
   const [tokenPrices, setTokenPrices] = useState<TokenPriceMap>({});
   const [isExporting, setIsExporting] = useState(false);
@@ -754,6 +800,14 @@ export function TokenTransfersSection() {
       setTransfers([]);
       setOverview(null);
     }
+  };
+
+  const handleUpdateAddressLabel = async (id: string, label: string | null) => {
+    const updated = await apiRequest<WalletAddress>(`/accounting/addresses/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ label }),
+    });
+    setAddresses(prev => prev.map(a => (a.id === id ? updated : a)));
   };
 
   const handleSelectAddress = (id: string) => {
@@ -884,8 +938,16 @@ export function TokenTransfersSection() {
       if (t.tokenAddress && blacklistedAddresses.has(t.tokenAddress.toLowerCase())) return false;
       if (t.timestamp) {
         const d = new Date(t.timestamp);
-        if (selectedYear && d.getFullYear() !== selectedYear) return false;
-        if (selectedQuarter && Math.ceil((d.getMonth() + 1) / 3) !== selectedQuarter) return false;
+        // Filter transfer table to the exact selected period
+        if (selectedYear) {
+          const startMonth = selectedQuarter ? (selectedQuarter - 1) * 3 + 1 : 1;
+          const endMonth = selectedQuarter ? selectedQuarter * 3 + 1 : 13;
+          const start = new Date(`${selectedYear}-${String(startMonth).padStart(2, '0')}-01T00:00:00.000Z`);
+          const end = endMonth > 12
+            ? new Date(`${selectedYear + 1}-01-01T00:00:00.000Z`)
+            : new Date(`${selectedYear}-${String(endMonth).padStart(2, '0')}-01T00:00:00.000Z`);
+          if (d < start || d >= end) return false;
+        }
       }
       return true;
     });
@@ -900,12 +962,7 @@ export function TokenTransfersSection() {
   }, [overview, transfers]);
 
   return (
-    <Section>
-      <PageHeader
-        title="Token Transfers"
-        description="Track wallet transfers and classify them to compute asset, liability, and net positions."
-        icon={faCoins}
-      />
+    <div>
       <AddressBar
         addresses={addresses}
         selectedId={selectedId}
@@ -914,6 +971,7 @@ export function TokenTransfersSection() {
         onSync={handleSync}
         onRemove={handleRemoveAddress}
         onSelect={handleSelectAddress}
+        onUpdateLabel={handleUpdateAddressLabel}
       />
       <BlacklistPanel blacklist={blacklist} onRemove={handleUnblacklist} />
       {/* ------------------------------------------------------------------ */}
@@ -1062,6 +1120,6 @@ export function TokenTransfersSection() {
         )}
       </div>{' '}
       {/* end printable region */}
-    </Section>
+    </div>
   );
 }
