@@ -73,6 +73,8 @@ export interface TokenOverviewResponse {
   years: number[]
 }
 
+export type TokenPriceMap = Record<string, string> // tokenSymbol → CHF price string
+
 export type AdjustmentType = 'PROFIT' | 'LOSS' | 'BORROW' | 'REPAYMENT'
 
 export interface Adjustment {

@@ -1,4 +1,5 @@
 import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
+import generatePDF, { Margin } from 'react-to-pdf';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faCoins,
@@ -24,6 +25,7 @@ import type {
   BlacklistEntry,
   TransferClassification,
   TokenOverviewResponse,
+  TokenPriceMap,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -123,7 +125,7 @@ function formatDate(iso: string | null) {
 }
 
 function fmtNum(n: number, decimals = 2) {
-  return formatCurrency(n, 0, decimals) ?? '0';
+  return formatCurrency(n, decimals, decimals) ?? '0';
 }
 
 function dust(n: number) {
@@ -344,21 +346,31 @@ function BlacklistPanel({
 // TokenOverviewSection
 // ---------------------------------------------------------------------------
 
-const TOKEN_OVERVIEW_HEADERS = ['Token', 'Asset', 'Liability', 'Net', 'Accounted', 'Delta'];
+const TOKEN_OVERVIEW_HEADERS = ['Token', 'Asset', 'Liability', 'Net', 'Accounted', 'Year End Price', 'Unrealized P/L'];
 
 type PriceMap = Record<string, { chf: number | null }>;
 
 function TokenOverviewSection({
   overview,
-  prices,
+  prices: _prices,
+  tokenPrices,
+  year,
+  isExporting,
   onBlacklist,
   onAddCorrection,
+  onSaveTokenPrice,
 }: {
   overview: TokenOverviewResponse | null;
   prices: PriceMap;
+  tokenPrices: TokenPriceMap;
+  year: number | null;
+  isExporting: boolean;
   onBlacklist: (tokenAddress: string, chainId: number, tokenSymbol: string | null) => Promise<void>;
   onAddCorrection: (tokenSymbol: string | null) => void;
+  onSaveTokenPrice: (tokenSymbol: string, priceChf: string | null) => Promise<void>;
 }) {
+  const [priceEditing, setPriceEditing] = useState<{ symbol: string; value: string } | null>(null);
+
   if (!overview) {
     return (
       <p className="text-center text-text-muted text-sm py-8">
@@ -368,10 +380,6 @@ function TokenOverviewSection({
   }
 
   const { tokens, byClassification, unclassifiedCount } = overview;
-  const pricesByLower = useMemo(
-    () => Object.fromEntries(Object.entries(prices).map(([k, v]) => [k.toLowerCase(), v])),
-    [prices]
-  );
 
   return (
     <div className="space-y-6 mb-8">
@@ -397,31 +405,21 @@ function TokenOverviewSection({
                 .filter(t => dust(t.net) !== 0 || t.chfNet !== 0)
                 .map(t => {
                   const key = t.tokenAddress ?? t.tokenSymbol ?? 'UNKNOWN';
-                  const priceChf = t.tokenSymbol
-                    ? (pricesByLower[t.tokenSymbol.toLowerCase()]?.chf ?? null)
-                    : null;
+                  const sym = t.tokenSymbol ?? '';
                   const net = dust(t.net);
                   const asset = dust(t.asset);
                   const liability = dust(t.liability);
-                  const marketValue = priceChf !== null ? net * priceChf : null;
-                  const delta =
-                    marketValue !== null
-                      ? marketValue - t.chfNet
-                      : t.chfNet !== 0 ? -t.chfNet : null;
+                  const enteredPrice = sym ? (parseFloat(tokenPrices[sym] ?? '') || null) : null;
+                  const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
+                  const isEditingPrice = priceEditing?.symbol === sym;
 
                   return (
                     <TableRow key={key} headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
+                      {/* Token */}
                       <div className="group flex items-center gap-2 text-left">
-                        <div>
-                          <span className="font-semibold text-sm text-text-primary">
-                            {t.tokenSymbol ?? 'Unknown'}
-                          </span>
-                          {priceChf !== null && (
-                            <span className="ml-1.5 text-xs text-text-muted">
-                              ({fmtNum(priceChf)} CHF)
-                            </span>
-                          )}
-                        </div>
+                        <span className="font-semibold text-sm text-text-primary">
+                          {t.tokenSymbol ?? 'Unknown'}
+                        </span>
                         <button
                           onClick={() => onAddCorrection(t.tokenSymbol)}
                           className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5 print:hidden"
@@ -439,22 +437,60 @@ function TokenOverviewSection({
                           </button>
                         )}
                       </div>
+
+                      {/* Asset */}
                       <div className={`text-sm tabular-nums font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
                         {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
                       </div>
+
+                      {/* Liability */}
                       <div className={`text-sm tabular-nums font-medium ${liability === 0 ? 'text-text-muted' : 'text-error'}`}>
                         {liability === 0 ? '—' : fmtNum(liability, 4)}
                       </div>
+
+                      {/* Net */}
                       <div className={`text-sm tabular-nums font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
                         {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
                       </div>
+
+                      {/* Accounted */}
                       <div className="text-right">{chfCell(t.chfNet)}</div>
+
+                      {/* Price — editable, only meaningful when a year is selected */}
+                      <div onClick={e => e.stopPropagation()}>
+                        {isExporting ? (
+                          <span className="text-sm tabular-nums text-text-secondary">
+                            {tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : '—'}
+                          </span>
+                        ) : year ? (
+                          <EditableCell
+                            value={tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : null}
+                            isEditing={isEditingPrice}
+                            editValue={isEditingPrice ? priceEditing!.value : ''}
+                            onEdit={() => setPriceEditing({ symbol: sym, value: tokenPrices[sym] ?? '' })}
+                            onSave={async () => {
+                              if (!priceEditing) return;
+                              const v = priceEditing.value.trim();
+                              await onSaveTokenPrice(sym, v || null);
+                              setPriceEditing(null);
+                            }}
+                            onCancel={() => setPriceEditing(null)}
+                            onChange={v => setPriceEditing({ symbol: sym, value: v })}
+                            placeholder="0.00"
+                            emptyText="Set price"
+                          />
+                        ) : (
+                          <span className="text-text-muted text-xs">select year</span>
+                        )}
+                      </div>
+
+                      {/* Unrealized P/L = Net × Price − Accounted */}
                       <div className="text-right">
-                        {delta === null || Math.abs(delta) < 0.01 ? (
+                        {unrealized === null || Math.abs(unrealized) < 0.01 ? (
                           <span className="text-text-muted text-xs">—</span>
                         ) : (
-                          <span className={`text-sm tabular-nums font-medium ${delta >= 0 ? 'text-success' : 'text-error'}`}>
-                            {delta >= 0 ? '+' : ''}CHF {fmtNum(delta)}
+                          <span className={`text-sm tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                            {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
                           </span>
                         )}
                       </div>
@@ -516,6 +552,8 @@ export function TokenTransfersSection() {
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [selectedQuarter, setSelectedQuarter] = useState<number | null>(null);
   const [prefillToken, setPrefillToken] = useState<string | null>(null);
+  const [tokenPrices, setTokenPrices] = useState<TokenPriceMap>({});
+  const [isExporting, setIsExporting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -551,6 +589,32 @@ export function TokenTransfersSection() {
       setLoadingTransfers(false);
     }
   }, []);
+
+  const loadTokenPrices = useCallback(async (id: string, year: number) => {
+    const data = await apiRequest<TokenPriceMap>(
+      `/accounting/addresses/${id}/token-prices?year=${year}`
+    );
+    setTokenPrices(data);
+  }, []);
+
+  const handleSaveTokenPrice = useCallback(
+    async (tokenSymbol: string, priceChf: string | null) => {
+      if (!selectedId || !selectedYear) return;
+      await apiRequest(`/accounting/addresses/${selectedId}/token-prices`, {
+        method: 'POST',
+        body: JSON.stringify({ year: selectedYear, tokenSymbol, priceChf }),
+      });
+      setTokenPrices(prev => {
+        if (!priceChf) {
+          const next = { ...prev };
+          delete next[tokenSymbol];
+          return next;
+        }
+        return { ...prev, [tokenSymbol]: priceChf };
+      });
+    },
+    [selectedId, selectedYear]
+  );
 
   const loadOverview = useCallback(async (id: string, year?: number | null, quarter?: number | null) => {
     const qs = new URLSearchParams();
@@ -597,12 +661,17 @@ export function TokenTransfersSection() {
     setSelectedId(id);
     void loadTransfers(id);
     void loadOverview(id, selectedYear, selectedQuarter);
+    if (selectedYear) void loadTokenPrices(id, selectedYear);
   };
 
   const handleYearChange = (year: number | null) => {
     setSelectedYear(year);
     setSelectedQuarter(null);
-    if (selectedId) void loadOverview(selectedId, year, null);
+    if (selectedId) {
+      void loadOverview(selectedId, year, null);
+      if (year) void loadTokenPrices(selectedId, year);
+      else setTokenPrices({});
+    }
   };
 
   const handleQuarterChange = (quarter: number | null) => {
@@ -661,7 +730,21 @@ export function TokenTransfersSection() {
     [selectedId, selectedYear, selectedQuarter, loadTransfers, loadOverview]
   );
 
-  const handlePrint = () => window.print();
+  useEffect(() => {
+    if (!isExporting) return;
+    const addr = selectedAddress;
+    const label = addr?.label ?? addr?.address?.slice(0, 10) ?? 'report';
+    const period = selectedYear
+      ? selectedQuarter
+        ? `${QUARTERS[selectedQuarter - 1].label}${selectedYear}`
+        : `${selectedYear}`
+      : 'all';
+    generatePDF(printRef, {
+      filename: `token-transfers-${label}-${period}.pdf`,
+      page: { margin: Margin.LARGE, format: 'A4', orientation: 'portrait' },
+    });
+    setIsExporting(false);
+  }, [isExporting]);
 
   const selectedAddress = addresses.find(a => a.id === selectedId);
   const chainId = selectedAddress?.chainId ?? 1;
@@ -704,9 +787,12 @@ export function TokenTransfersSection() {
       />
 
       {/* ------------------------------------------------------------------ */}
-      {/* Print header — only visible when printing                           */}
+      {/* Printable region                                                    */}
       {/* ------------------------------------------------------------------ */}
-      <div className="hidden print:block mb-6">
+      <div ref={printRef} className={isExporting ? 'w-[96rem]' : ''}>
+
+      {/* Print header — only visible when exporting                         */}
+      <div className={`mb-6 ${isExporting ? 'block' : 'hidden'}`}>
         <h1 className="text-xl font-bold text-text-primary">Token Transfer Report</h1>
         {selectedAddress && (
           <p className="text-sm text-text-muted mt-1">
@@ -785,11 +871,12 @@ export function TokenTransfersSection() {
           {selectedYear && (
             <div className="self-end">
               <button
-                onClick={handlePrint}
-                className="flex items-center gap-2 text-sm border border-table-alt px-3 py-1.5 rounded-lg text-text-secondary hover:text-brand hover:border-brand transition-colors"
+                onClick={() => setIsExporting(true)}
+                disabled={isExporting}
+                className="flex items-center gap-2 text-sm border border-table-alt px-3 py-1.5 rounded-lg text-text-secondary hover:text-brand hover:border-brand transition-colors disabled:opacity-50"
               >
                 <FontAwesomeIcon icon={faPrint} className="w-3.5 h-3.5" />
-                Export PDF
+                {isExporting ? 'Generating…' : 'Export PDF'}
               </button>
             </div>
           )}
@@ -811,8 +898,12 @@ export function TokenTransfersSection() {
       <TokenOverviewSection
         overview={overview}
         prices={prices}
+        tokenPrices={tokenPrices}
+        year={selectedYear}
+        isExporting={isExporting}
         onBlacklist={handleBlacklist}
         onAddCorrection={sym => setPrefillToken(sym)}
+        onSaveTokenPrice={handleSaveTokenPrice}
       />
 
       {/* Transfer list */}
@@ -874,16 +965,16 @@ export function TokenTransfersSection() {
                     <TableRow key={t.id} headers={TRANSFER_HEADERS} colSpan={TRANSFER_HEADERS.length} rawHeader>
                       {/* Date */}
                       <div className="text-left">
-                        {txUrl ? (
+                        {txUrl && !isExporting ? (
                           <a
                             href={txUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-brand transition-colors print:no-underline"
+                            className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-brand transition-colors"
                             onClick={e => e.stopPropagation()}
                           >
                             {formatDate(t.timestamp)}
-                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-2.5 h-2.5 opacity-60 print:hidden" />
+                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-2.5 h-2.5 opacity-60" />
                           </a>
                         ) : (
                           <span className="text-sm text-text-secondary">{formatDate(t.timestamp)}</span>
@@ -907,32 +998,48 @@ export function TokenTransfersSection() {
                       </div>
 
                       {/* CHF */}
-                      <div onClick={e => e.stopPropagation()} className="print:pointer-events-none">
-                        <EditableCell
-                          value={t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
-                          isEditing={chfEditing?.id === t.id}
-                          editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
-                          onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
-                          onSave={handleSaveChf}
-                          onCancel={() => setChfEditing(null)}
-                          onChange={v => setChfEditing({ id: t.id, value: v })}
-                          placeholder="0.00"
-                          emptyText="Set CHF"
-                        />
-                      </div>
+                      {isExporting ? (
+                        <div className="text-right">
+                          <span className="text-sm tabular-nums text-text-secondary">
+                            {t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
+                          </span>
+                        </div>
+                      ) : (
+                        <div onClick={e => e.stopPropagation()}>
+                          <EditableCell
+                            value={t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
+                            isEditing={chfEditing?.id === t.id}
+                            editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
+                            onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
+                            onSave={handleSaveChf}
+                            onCancel={() => setChfEditing(null)}
+                            onChange={v => setChfEditing({ id: t.id, value: v })}
+                            placeholder="0.00"
+                            emptyText="Set CHF"
+                          />
+                        </div>
+                      )}
 
                       {/* Classification */}
-                      <div className="flex justify-end min-w-0" onClick={e => e.stopPropagation()}>
-                        <select
-                          value={t.classification}
-                          onChange={e => handleUpdateTransfer(t.id, { classification: e.target.value })}
-                          className={`text-xs rounded-lg px-2 py-1 border-transparent outline-none cursor-pointer max-w-full print:appearance-none ${cls.bg} ${cls.color}`}
-                        >
-                          {CLASSIFICATION_OPTIONS.map(o => (
-                            <option key={o.value} value={o.value}>{o.label}</option>
-                          ))}
-                        </select>
-                      </div>
+                      {isExporting ? (
+                        <div className="flex justify-end">
+                          <span className={`text-xs rounded-lg px-2 py-1 ${cls.bg} ${cls.color}`}>
+                            {CLASSIFICATION_LABEL[t.classification] ?? t.classification}
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="flex justify-end min-w-0" onClick={e => e.stopPropagation()}>
+                          <select
+                            value={t.classification}
+                            onChange={e => handleUpdateTransfer(t.id, { classification: e.target.value })}
+                            className={`text-xs rounded-lg px-2 py-1 border-transparent outline-none cursor-pointer max-w-full ${cls.bg} ${cls.color}`}
+                          >
+                            {CLASSIFICATION_OPTIONS.map(o => (
+                              <option key={o.value} value={o.value}>{o.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                      )}
                     </TableRow>
                   );
                 })
@@ -942,6 +1049,7 @@ export function TokenTransfersSection() {
 
         </>
       )}
+      </div> {/* end printable region */}
     </Section>
   );
 }
