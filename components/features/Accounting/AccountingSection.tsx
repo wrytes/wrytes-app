@@ -77,15 +77,21 @@ const CLASSIFICATION_OPTIONS = [
 
 // positive = green, negative = red, directional = blue, neutral = grey, unclassified = yellow
 const CLASSIFICATION_STYLE: Record<TransferClassification, { color: string; bg: string }> = {
-  ASSET: { color: 'text-success', bg: 'bg-success-bg' },
-  RECEIVED: { color: 'text-success', bg: 'bg-success-bg' },
-  SWAP_IN: { color: 'text-info', bg: 'bg-info/10' },
-  LIABILITY: { color: 'text-error', bg: 'bg-error-bg' },
-  PAYMENT: { color: 'text-error', bg: 'bg-error-bg' },
-  SWAP_OUT: { color: 'text-warning', bg: 'bg-warning/10' },
-  TRANSFER: { color: 'text-brand', bg: 'bg-brand/10' },
-  SKIPPED: { color: 'text-text-muted', bg: 'bg-surface' },
+  ASSET:        { color: 'text-success',        bg: 'bg-success-bg' },
+  RECEIVED:     { color: 'text-success',        bg: 'bg-success-bg' },
+  SWAP_IN:      { color: 'text-info',           bg: 'bg-info/10' },
+  LIABILITY:    { color: 'text-error',          bg: 'bg-error-bg' },
+  PAYMENT:      { color: 'text-error',          bg: 'bg-error-bg' },
+  SWAP_OUT:     { color: 'text-warning',        bg: 'bg-warning/10' },
+  TRANSFER:     { color: 'text-brand',          bg: 'bg-brand/10' },
+  SKIPPED:      { color: 'text-text-muted',     bg: 'bg-surface' },
   UNCLASSIFIED: { color: 'text-text-secondary', bg: 'bg-surface' },
+  CAPITAL:      { color: 'text-success',        bg: 'bg-success-bg' },
+  INCOME:       { color: 'text-success',        bg: 'bg-success-bg' },
+  LOAN:         { color: 'text-info',           bg: 'bg-info/10' },
+  REPAYMENT:    { color: 'text-brand',          bg: 'bg-brand/10' },
+  EXPENSE:      { color: 'text-error',          bg: 'bg-error-bg' },
+  NEUTRAL:      { color: 'text-text-muted',     bg: 'bg-surface' },
 };
 
 const CLASSIFICATION_FILTER = [

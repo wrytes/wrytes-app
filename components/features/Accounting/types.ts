@@ -11,6 +11,14 @@ export interface AccountingAddress {
 }
 
 export type TransferClassification =
+  // New
+  | 'CAPITAL'
+  | 'INCOME'
+  | 'LOAN'
+  | 'REPAYMENT'
+  | 'EXPENSE'
+  | 'NEUTRAL'
+  // Legacy (accounting module)
   | 'ASSET'
   | 'LIABILITY'
   | 'SWAP_IN'
@@ -125,6 +133,32 @@ export interface TrialBalanceLine extends AccountingAccount {
   chfCredit: number
   net: number
   chfNet: number
+}
+
+export interface TokenOverviewToken {
+  tokenSymbol: string | null
+  tokenAddress: string | null
+  asset: number
+  liability: number
+  net: number
+  chfAsset: number
+  chfLiability: number
+  chfNet: number
+}
+
+export interface TokenOverviewClassification {
+  classification: TransferClassification
+  count: number
+  total: number
+  chfTotal: number
+}
+
+export interface TokenOverviewResponse {
+  address: AccountingAddress
+  tokens: TokenOverviewToken[]
+  byClassification: TokenOverviewClassification[]
+  unclassifiedCount: number
+  years: number[]
 }
 
 // Legacy — kept for backwards compat with old summary endpoint

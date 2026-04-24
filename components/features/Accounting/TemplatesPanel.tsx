@@ -49,6 +49,12 @@ const CLASSIFICATION_STYLE: Record<TransferClassification, { color: string; bg: 
   TRANSFER:     { color: 'text-brand',          bg: 'bg-brand/10' },
   SKIPPED:      { color: 'text-text-muted',     bg: 'bg-surface' },
   UNCLASSIFIED: { color: 'text-text-secondary', bg: 'bg-surface' },
+  CAPITAL:      { color: 'text-success',        bg: 'bg-success-bg' },
+  INCOME:       { color: 'text-success',        bg: 'bg-success-bg' },
+  LOAN:         { color: 'text-info',           bg: 'bg-info/10' },
+  REPAYMENT:    { color: 'text-brand',          bg: 'bg-brand/10' },
+  EXPENSE:      { color: 'text-error',          bg: 'bg-error-bg' },
+  NEUTRAL:      { color: 'text-text-muted',     bg: 'bg-surface' },
 };
 
 // ---------------------------------------------------------------------------
