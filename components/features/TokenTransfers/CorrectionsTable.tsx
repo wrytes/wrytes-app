@@ -1,9 +1,10 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faPencil, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
+import { useSort } from '@/hooks/useSort';
 import type { Adjustment, AdjustmentType } from './types';
 
 // ---------------------------------------------------------------------------
@@ -41,9 +42,10 @@ interface RowProps {
   adj: Adjustment;
   onSave: (id: string, patch: Partial<Omit<Adjustment, 'id' | 'accountingAddressId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
+  isExporting?: boolean;
 }
 
-function AdjustmentRow({ adj, onSave, onDelete }: RowProps) {
+function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
     date: adj.date.slice(0, 10),
@@ -166,9 +168,13 @@ function AdjustmentRow({ adj, onSave, onDelete }: RowProps) {
       <span className="text-sm text-text-secondary text-left block">{fmtDate(adj.date)}</span>
 
       {/* Type */}
-      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${style.bg} ${style.color}`}>
-        {style.label}
-      </span>
+      {isExporting ? (
+        <span className={`text-xs font-semibold ${style.color}`}>{style.label}</span>
+      ) : (
+        <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${style.bg} ${style.color}`}>
+          {style.label}
+        </span>
+      )}
 
       {/* Token */}
       <span className="text-sm font-medium text-text-primary">{adj.tokenSymbol ?? '—'}</span>
@@ -182,12 +188,10 @@ function AdjustmentRow({ adj, onSave, onDelete }: RowProps) {
       </span>
 
       {/* Note */}
-      <span className="text-sm text-text-muted italic truncate max-w-[180px]">
-        {adj.note ?? '—'}
-      </span>
+      <span className="text-sm text-text-secondary">{adj.note ?? '—'}</span>
 
       {/* Actions */}
-      <div className="flex items-center justify-end gap-1.5 print:hidden">
+      <div className={`flex items-center justify-end gap-1.5 ${isExporting ? 'invisible' : ''}`}>
         <button
           onClick={() => setEditing(true)}
           className="text-text-muted hover:text-brand transition-colors p-1"
@@ -321,13 +325,19 @@ interface Props {
   prefillToken?: string | null;
   onPrefillConsumed?: () => void;
   onMutate?: () => void;
+  isExporting?: boolean;
 }
 
-export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPrefillConsumed, onMutate }: Props) {
+export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPrefillConsumed, onMutate, isExporting = false }: Props) {
   const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addInitialToken, setAddInitialToken] = useState<string>('');
+
+  // Search / filter / sort
+  const { sortTab, sortReverse, handleSort } = useSort('Date');
+  const [search, setSearch] = useState('');
+  const [typeFilters, setTypeFilters] = useState<string[]>([]);
 
   useEffect(() => {
     if (prefillToken != null) {
@@ -349,6 +359,29 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
   }, [addressId, year, quarter]);
 
   useEffect(() => { void load(); }, [load]);
+
+  const visible = useMemo(() => {
+    const q = search.toLowerCase().trim();
+    return [...adjustments]
+      .filter(a => {
+        if (typeFilters.length > 0 && !typeFilters.includes(a.type)) return false;
+        if (!q) return true;
+        return (
+          (a.tokenSymbol ?? '').toLowerCase().includes(q) ||
+          (a.note ?? '').toLowerCase().includes(q)
+        );
+      })
+      .sort((a, b) => {
+        const m = sortReverse ? -1 : 1;
+        switch (sortTab) {
+          case 'Type':    return m * a.type.localeCompare(b.type);
+          case 'Token':   return m * (a.tokenSymbol ?? '').localeCompare(b.tokenSymbol ?? '');
+          case 'Amount':  return m * (parseFloat(a.amount ?? '0') - parseFloat(b.amount ?? '0'));
+          case 'CHF Value': return m * (parseFloat(a.chfValue ?? '0') - parseFloat(b.chfValue ?? '0'));
+          default:        return m * (new Date(b.date).getTime() - new Date(a.date).getTime());
+        }
+      });
+  }, [adjustments, search, typeFilters, sortTab, sortReverse]);
 
   const handleAdd = async (entry: Parameters<AddRowProps['onAdd']>[0]) => {
     const created = await apiRequest<Adjustment>(`/accounting/addresses/${addressId}/adjustments`, {
@@ -376,41 +409,68 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
     onMutate?.();
   };
 
+  // Sortable headers — exclude the empty actions column
+  const SORTABLE_HEADERS = HEADERS.slice(0, -1);
+
   return (
     <div className="mb-8">
       <div className="flex items-center justify-between mb-3">
         <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
-          Manual Corrections &amp; Entries
+          Accounting Entries
         </h3>
-        <button
-          onClick={() => setAdding(true)}
-          className="print:hidden flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
-        >
-          <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
-          Add entry
-        </button>
+        {!isExporting && (
+          <button
+            onClick={() => setAdding(true)}
+            className="flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
+          >
+            <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+            Add entry
+          </button>
+        )}
       </div>
 
       <Table>
-        <TableHead headers={HEADERS} colSpan={HEADERS.length} />
+        {isExporting ? (
+          <TableHead headers={SORTABLE_HEADERS} colSpan={HEADERS.length} />
+        ) : (
+          <TableHeadSearchable
+            headers={SORTABLE_HEADERS}
+            colSpan={HEADERS.length}
+            tab={sortTab}
+            reverse={sortReverse}
+            tabOnChange={handleSort}
+            searchValue={search}
+            onSearchChange={setSearch}
+            searchPlaceholder="Search by token or note…"
+            hideMyWallet
+            inMyWallet={false}
+            onInMyWalletChange={() => {}}
+            filterOptionsTitle="Type"
+            filterOptions={TYPE_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+            activeFilters={typeFilters}
+            onFiltersChange={setTypeFilters}
+          />
+        )}
         <TableBody>
           {(() => {
             const rows: React.ReactElement[] = [];
             if (adding) rows.push(
-            <AddRow
-              key="__add"
-              onAdd={handleAdd}
-              onCancel={() => { setAdding(false); setAddInitialToken(''); }}
-              initialToken={addInitialToken}
-            />
-          );
+              <AddRow
+                key="__add"
+                onAdd={handleAdd}
+                onCancel={() => { setAdding(false); setAddInitialToken(''); }}
+                initialToken={addInitialToken}
+              />
+            );
             if (!loaded) {
               rows.push(<TableRowEmpty key="loading">Loading…</TableRowEmpty>);
-            } else if (adjustments.length === 0 && !adding) {
-              rows.push(<TableRowEmpty key="empty">No manual entries yet.</TableRowEmpty>);
+            } else if (visible.length === 0 && !adding) {
+              rows.push(<TableRowEmpty key="empty">
+                {adjustments.length === 0 ? 'No manual entries yet.' : 'No entries match your filter.'}
+              </TableRowEmpty>);
             } else {
-              adjustments.forEach(adj =>
-                rows.push(<AdjustmentRow key={adj.id} adj={adj} onSave={handleSave} onDelete={handleDelete} />)
+              visible.forEach(adj =>
+                rows.push(<AdjustmentRow key={adj.id} adj={adj} onSave={handleSave} onDelete={handleDelete} isExporting={isExporting} />)
               );
             }
             return rows;

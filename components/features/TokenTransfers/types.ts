@@ -29,7 +29,11 @@ export interface Transfer {
   id: string
   txHash: string
   timestamp: string | null
+  blockNumber: number | null
+  logIndex: number | null
   direction: 'IN' | 'OUT'
+  fromAddress: string
+  toAddress: string | null
   tokenAddress: string | null
   tokenSymbol: string | null
   amountFormatted: string | null
@@ -73,7 +77,8 @@ export interface TokenOverviewResponse {
   years: number[]
 }
 
-export type TokenPriceMap = Record<string, string> // tokenSymbol → CHF price string
+export type TokenPriceMap = Record<string, string>          // tokenSymbol → CHF price string
+export type CounterpartyLabelMap = Record<string, string>   // address (lowercase) → label
 
 export type AdjustmentType = 'PROFIT' | 'LOSS' | 'BORROW' | 'REPAYMENT'
 
