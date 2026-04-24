@@ -134,3 +134,18 @@ div[data-hot-toast-wrapper] div[role="status"] > div {
   flex: 1 !important;
 }
 
+/* ------------------------------------------------------------------ */
+/* Print — token transfer report                                       */
+/* ------------------------------------------------------------------ */
+@media print {
+  * {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
+
+  @page {
+    margin: 1.5cm;
+    size: A4 landscape;
+  }
+}
+
