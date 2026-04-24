@@ -19,6 +19,7 @@ import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { CorrectionsTable } from './CorrectionsTable';
+import { TransfersTable } from './TransfersTable';
 import type {
   WalletAddress,
   Transfer,
@@ -50,15 +51,15 @@ const EXPLORER_BASE: Record<number, string> = {
 
 const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification; hint: string }[] = [
   { label: 'Unclassified', value: 'UNCLASSIFIED', hint: '' },
-  { label: 'Neutral',      value: 'NEUTRAL',      hint: 'no effect — still owned' },
-  { label: 'Capital',      value: 'CAPITAL',      hint: 'asset +' },
-  { label: 'Income',       value: 'INCOME',       hint: 'asset +' },
-  { label: 'Swap In',      value: 'SWAP_IN',      hint: 'asset +' },
-  { label: 'Loan',         value: 'LOAN',         hint: 'asset + / liab +' },
-  { label: 'Repayment',    value: 'REPAYMENT',    hint: 'asset − / liab −' },
-  { label: 'Swap Out',     value: 'SWAP_OUT',     hint: 'asset −' },
-  { label: 'Expense',      value: 'EXPENSE',      hint: 'asset −' },
-  { label: 'Payment',      value: 'PAYMENT',      hint: 'asset −' },
+  { label: 'Neutral', value: 'NEUTRAL', hint: 'no effect — still owned' },
+  { label: 'Capital', value: 'CAPITAL', hint: 'asset +' },
+  { label: 'Income', value: 'INCOME', hint: 'asset +' },
+  { label: 'Swap In', value: 'SWAP_IN', hint: 'asset +' },
+  { label: 'Loan', value: 'LOAN', hint: 'asset + / liab +' },
+  { label: 'Repayment', value: 'REPAYMENT', hint: 'asset − / liab −' },
+  { label: 'Swap Out', value: 'SWAP_OUT', hint: 'asset −' },
+  { label: 'Expense', value: 'EXPENSE', hint: 'asset −' },
+  { label: 'Payment', value: 'PAYMENT', hint: 'asset −' },
 ];
 
 const CLASSIFICATION_LABEL: Partial<Record<TransferClassification, string>> = {
@@ -77,22 +78,22 @@ const CLASSIFICATION_LABEL: Partial<Record<TransferClassification, string>> = {
 type ClassStyle = { color: string; bg: string };
 
 const CLASSIFICATION_STYLE: Partial<Record<TransferClassification, ClassStyle>> = {
-  CAPITAL:      { color: 'text-success',      bg: 'bg-success-bg' },
-  INCOME:       { color: 'text-success',      bg: 'bg-success-bg' },
-  SWAP_IN:      { color: 'text-success',      bg: 'bg-success-bg' },
-  LOAN:         { color: 'text-info',         bg: 'bg-info/10'    },
-  REPAYMENT:    { color: 'text-brand',        bg: 'bg-brand/10'   },
-  SWAP_OUT:     { color: 'text-warning',      bg: 'bg-warning/10' },
-  EXPENSE:      { color: 'text-error',        bg: 'bg-error-bg'   },
-  PAYMENT:      { color: 'text-error',        bg: 'bg-error-bg'   },
-  NEUTRAL:      { color: 'text-text-muted',   bg: 'bg-surface'    },
-  UNCLASSIFIED: { color: 'text-warning',      bg: 'bg-warning/10' },
+  CAPITAL: { color: 'text-success', bg: 'bg-success-bg' },
+  INCOME: { color: 'text-success', bg: 'bg-success-bg' },
+  SWAP_IN: { color: 'text-success', bg: 'bg-success-bg' },
+  LOAN: { color: 'text-info', bg: 'bg-info/10' },
+  REPAYMENT: { color: 'text-brand', bg: 'bg-brand/10' },
+  SWAP_OUT: { color: 'text-warning', bg: 'bg-warning/10' },
+  EXPENSE: { color: 'text-error', bg: 'bg-error-bg' },
+  PAYMENT: { color: 'text-error', bg: 'bg-error-bg' },
+  NEUTRAL: { color: 'text-text-muted', bg: 'bg-surface' },
+  UNCLASSIFIED: { color: 'text-warning', bg: 'bg-warning/10' },
   // legacy
-  ASSET:        { color: 'text-success',      bg: 'bg-success-bg' },
-  RECEIVED:     { color: 'text-success',      bg: 'bg-success-bg' },
-  LIABILITY:    { color: 'text-info',         bg: 'bg-info/10'    },
-  TRANSFER:     { color: 'text-text-muted',   bg: 'bg-surface'    },
-  SKIPPED:      { color: 'text-text-muted',   bg: 'bg-surface'    },
+  ASSET: { color: 'text-success', bg: 'bg-success-bg' },
+  RECEIVED: { color: 'text-success', bg: 'bg-success-bg' },
+  LIABILITY: { color: 'text-info', bg: 'bg-info/10' },
+  TRANSFER: { color: 'text-text-muted', bg: 'bg-surface' },
+  SKIPPED: { color: 'text-text-muted', bg: 'bg-surface' },
 };
 
 function getStyle(cls: TransferClassification): ClassStyle {
@@ -252,7 +253,9 @@ function AddressBar({
               className="bg-card border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary outline-none focus:border-brand"
             >
               {SUPPORTED_CHAINS.map(c => (
-                <option key={c.value} value={c.value}>{c.label}</option>
+                <option key={c.value} value={c.value}>
+                  {c.label}
+                </option>
               ))}
             </select>
             <input
@@ -346,7 +349,15 @@ function BlacklistPanel({
 // TokenOverviewSection
 // ---------------------------------------------------------------------------
 
-const TOKEN_OVERVIEW_HEADERS = ['Token', 'Asset', 'Liability', 'Net', 'Accounted', 'Year End Price', 'Unrealized P/L'];
+const TOKEN_OVERVIEW_HEADERS = [
+  'Token',
+  'Asset',
+  'Liability',
+  'Net',
+  'Accounted',
+  'Year End Price',
+  'Unrealized P/L',
+];
 
 type PriceMap = Record<string, { chf: number | null }>;
 
@@ -379,129 +390,26 @@ function TokenOverviewSection({
     );
   }
 
-  const { tokens, byClassification, unclassifiedCount } = overview;
+  const { tokens, byClassification } = overview;
+
+  const visibleTokens = tokens.filter(t => dust(t.net) !== 0 || t.chfNet !== 0);
+
+  const totals = visibleTokens.reduce(
+    (acc, t) => {
+      const sym = t.tokenSymbol ?? '';
+      const net = dust(t.net);
+      const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
+      const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
+      return {
+        accounted: acc.accounted + t.chfNet,
+        unrealized: unrealized !== null ? (acc.unrealized ?? 0) + unrealized : acc.unrealized,
+      };
+    },
+    { accounted: 0, unrealized: null as number | null }
+  );
 
   return (
     <div className="space-y-6 mb-8">
-      {unclassifiedCount > 0 && (
-        <div className="flex items-center gap-2 bg-warning/10 border border-warning/30 rounded-lg px-4 py-2.5 text-sm text-warning print:hidden">
-          <FontAwesomeIcon icon={faExclamationTriangle} className="w-3.5 h-3.5 shrink-0" />
-          <span>
-            <strong>{unclassifiedCount}</strong> transfer{unclassifiedCount !== 1 ? 's' : ''} not
-            yet classified — scroll down to classify them.
-          </span>
-        </div>
-      )}
-
-      {tokens.length > 0 && (
-        <div>
-          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-            Token Balances
-          </h3>
-          <Table>
-            <TableHead headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} />
-            <TableBody>
-              {tokens
-                .filter(t => dust(t.net) !== 0 || t.chfNet !== 0)
-                .map(t => {
-                  const key = t.tokenAddress ?? t.tokenSymbol ?? 'UNKNOWN';
-                  const sym = t.tokenSymbol ?? '';
-                  const net = dust(t.net);
-                  const asset = dust(t.asset);
-                  const liability = dust(t.liability);
-                  const enteredPrice = sym ? (parseFloat(tokenPrices[sym] ?? '') || null) : null;
-                  const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
-                  const isEditingPrice = priceEditing?.symbol === sym;
-
-                  return (
-                    <TableRow key={key} headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
-                      {/* Token */}
-                      <div className="group flex items-center gap-2 text-left">
-                        <span className="font-semibold text-sm text-text-primary">
-                          {t.tokenSymbol ?? 'Unknown'}
-                        </span>
-                        <button
-                          onClick={() => onAddCorrection(t.tokenSymbol)}
-                          className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5 print:hidden"
-                          title="Add manual correction"
-                        >
-                          <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
-                        </button>
-                        {t.tokenAddress && (
-                          <button
-                            onClick={() => onBlacklist(t.tokenAddress!, overview.address.chainId, t.tokenSymbol)}
-                            className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5 print:hidden"
-                            title="Blacklist token"
-                          >
-                            <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
-                          </button>
-                        )}
-                      </div>
-
-                      {/* Asset */}
-                      <div className={`text-sm tabular-nums font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
-                        {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
-                      </div>
-
-                      {/* Liability */}
-                      <div className={`text-sm tabular-nums font-medium ${liability === 0 ? 'text-text-muted' : 'text-error'}`}>
-                        {liability === 0 ? '—' : fmtNum(liability, 4)}
-                      </div>
-
-                      {/* Net */}
-                      <div className={`text-sm tabular-nums font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
-                        {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
-                      </div>
-
-                      {/* Accounted */}
-                      <div className="text-right">{chfCell(t.chfNet)}</div>
-
-                      {/* Price — editable, only meaningful when a year is selected */}
-                      <div onClick={e => e.stopPropagation()}>
-                        {isExporting ? (
-                          <span className="text-sm tabular-nums text-text-secondary">
-                            {tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : '—'}
-                          </span>
-                        ) : year ? (
-                          <EditableCell
-                            value={tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : null}
-                            isEditing={isEditingPrice}
-                            editValue={isEditingPrice ? priceEditing!.value : ''}
-                            onEdit={() => setPriceEditing({ symbol: sym, value: tokenPrices[sym] ?? '' })}
-                            onSave={async () => {
-                              if (!priceEditing) return;
-                              const v = priceEditing.value.trim();
-                              await onSaveTokenPrice(sym, v || null);
-                              setPriceEditing(null);
-                            }}
-                            onCancel={() => setPriceEditing(null)}
-                            onChange={v => setPriceEditing({ symbol: sym, value: v })}
-                            placeholder="0.00"
-                            emptyText="Set price"
-                          />
-                        ) : (
-                          <span className="text-text-muted text-xs">select year</span>
-                        )}
-                      </div>
-
-                      {/* Unrealized P/L = Net × Price − Accounted */}
-                      <div className="text-right">
-                        {unrealized === null || Math.abs(unrealized) < 0.01 ? (
-                          <span className="text-text-muted text-xs">—</span>
-                        ) : (
-                          <span className={`text-sm tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
-                            {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
-                          </span>
-                        )}
-                      </div>
-                    </TableRow>
-                  );
-                })}
-            </TableBody>
-          </Table>
-        </div>
-      )}
-
       {byClassification.length > 0 && (
         <div>
           <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
@@ -512,7 +420,10 @@ function TokenOverviewSection({
               const style = getStyle(item.classification);
               const label = CLASSIFICATION_LABEL[item.classification] ?? item.classification;
               return (
-                <div key={item.classification} className="rounded-lg px-4 py-3 border border-table-alt bg-card space-y-1">
+                <div
+                  key={item.classification}
+                  className="rounded-lg px-4 py-3 border border-table-alt bg-card space-y-1"
+                >
                   <div className={`text-xs font-semibold ${style.color}`}>{label}</div>
                   <div className="text-sm font-bold text-text-primary tabular-nums">
                     {item.chfTotal > 0 ? `CHF ${fmtNum(item.chfTotal)}` : '—'}
@@ -524,6 +435,180 @@ function TokenOverviewSection({
               );
             })}
           </div>
+        </div>
+      )}
+
+      {tokens.length > 0 && (
+        <div>
+          <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+            Token Balances
+          </h3>
+
+          {isExporting ? (
+            /* Native table for PDF — guarantees column alignment */
+            <table className="w-full text-sm border-collapse bg-card rounded-lg overflow-hidden">
+              <thead>
+                <tr className="border-b border-table-alt">
+                  {TOKEN_OVERVIEW_HEADERS.map((h, i) => (
+                    <th
+                      key={h}
+                      className={`px-4 py-3 font-bold text-text-primary ${i === 0 ? 'text-left' : 'text-right'}`}
+                    >
+                      {h}
+                    </th>
+                  ))}
+                </tr>
+              </thead>
+              <tbody>
+                {visibleTokens.map(t => {
+                    const key = t.tokenAddress ?? t.tokenSymbol ?? 'UNKNOWN';
+                    const sym = t.tokenSymbol ?? '';
+                    const net = dust(t.net);
+                    const asset = dust(t.asset);
+                    const liability = dust(t.liability);
+                    const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
+                    const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
+                    return (
+                      <tr key={key} className="border-b border-table-alt/50 last:border-0">
+                        <td className="px-4 py-3 font-semibold text-text-primary text-left">{t.tokenSymbol ?? 'Unknown'}</td>
+                        <td className={`px-4 py-3 tabular-nums text-right font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
+                          {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
+                        </td>
+                        <td className={`px-4 py-3 tabular-nums text-right font-medium ${liability === 0 ? 'text-text-muted' : 'text-error'}`}>
+                          {liability === 0 ? '—' : fmtNum(liability, 4)}
+                        </td>
+                        <td className={`px-4 py-3 tabular-nums text-right font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
+                          {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
+                        </td>
+                        <td className="px-4 py-3 text-right">{chfCell(t.chfNet)}</td>
+                        <td className="px-4 py-3 tabular-nums text-right text-text-secondary">
+                          {tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : '—'}
+                        </td>
+                        <td className="px-4 py-3 text-right">
+                          {unrealized === null || Math.abs(unrealized) < 0.01 ? (
+                            <span className="text-text-muted">—</span>
+                          ) : (
+                            <span className={`tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                              {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
+                            </span>
+                          )}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                {/* Totals row */}
+                <tr className="border-t-2 border-table-alt">
+                  <td className="px-4 py-3 font-bold text-text-primary text-left">Total</td>
+                  <td /><td /><td />
+                  <td className={`px-4 py-3 tabular-nums text-right font-bold ${Math.abs(totals.accounted) < 0.01 ? 'text-text-muted' : totals.accounted >= 0 ? 'text-success' : 'text-error'}`}>
+                    {Math.abs(totals.accounted) < 0.01 ? '—' : `${totals.accounted >= 0 ? '+' : ''}CHF ${fmtNum(totals.accounted)}`}
+                  </td>
+                  <td />
+                  <td className="px-4 py-3 text-right">
+                    {totals.unrealized === null || Math.abs(totals.unrealized) < 0.01 ? (
+                      <span className="text-text-muted">—</span>
+                    ) : (
+                      <span className={`tabular-nums font-bold ${totals.unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                        {totals.unrealized >= 0 ? '+' : ''}CHF {fmtNum(totals.unrealized)}
+                      </span>
+                    )}
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          ) : (
+            <Table>
+              <TableHead headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} />
+              <TableBody>
+                {((): React.ReactElement[] => {
+                  const rows: React.ReactElement[] = visibleTokens.map(t => {
+                    const key = t.tokenAddress ?? t.tokenSymbol ?? 'UNKNOWN';
+                    const sym = t.tokenSymbol ?? '';
+                    const net = dust(t.net);
+                    const asset = dust(t.asset);
+                    const liability = dust(t.liability);
+                    const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
+                    const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
+                    const isEditingPrice = priceEditing?.symbol === sym;
+
+                    return (
+                      <TableRow key={key} headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
+                        <div className="group flex items-center gap-2 text-left">
+                          <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
+                          <button onClick={() => onAddCorrection(t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
+                            <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+                          </button>
+                          {t.tokenAddress && (
+                            <button onClick={() => onBlacklist(t.tokenAddress!, overview.address.chainId, t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5" title="Blacklist token">
+                              <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
+                            </button>
+                          )}
+                        </div>
+                        <div className={`text-sm tabular-nums font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
+                          {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
+                        </div>
+                        <div className={`text-sm tabular-nums font-medium ${liability === 0 ? 'text-text-muted' : 'text-error'}`}>
+                          {liability === 0 ? '—' : fmtNum(liability, 4)}
+                        </div>
+                        <div className={`text-sm tabular-nums font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
+                          {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
+                        </div>
+                        <div className="text-right">{chfCell(t.chfNet)}</div>
+                        <div onClick={e => e.stopPropagation()}>
+                          {year ? (
+                            <EditableCell
+                              value={tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : null}
+                              isEditing={isEditingPrice}
+                              editValue={isEditingPrice ? priceEditing!.value : ''}
+                              onEdit={() => setPriceEditing({ symbol: sym, value: tokenPrices[sym] ?? '' })}
+                              onSave={async () => { if (!priceEditing) return; await onSaveTokenPrice(sym, priceEditing.value.trim() || null); setPriceEditing(null); }}
+                              onCancel={() => setPriceEditing(null)}
+                              onChange={v => setPriceEditing({ symbol: sym, value: v })}
+                              placeholder="0.00"
+                              emptyText="Set price"
+                            />
+                          ) : (
+                            <span className="text-text-muted text-xs">select year</span>
+                          )}
+                        </div>
+                        <div className="text-right">
+                          {unrealized === null || Math.abs(unrealized) < 0.01 ? (
+                            <span className="text-text-muted text-xs">—</span>
+                          ) : (
+                            <span className={`text-sm tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                              {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
+                            </span>
+                          )}
+                        </div>
+                      </TableRow>
+                    );
+                  });
+                  rows.push(
+                    <TableRow key="__total" headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
+                      <div className="text-left font-bold text-text-primary text-sm">Total</div>
+                      <div />
+                      <div />
+                      <div />
+                      <div className={`text-right font-bold text-sm tabular-nums ${Math.abs(totals.accounted) < 0.01 ? 'text-text-muted' : totals.accounted >= 0 ? 'text-success' : 'text-error'}`}>
+                        {Math.abs(totals.accounted) < 0.01 ? '—' : `${totals.accounted >= 0 ? '+' : ''}CHF ${fmtNum(totals.accounted)}`}
+                      </div>
+                      <div />
+                      <div className="text-right">
+                        {totals.unrealized === null || Math.abs(totals.unrealized) < 0.01 ? (
+                          <span className="text-text-muted text-xs">—</span>
+                        ) : (
+                          <span className={`text-sm tabular-nums font-bold ${totals.unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                            {totals.unrealized >= 0 ? '+' : ''}CHF {fmtNum(totals.unrealized)}
+                          </span>
+                        )}
+                      </div>
+                    </TableRow>
+                  );
+                  return rows;
+                })()}
+              </TableBody>
+            </Table>
+          )}
         </div>
       )}
     </div>
@@ -544,9 +629,6 @@ export function TokenTransfersSection() {
   const [overview, setOverview] = useState<TokenOverviewResponse | null>(null);
   const [loadingTransfers, setLoadingTransfers] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
-  const [search, setSearch] = useState('');
-  const [classFilter, setClassFilter] = useState('');
-  const [chfEditing, setChfEditing] = useState<{ id: string; value: string } | null>(null);
   const [prices, setPrices] = useState<PriceMap>({});
   const [blacklist, setBlacklist] = useState<BlacklistEntry[]>([]);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -558,8 +640,12 @@ export function TokenTransfersSection() {
 
   useEffect(() => {
     void loadAddresses();
-    void apiRequest<PriceMap>('/prices').then(setPrices).catch(() => {});
-    void apiRequest<BlacklistEntry[]>('/accounting/blacklist').then(setBlacklist).catch(() => {});
+    void apiRequest<PriceMap>('/prices')
+      .then(setPrices)
+      .catch(() => {});
+    void apiRequest<BlacklistEntry[]>('/accounting/blacklist')
+      .then(setBlacklist)
+      .catch(() => {});
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
@@ -616,15 +702,18 @@ export function TokenTransfersSection() {
     [selectedId, selectedYear]
   );
 
-  const loadOverview = useCallback(async (id: string, year?: number | null, quarter?: number | null) => {
-    const qs = new URLSearchParams();
-    if (year) qs.set('year', String(year));
-    if (quarter) qs.set('quarter', String(quarter));
-    const data = await apiRequest<TokenOverviewResponse>(
-      `/accounting/addresses/${id}/token-overview${qs.toString() ? '?' + qs : ''}`
-    );
-    setOverview(data);
-  }, []);
+  const loadOverview = useCallback(
+    async (id: string, year?: number | null, quarter?: number | null) => {
+      const qs = new URLSearchParams();
+      if (year) qs.set('year', String(year));
+      if (quarter) qs.set('quarter', String(quarter));
+      const data = await apiRequest<TokenOverviewResponse>(
+        `/accounting/addresses/${id}/token-overview${qs.toString() ? '?' + qs : ''}`
+      );
+      setOverview(data);
+    },
+    []
+  );
 
   const handleAddAddress = async (address: string, chain: string, label: string) => {
     await apiRequest('/accounting/addresses', {
@@ -691,13 +780,6 @@ export function TokenTransfersSection() {
     [selectedId, selectedYear, selectedQuarter, loadOverview]
   );
 
-  const handleSaveChf = useCallback(async () => {
-    if (!chfEditing) return;
-    const raw = chfEditing.value.trim();
-    await handleUpdateTransfer(chfEditing.id, { chfValue: raw === '' ? null : raw });
-    setChfEditing(null);
-  }, [chfEditing, handleUpdateTransfer]);
-
   const handleBlacklist = useCallback(
     async (tokenAddress: string, chainId: number, tokenSymbol: string | null) => {
       await apiRequest('/accounting/blacklist', {
@@ -714,7 +796,10 @@ export function TokenTransfersSection() {
         selectedId ? loadOverview(selectedId, selectedYear, selectedQuarter) : null,
       ] as const);
       setBlacklist(bl);
-      if (data) { setTransfers(data.transfers); setTotal(data.total); }
+      if (data) {
+        setTransfers(data.transfers);
+        setTotal(data.total);
+      }
     },
     [selectedId, selectedYear, selectedQuarter, loadOverview]
   );
@@ -724,7 +809,10 @@ export function TokenTransfersSection() {
       await apiRequest(`/accounting/blacklist/${id}`, { method: 'DELETE' });
       setBlacklist(prev => prev.filter(e => e.id !== id));
       if (selectedId) {
-        await Promise.all([loadTransfers(selectedId), loadOverview(selectedId, selectedYear, selectedQuarter)]);
+        await Promise.all([
+          loadTransfers(selectedId),
+          loadOverview(selectedId, selectedYear, selectedQuarter),
+        ]);
       }
     },
     [selectedId, selectedYear, selectedQuarter, loadTransfers, loadOverview]
@@ -739,9 +827,14 @@ export function TokenTransfersSection() {
         ? `${QUARTERS[selectedQuarter - 1].label}${selectedYear}`
         : `${selectedYear}`
       : 'all';
+    // Size the PDF page to exactly the rendered content so no row gets sliced
+    const el = printRef.current;
+    const pxToMm = 0.264583;
+    const widthMm = el ? el.scrollWidth * pxToMm : 210;
+    const heightMm = el ? el.scrollHeight * pxToMm : 297;
     generatePDF(printRef, {
       filename: `token-transfers-${label}-${period}.pdf`,
-      page: { margin: Margin.LARGE, format: 'A4', orientation: 'portrait' },
+      page: { margin: Margin.SMALL, format: [widthMm, heightMm] },
     });
     setIsExporting(false);
   }, [isExporting]);
@@ -755,25 +848,22 @@ export function TokenTransfersSection() {
   );
 
   const visible = useMemo(() => {
-    const q = search.toLowerCase().trim();
     return transfers.filter(t => {
       if (t.isHidden) return false;
       if (t.tokenAddress && blacklistedAddresses.has(t.tokenAddress.toLowerCase())) return false;
-      if (classFilter && t.classification !== classFilter) return false;
       if (t.timestamp) {
         const d = new Date(t.timestamp);
         if (selectedYear && d.getFullYear() !== selectedYear) return false;
         if (selectedQuarter && Math.ceil((d.getMonth() + 1) / 3) !== selectedQuarter) return false;
       }
-      if (!q) return true;
-      return (t.tokenSymbol ?? '').toLowerCase().includes(q) || t.txHash.toLowerCase().includes(q);
+      return true;
     });
-  }, [transfers, search, classFilter, blacklistedAddresses, selectedYear, selectedQuarter]);
+  }, [transfers, blacklistedAddresses, selectedYear, selectedQuarter]);
 
   const availableYears = useMemo(() => {
     if (overview?.years?.length) return overview.years;
     const years = new Set(
-      transfers.map(t => t.timestamp ? new Date(t.timestamp).getFullYear() : null).filter(Boolean)
+      transfers.map(t => (t.timestamp ? new Date(t.timestamp).getFullYear() : null)).filter(Boolean)
     );
     return [...years].sort((a, b) => (b as number) - (a as number)) as number[];
   }, [overview, transfers]);
@@ -785,27 +875,6 @@ export function TokenTransfersSection() {
         description="Track wallet transfers and classify them to compute asset, liability, and net positions."
         icon={faCoins}
       />
-
-      {/* ------------------------------------------------------------------ */}
-      {/* Printable region                                                    */}
-      {/* ------------------------------------------------------------------ */}
-      <div ref={printRef} className={isExporting ? 'w-[96rem]' : ''}>
-
-      {/* Print header — only visible when exporting                         */}
-      <div className={`mb-6 ${isExporting ? 'block' : 'hidden'}`}>
-        <h1 className="text-xl font-bold text-text-primary">Token Transfer Report</h1>
-        {selectedAddress && (
-          <p className="text-sm text-text-muted mt-1">
-            {selectedAddress.label ?? selectedAddress.address} · {selectedAddress.chain}
-          </p>
-        )}
-        {selectedYear && (
-          <p className="text-sm text-text-muted">
-            Period: {selectedQuarter ? quarterLabel(selectedYear, selectedQuarter) : `Full year ${selectedYear}`}
-          </p>
-        )}
-      </div>
-
       <AddressBar
         addresses={addresses}
         selectedId={selectedId}
@@ -815,9 +884,7 @@ export function TokenTransfersSection() {
         onRemove={handleRemoveAddress}
         onSelect={handleSelectAddress}
       />
-
       <BlacklistPanel blacklist={blacklist} onRemove={handleUnblacklist} />
-
       {/* ------------------------------------------------------------------ */}
       {/* Year + Quarter filter + Print button                                */}
       {/* ------------------------------------------------------------------ */}
@@ -851,7 +918,9 @@ export function TokenTransfersSection() {
                 {QUARTERS.map(q => (
                   <button
                     key={q.value}
-                    onClick={() => handleQuarterChange(selectedQuarter === q.value ? null : q.value)}
+                    onClick={() =>
+                      handleQuarterChange(selectedQuarter === q.value ? null : q.value)
+                    }
                     title={q.months}
                     className={`px-3 py-1 rounded-lg text-sm transition-colors ${
                       selectedQuarter === q.value
@@ -882,7 +951,6 @@ export function TokenTransfersSection() {
           )}
         </div>
       )}
-
       {/* Active filter pill */}
       {(selectedYear || selectedQuarter) && (
         <div className="flex items-center gap-2 mb-4 print:hidden">
@@ -893,163 +961,72 @@ export function TokenTransfersSection() {
           )}
         </div>
       )}
-
-      {/* Overview */}
-      <TokenOverviewSection
-        overview={overview}
-        prices={prices}
-        tokenPrices={tokenPrices}
-        year={selectedYear}
-        isExporting={isExporting}
-        onBlacklist={handleBlacklist}
-        onAddCorrection={sym => setPrefillToken(sym)}
-        onSaveTokenPrice={handleSaveTokenPrice}
-      />
-
-      {/* Transfer list */}
-      {selectedId && (
-        <>
-          {/* Corrections / manual entries */}
-          <CorrectionsTable
-            addressId={selectedId}
-            year={selectedYear}
-            quarter={selectedQuarter}
-            prefillToken={prefillToken}
-            onPrefillConsumed={() => setPrefillToken(null)}
-            onMutate={() => selectedId && void loadOverview(selectedId, selectedYear, selectedQuarter)}
-          />
-
-          <div className="flex items-center gap-2 mb-3 flex-wrap print:hidden">
-            <input
-              type="text"
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              placeholder="Search by token or tx hash…"
-              className="flex-1 min-w-48 bg-transparent border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
-            />
-            <select
-              value={classFilter}
-              onChange={e => setClassFilter(e.target.value)}
-              className="bg-card border border-table-alt rounded-lg px-3 py-2 text-sm text-text-primary outline-none focus:border-brand"
-            >
-              <option value="">All classifications</option>
-              {CLASSIFICATION_OPTIONS.map(o => (
-                <option key={o.value} value={o.value}>{o.label}</option>
-              ))}
-            </select>
-            {total > visible.length && (
-              <span className="text-xs text-text-muted whitespace-nowrap">
-                {visible.length} of {total}
-              </span>
-            )}
-          </div>
-
-          <Table>
-            <TableHead headers={TRANSFER_HEADERS} colSpan={TRANSFER_HEADERS.length} />
-            <TableBody>
-              {loadingTransfers ? (
-                <TableRowEmpty>Loading transfers…</TableRowEmpty>
-              ) : visible.length === 0 ? (
-                <TableRowEmpty>
-                  {transfers.length === 0
-                    ? 'No transfers yet — click Sync on the address above.'
-                    : 'No transfers match your filter.'}
-                </TableRowEmpty>
-              ) : (
-                visible.map(t => {
-                  const cls = getStyle(t.classification);
-                  const isIn = t.direction === 'IN';
-                  const txUrl = explorerTxUrl(chainId, t.txHash);
-
-                  return (
-                    <TableRow key={t.id} headers={TRANSFER_HEADERS} colSpan={TRANSFER_HEADERS.length} rawHeader>
-                      {/* Date */}
-                      <div className="text-left">
-                        {txUrl && !isExporting ? (
-                          <a
-                            href={txUrl}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="inline-flex items-center gap-1.5 text-sm text-text-secondary hover:text-brand transition-colors"
-                            onClick={e => e.stopPropagation()}
-                          >
-                            {formatDate(t.timestamp)}
-                            <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-2.5 h-2.5 opacity-60" />
-                          </a>
-                        ) : (
-                          <span className="text-sm text-text-secondary">{formatDate(t.timestamp)}</span>
-                        )}
-                      </div>
-
-                      {/* Token */}
-                      <div className="text-right">
-                        <span className="font-medium text-sm text-text-primary">
-                          {t.tokenSymbol ?? '?'}
-                        </span>
-                      </div>
-
-                      {/* Amount */}
-                      <div className="text-right">
-                        <span className={`text-sm font-semibold tabular-nums ${isIn ? 'text-success' : 'text-error'}`}>
-                          {isIn ? '+' : '−'}
-                          {fmtNum(parseFloat(t.amountFormatted ?? '0'), 6)}
-                          <span className="font-normal text-text-muted ml-1 text-xs">{t.tokenSymbol}</span>
-                        </span>
-                      </div>
-
-                      {/* CHF */}
-                      {isExporting ? (
-                        <div className="text-right">
-                          <span className="text-sm tabular-nums text-text-secondary">
-                            {t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
-                          </span>
-                        </div>
-                      ) : (
-                        <div onClick={e => e.stopPropagation()}>
-                          <EditableCell
-                            value={t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
-                            isEditing={chfEditing?.id === t.id}
-                            editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
-                            onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
-                            onSave={handleSaveChf}
-                            onCancel={() => setChfEditing(null)}
-                            onChange={v => setChfEditing({ id: t.id, value: v })}
-                            placeholder="0.00"
-                            emptyText="Set CHF"
-                          />
-                        </div>
-                      )}
-
-                      {/* Classification */}
-                      {isExporting ? (
-                        <div className="flex justify-end">
-                          <span className={`text-xs rounded-lg px-2 py-1 ${cls.bg} ${cls.color}`}>
-                            {CLASSIFICATION_LABEL[t.classification] ?? t.classification}
-                          </span>
-                        </div>
-                      ) : (
-                        <div className="flex justify-end min-w-0" onClick={e => e.stopPropagation()}>
-                          <select
-                            value={t.classification}
-                            onChange={e => handleUpdateTransfer(t.id, { classification: e.target.value })}
-                            className={`text-xs rounded-lg px-2 py-1 border-transparent outline-none cursor-pointer max-w-full ${cls.bg} ${cls.color}`}
-                          >
-                            {CLASSIFICATION_OPTIONS.map(o => (
-                              <option key={o.value} value={o.value}>{o.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      )}
-                    </TableRow>
-                  );
-                })
+      {/* ------------------------------------------------------------------ */}
+      {/* Printable region — starts here (after address bar, blacklist,      */}
+      {/* year/quarter filter)                                               */}
+      {/* ------------------------------------------------------------------ */}
+      <div ref={printRef} className={isExporting ? 'w-[92rem]' : ''}>
+        {/* Print header — only visible when exporting */}
+        <div className={`mb-6 ${isExporting ? 'block' : 'hidden'}`}>
+          <h1 className="text-xl font-bold text-text-primary">Token Transfer Report</h1>
+          {selectedAddress && (
+            <div className="mt-1 space-y-0.5">
+              {selectedAddress.label && (
+                <p className="text-sm font-medium text-text-secondary">{selectedAddress.label}</p>
               )}
-            </TableBody>
-          </Table>
+              <p className="text-xs text-text-muted font-mono">{selectedAddress.address}</p>
+              <p className="text-xs text-text-muted">{selectedAddress.chain}</p>
+            </div>
+          )}
+          {selectedYear && (
+            <p className="text-sm text-text-muted">
+              Period:{' '}
+              {selectedQuarter
+                ? quarterLabel(selectedYear, selectedQuarter)
+                : `Full year ${selectedYear}`}
+            </p>
+          )}
+        </div>
 
-        </>
-      )}
-      </div> {/* end printable region */}
+        {/* Overview */}
+        <TokenOverviewSection
+          overview={overview}
+          prices={prices}
+          tokenPrices={tokenPrices}
+          year={selectedYear}
+          isExporting={isExporting}
+          onBlacklist={handleBlacklist}
+          onAddCorrection={sym => setPrefillToken(sym)}
+          onSaveTokenPrice={handleSaveTokenPrice}
+        />
+
+        {/* Transfer list */}
+        {selectedId && (
+          <>
+            {/* Corrections / manual entries */}
+            <CorrectionsTable
+              addressId={selectedId}
+              year={selectedYear}
+              quarter={selectedQuarter}
+              prefillToken={prefillToken}
+              onPrefillConsumed={() => setPrefillToken(null)}
+              onMutate={() =>
+                selectedId && void loadOverview(selectedId, selectedYear, selectedQuarter)
+              }
+              isExporting={isExporting}
+            />
+
+            <TransfersTable
+              transfers={visible}
+              loading={loadingTransfers}
+              chainId={chainId}
+              isExporting={isExporting}
+              onUpdate={handleUpdateTransfer}
+            />
+          </>
+        )}
+      </div>{' '}
+      {/* end printable region */}
     </Section>
   );
 }
