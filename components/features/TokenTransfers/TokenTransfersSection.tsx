@@ -1016,6 +1016,10 @@ export function TokenTransfersSection() {
               isExporting={isExporting}
             />
 
+            <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 mt-8">
+              Token Transfers
+            </h3>
+
             <TransfersTable
               transfers={visible}
               loading={loadingTransfers}
