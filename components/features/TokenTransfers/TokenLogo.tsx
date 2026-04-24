@@ -28,7 +28,7 @@ export function TokenLogo({ symbol, size = 20 }: Props) {
   return (
     <span
       className="inline-flex items-center justify-center rounded-full bg-surface border border-table-alt text-text-muted font-semibold flex-shrink-0"
-      style={{ width: size, height: size, fontSize: size * 0.45 }}
+      style={{ width: size, height: size, fontSize: size * 0.45, lineHeight: 1 }}
     >
       {letter}
     </span>

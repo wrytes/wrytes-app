@@ -138,7 +138,7 @@ function chfCell(value: number) {
   if (Math.abs(value) < 0.01) return <span className="text-text-muted text-xs">—</span>;
   const pos = value >= 0;
   return (
-    <span className={`text-sm tabular-nums ${pos ? 'text-success' : 'text-error'}`}>
+    <span className={`text-sm font-semibold tabular-nums ${pos ? 'text-success' : 'text-error'}`}>
       {pos ? '+' : ''}CHF {fmtNum(value)}
     </span>
   );
@@ -417,7 +417,10 @@ function TokenOverviewSection({
             By Classification
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {byClassification.map(item => {
+            {(['CAPITAL', 'LOAN', 'INCOME', 'EXPENSE', 'PAYMENT', 'SWAP_OUT', 'SWAP_IN'] as TransferClassification[])
+              .map(cls => byClassification.find(b => b.classification === cls))
+              .filter((item): item is NonNullable<typeof item> => !!item)
+              .map(item => {
               const style = getStyle(item.classification);
               const label = CLASSIFICATION_LABEL[item.classification] ?? item.classification;
               return (
@@ -427,7 +430,7 @@ function TokenOverviewSection({
                 >
                   <div className={`text-xs font-semibold ${style.color}`}>{label}</div>
                   <div className="text-sm font-bold text-text-primary tabular-nums">
-                    {item.chfTotal > 0 ? `CHF ${fmtNum(item.chfTotal)}` : '—'}
+                    {Math.abs(item.chfTotal) >= 0.01 ? `CHF ${fmtNum(Math.abs(item.chfTotal))}` : '—'}
                   </div>
                   <div className="text-xs text-text-muted tabular-nums">
                     {item.count} transfer{item.count !== 1 ? 's' : ''}
@@ -834,16 +837,37 @@ export function TokenTransfersSection() {
         ? `${QUARTERS[selectedQuarter - 1].label}${selectedYear}`
         : `${selectedYear}`
       : 'all';
-    // Size the PDF page to exactly the rendered content so no row gets sliced
+
+    // Wait for freshly-mounted images (token logos) to load before capturing.
+    // html2canvas fires synchronously so images must already be in the DOM.
+    const waitForImages = (root: HTMLElement) =>
+      Promise.all(
+        Array.from(root.querySelectorAll('img')).map(
+          img =>
+            img.complete
+              ? Promise.resolve()
+              : new Promise<void>(res => {
+                  img.onload = () => res();
+                  img.onerror = () => res(); // resolve even on error — fallback will render
+                })
+        )
+      );
+
     const el = printRef.current;
-    const pxToMm = 0.264583;
+    const run = async () => {
+      if (el) await waitForImages(el);
+
+      const pxToMm = 0.264583;
     const widthMm = el ? el.scrollWidth * pxToMm : 210;
     const heightMm = el ? el.scrollHeight * pxToMm : 297;
     generatePDF(printRef, {
       filename: `token-transfers-${label}-${period}.pdf`,
       page: { margin: Margin.SMALL, format: [widthMm, heightMm] },
+      overrides: { canvas: { useCORS: true, allowTaint: false, logging: false } },
     });
     setIsExporting(false);
+    };
+    void run();
   }, [isExporting]);
 
   const selectedAddress = addresses.find(a => a.id === selectedId);

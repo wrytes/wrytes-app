@@ -284,17 +284,17 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
                   </span>
                 </div>
 
-                {/* Value (CHF) */}
+                {/* Value (CHF) — sign and colour driven by direction, input stays positive */}
                 {isExporting ? (
                   <div className="text-right">
-                    <span className="text-sm tabular-nums text-text-secondary">
-                      {t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
+                    <span className={`text-sm font-semibold tabular-nums ${t.chfValue ? (isIn ? 'text-success' : 'text-error') : 'text-text-muted'}`}>
+                      {t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
                     </span>
                   </div>
                 ) : (
                   <div onClick={e => e.stopPropagation()}>
                     <EditableCell
-                      value={t.chfValue ? `CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
+                      value={t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
                       isEditing={chfEditing?.id === t.id}
                       editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
                       onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
@@ -303,6 +303,7 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
                       onChange={v => setChfEditing({ id: t.id, value: v })}
                       placeholder="0.00"
                       emptyText="Set value"
+                      valueClassName={`font-semibold ${isIn ? 'text-success' : 'text-error'}`}
                     />
                   </div>
                 )}

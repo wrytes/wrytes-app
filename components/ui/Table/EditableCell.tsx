@@ -14,6 +14,7 @@ interface EditableCellProps {
   emptyText?: string;
   maxLength?: number;
   align?: 'left' | 'right';
+  valueClassName?: string;
 }
 
 export function EditableCell({
@@ -28,6 +29,7 @@ export function EditableCell({
   emptyText = 'Add label',
   maxLength = 64,
   align = 'right',
+  valueClassName,
 }: EditableCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const justifyClass = align === 'right' ? 'justify-end' : 'justify-start';
@@ -72,7 +74,7 @@ export function EditableCell({
       className={`group flex w-full items-center gap-1.5 text-sm hover:text-brand transition-colors ${justifyClass} ${textAlignClass}`}
     >
       {value ? (
-        <span>{value}</span>
+        <span className={valueClassName}>{value}</span>
       ) : (
         <span className="text-text-muted italic">{emptyText}</span>
       )}

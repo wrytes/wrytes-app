@@ -12,10 +12,10 @@ import type { Adjustment, AdjustmentType } from './types';
 // ---------------------------------------------------------------------------
 
 const TYPE_OPTIONS: { label: string; value: AdjustmentType; hint: string; color: string; bg: string }[] = [
-  { label: 'Asset Received', value: 'PROFIT',    hint: 'asset +',     color: 'text-success', bg: 'bg-success-bg' },
-  { label: 'Asset Sent',     value: 'LOSS',      hint: 'asset −',     color: 'text-error',   bg: 'bg-error-bg'   },
-  { label: 'Loan Received',  value: 'BORROW',    hint: 'liability +', color: 'text-info',    bg: 'bg-info/10'    },
-  { label: 'Loan Repaid',    value: 'REPAYMENT', hint: 'liability −', color: 'text-brand',   bg: 'bg-brand/10'   },
+  { label: 'Asset Income',     value: 'PROFIT',    hint: 'asset +',     color: 'text-success', bg: 'bg-success-bg' },
+  { label: 'Asset Expense',    value: 'LOSS',      hint: 'asset −',     color: 'text-error',   bg: 'bg-error-bg'   },
+  { label: 'Liability Income', value: 'BORROW',    hint: 'liability +', color: 'text-info',    bg: 'bg-info/10'    },
+  { label: 'Liability Expense',value: 'REPAYMENT', hint: 'liability −', color: 'text-brand',   bg: 'bg-brand/10'   },
 ];
 
 const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
@@ -378,7 +378,7 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
           case 'Token':   return m * (a.tokenSymbol ?? '').localeCompare(b.tokenSymbol ?? '');
           case 'Amount':  return m * (parseFloat(a.amount ?? '0') - parseFloat(b.amount ?? '0'));
           case 'CHF Value': return m * (parseFloat(a.chfValue ?? '0') - parseFloat(b.chfValue ?? '0'));
-          default:        return m * (new Date(b.date).getTime() - new Date(a.date).getTime());
+          default:        return m * (new Date(a.date).getTime() - new Date(b.date).getTime());
         }
       });
   }, [adjustments, search, typeFilters, sortTab, sortReverse]);
