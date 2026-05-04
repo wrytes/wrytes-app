@@ -1,6 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { faShield } from '@fortawesome/free-solid-svg-icons';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { Badge, AddressDisplay } from '@/components/ui';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { ChainLogo } from '@/components/ui/logo';
@@ -55,12 +53,7 @@ export default function SafeWalletsSection({ hasScope }: Props) {
   });
 
   return (
-    <Section>
-      <PageHeader
-        title="Safe Accounts"
-        description="Company-managed multi-sig deposit addresses"
-        icon={faShield}
-      />
+    <>
       {!hasScope ? (
         <p className="text-text-secondary text-sm">
           Safe wallet access requires the{' '}
@@ -121,6 +114,6 @@ export default function SafeWalletsSection({ hasScope }: Props) {
           </TableBody>
         </Table>
       )}
-    </Section>
+    </>
   );
 }

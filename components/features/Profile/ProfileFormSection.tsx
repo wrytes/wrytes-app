@@ -1,7 +1,6 @@
-import { useEffect, useState, useCallback } from 'react';
-import { faUser, faCheck, faShieldHalved } from '@fortawesome/free-solid-svg-icons';
+import React, { useEffect, useState, useCallback } from 'react';
+import { faShieldHalved } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { TextInput, ButtonInput } from '@/components/ui/Input';
 import { Badge, Card, CardTitle, showToast } from '@/components/ui';
 import { apiRequest } from '@/lib/api/client';
@@ -46,9 +45,11 @@ interface Props {
   isAdmin?: boolean;
   hasScope?: boolean;
   userId?: string;
+  saveRef?: React.MutableRefObject<(() => void) | null>;
+  onSavingChange?: (saving: boolean) => void;
 }
 
-export default function ProfileFormSection({ isAdmin = false, hasScope = false, userId }: Props) {
+export default function ProfileFormSection({ isAdmin = false, hasScope = false, userId, saveRef, onSavingChange }: Props) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [form, setForm] = useState<FormState>(EMPTY);
   const [loading, setLoading] = useState(true);
@@ -102,6 +103,7 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
   const handleSave = async () => {
     if (!validate()) return;
     setSaving(true);
+    onSavingChange?.(true);
     try {
       const data = await apiRequest<Profile>('/user/profile', {
         method: 'PUT',
@@ -122,30 +124,14 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
       showToast.error('Failed to update profile');
     } finally {
       setSaving(false);
+      onSavingChange?.(false);
     }
   };
 
-  return (
-    <Section>
-      <PageHeader
-        title="Profile"
-        description="Your personal and business information"
-        icon={faUser}
-        actions={
-          hasScope && !loading ? (
-            <ButtonInput
-              label={saving ? 'Saving…' : 'Save profile'}
-              icon={<FontAwesomeIcon icon={faCheck} />}
-              variant="primary"
-              size="sm"
-              onClick={handleSave}
-              loading={saving}
-              disabled={saving}
-            />
-          ) : undefined
-        }
-      />
+  if (saveRef) saveRef.current = handleSave;
 
+  return (
+    <>
       {!hasScope ? (
         <p className="text-text-secondary text-sm">
           Profile management requires{' '}
@@ -284,6 +270,6 @@ export default function ProfileFormSection({ isAdmin = false, hasScope = false, 
           </div>
         </>
       )}
-    </Section>
+    </>
   );
 }
