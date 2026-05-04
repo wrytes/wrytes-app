@@ -1,7 +1,4 @@
 import { useEffect, useState, useCallback } from 'react';
-import { faBuildingColumns, faPlus } from '@fortawesome/free-solid-svg-icons';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput, TextInput, TabInput } from '@/components/ui/Input';
 import { Badge, Modal, showToast } from '@/components/ui';
 import { FIAT_CURRENCY_TABS, FIAT_CURRENCY_BADGE, type FiatCurrency } from '@/lib/currencies';
@@ -28,12 +25,13 @@ const EMPTY_FORM = {
 
 interface Props {
   hasScope: boolean;
+  addOpen?: boolean;
+  onCloseAdd?: () => void;
 }
 
-export default function BankAccountsSection({ hasScope }: Props) {
+export default function BankAccountsSection({ hasScope, addOpen = false, onCloseAdd }: Props) {
   const [accounts, setAccounts] = useState<BankAccount[]>([]);
   const [loading, setLoading] = useState(true);
-  const [addOpen, setAddOpen] = useState(false);
   const [saving, setSaving] = useState(false);
   const [form, setForm] = useState(EMPTY_FORM);
   const [errors, setErrors] = useState<Partial<typeof EMPTY_FORM>>({});
@@ -74,15 +72,19 @@ export default function BankAccountsSection({ hasScope }: Props) {
     return Object.keys(e).length === 0;
   };
 
+  const closeAdd = () => {
+    setForm(EMPTY_FORM);
+    setErrors({});
+    onCloseAdd?.();
+  };
+
   const handleAdd = async () => {
     if (!validate()) return;
     setSaving(true);
     try {
       await apiRequest('/bank-accounts', { method: 'POST', body: JSON.stringify(form) });
       showToast.success('Bank account added');
-      setAddOpen(false);
-      setForm(EMPTY_FORM);
-      setErrors({});
+      closeAdd();
       load();
     } catch (err: unknown) {
       const msg = (err as { message?: string }).message;
@@ -136,25 +138,7 @@ export default function BankAccountsSection({ hasScope }: Props) {
 
   return (
     <>
-      <Section>
-        <PageHeader
-          title="Accounts"
-          description="Bank Account and Safe Wallet destinations"
-          icon={faBuildingColumns}
-          actions={
-            hasScope ? (
-              <ButtonInput
-                label="Add account"
-                icon={<FontAwesomeIcon icon={faPlus} />}
-                variant="primary"
-                size="sm"
-                onClick={() => setAddOpen(true)}
-              />
-            ) : undefined
-          }
-        />
-
-        {!hasScope ? (
+      {!hasScope ? (
           <p className="text-text-secondary text-sm">
             Bank account management requires the{' '}
             <Badge
@@ -215,16 +199,10 @@ export default function BankAccountsSection({ hasScope }: Props) {
             </TableBody>
           </Table>
         )}
-      </Section>
 
-      {/* Add modal */}
       <Modal
         isOpen={addOpen}
-        onClose={() => {
-          setAddOpen(false);
-          setForm(EMPTY_FORM);
-          setErrors({});
-        }}
+        onClose={closeAdd}
         title="Add Bank Account"
         size="md"
         footer={
@@ -234,15 +212,7 @@ export default function BankAccountsSection({ hasScope }: Props) {
             onClick={handleAdd}
             loading={saving}
             disabled={saving}
-            second={{
-              label: 'Cancel',
-              variant: 'secondary',
-              onClick: () => {
-                setAddOpen(false);
-                setForm(EMPTY_FORM);
-                setErrors({});
-              },
-            }}
+            second={{ label: 'Cancel', variant: 'secondary', onClick: closeAdd }}
           />
         }
       >

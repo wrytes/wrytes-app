@@ -12,7 +12,7 @@ interface Props {
   onUpload: (files: File[]) => Promise<unknown>;
 }
 
-export default function InvoiceUpload({ onUpload }: Props) {
+export default function BillUpload({ onUpload }: Props) {
   const inputRef = useRef<HTMLInputElement>(null);
   const [dragging, setDragging] = useState(false);
   const [uploading, setUploading] = useState(false);
@@ -73,9 +73,7 @@ export default function InvoiceUpload({ onUpload }: Props) {
         className={cn('text-3xl transition-colors', dragging ? 'text-brand' : 'text-text-muted')}
       />
       <div className="text-center">
-        <p className="text-sm font-medium text-text-primary">
-          Drag & drop invoices here
-        </p>
+        <p className="text-sm font-medium text-text-primary">Drag & drop bills here</p>
         <p className="text-xs text-text-muted mt-1">PDF, JPEG, PNG, WEBP — max {MAX_MB} MB each</p>
       </div>
 

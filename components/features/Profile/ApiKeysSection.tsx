@@ -1,7 +1,6 @@
 import { useState, useCallback, useEffect } from 'react';
-import { faKey, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faTrash } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { Badge, ConfirmModal, showToast } from '@/components/ui';
 import {
   Table,
@@ -115,13 +114,7 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
 
   return (
     <>
-      <Section>
-        <PageHeader
-          title="API Keys"
-          description="Programmatic access tokens — use /api_create in Telegram to generate one"
-          icon={faKey}
-        />
-        {!hasScope ? (
+      {!hasScope ? (
           <p className="text-text-secondary text-sm">
             API key management requires{' '}
             <Badge
@@ -202,7 +195,6 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
             </TableBody>
           </Table>
         )}
-      </Section>
 
       <ConfirmModal
         isOpen={!!revokeTarget}

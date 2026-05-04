@@ -1,8 +1,7 @@
 import { useEffect, useState, useCallback } from 'react';
-import { faLink, faTrash, faPlus, faCopy, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
+import { faTrash, faCopy, faCheckCircle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAppKitAccount } from '@reown/appkit-controllers/react';
-import { PageHeader, Section } from '@/components/ui/Layout';
 import { ButtonInput } from '@/components/ui/Input';
 import { AddressDisplay, Badge, ConfirmModal, Modal, showToast } from '@/components/ui';
 
@@ -30,12 +29,13 @@ const WALLET_HEADERS = ['Address', 'Linked', 'Label', ''];
 
 interface Props {
   hasScope?: boolean;
+  linkOpen?: boolean;
+  onCloseLink?: () => void;
 }
 
-export default function LinkedWalletsSection({ hasScope = true }: Props) {
+export default function LinkedWalletsSection({ hasScope = true, linkOpen = false, onCloseLink }: Props) {
   const [wallets, setWallets] = useState<LinkedWallet[]>([]);
   const [unlinkTarget, setUnlinkTarget] = useState<LinkedWallet | null>(null);
-  const [linkOpen, setLinkOpen] = useState(false);
   const [copied, setCopied] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editValue, setEditValue] = useState('');
@@ -112,14 +112,16 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
     }
   };
 
-  const handleOpenLink = () => {
-    reset();
-    setLinkOpen(true);
-    setCopied(false);
-  };
+  useEffect(() => {
+    if (linkOpen) {
+      reset();
+      setCopied(false);
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [linkOpen]);
 
   const handleCloseLink = () => {
-    setLinkOpen(false);
+    onCloseLink?.();
     reset();
   };
 
@@ -146,24 +148,7 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
 
   return (
     <>
-      <Section>
-        <PageHeader
-          title="Linked Wallets"
-          description="EOA addresses you can use to sign in"
-          icon={faLink}
-          actions={
-            hasScope ? (
-              <ButtonInput
-                label="Link wallet"
-                icon={<FontAwesomeIcon icon={faPlus} />}
-                variant="primary"
-                size="sm"
-                onClick={handleOpenLink}
-              />
-            ) : undefined
-          }
-        />
-        {!hasScope ? (
+      {!hasScope ? (
           <p className="text-text-secondary text-sm">
             Wallet management requires{' '}
             <Badge
@@ -228,7 +213,6 @@ export default function LinkedWalletsSection({ hasScope = true }: Props) {
             </TableBody>
           </Table>
         )}
-      </Section>
 
       {/* Unlink confirm */}
       <ConfirmModal
