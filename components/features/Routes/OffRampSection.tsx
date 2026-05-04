@@ -16,6 +16,7 @@ import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import { FIAT_CURRENCY_TABS, type FiatCurrency } from '@/lib/currencies';
 import type { OffRampRoute, BankAccountRef } from './types';
+import { DepositCard } from './DepositCard';
 
 const ROUTE_HEADERS = ['Deposit Address', 'Bank Account', 'Label', 'Status'];
 
@@ -188,6 +189,8 @@ export default function OffRampSection({ hasScope, onRoutesLoaded }: Props) {
             scope.
           </p>
         ) : (
+          <>
+          <DepositCard routes={routes} />
           <Table>
             <TableHead
               headers={ROUTE_HEADERS}
@@ -249,6 +252,7 @@ export default function OffRampSection({ hasScope, onRoutesLoaded }: Props) {
               )}
             </TableBody>
           </Table>
+          </>
         )}
       </Section>
 

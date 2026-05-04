@@ -79,7 +79,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
   return (
     <div className="min-h-screen bg-base text-text-primary">
       {/* Dashboard Header */}
-      <header className="fixed top-0 left-0 right-0 z-50 bg-base">
+      <header className="fixed top-0 left-0 right-0 z-50 bg-base print:hidden">
         <div className="mx-auto max-md:px-4 px-5 py-3.5">
           <div className="flex items-center justify-between">
             {/* Logo */}
@@ -215,7 +215,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
 
         {/* Sidebar Navigation */}
         <aside
-          className={`fixed left-0 top-16 w-64 -mt-0.5 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 ${
+          className={`fixed left-0 top-16 w-64 -mt-0.5 h-screen bg-base transform transition-transform duration-300 ease-in-out z-50 print:hidden ${
             isSidebarOpen ? 'translate-x-0' : '-translate-x-full'
           } md:translate-x-0`}
         >
@@ -228,7 +228,7 @@ export default function DashboardLayout({ children }: DashboardLayoutProps) {
         </aside>
 
         {/* Main Content */}
-        <main className="flex-1 min-w-0 px-4 xl:px-12 md:ml-64 flex flex-col">
+        <main className="flex-1 min-w-0 px-4 xl:px-12 md:ml-64 print:ml-0 print:px-0 flex flex-col">
           <div className="flex-1">{children}</div>
           <FooterSimple />
         </main>

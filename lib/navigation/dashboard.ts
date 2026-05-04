@@ -1,11 +1,11 @@
 import {
   faCode,
-  faFileInvoice,
   faLightbulb,
   faRoute,
   faShield,
   faUser,
   faWallet,
+  faScaleBalanced,
   IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
 
@@ -39,10 +39,10 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     description: 'On-ramp and off-ramp conversion routes',
   },
   {
-    label: 'Invoices',
-    path: '/dashboard/invoices',
-    icon: faFileInvoice,
-    description: 'Upload and manage invoices',
+    label: 'Accounting',
+    path: '/dashboard/accounting',
+    icon: faScaleBalanced,
+    description: 'Token transfers, invoices and accounting overview',
   },
   {
     label: 'Profile',
