@@ -1,33 +1,26 @@
-export type InvoiceStatus =
-  | 'PENDING'
-  | 'PROCESSING'
-  | 'EXTRACTED'
-  | 'AWAITING_PAYMENT'
-  | 'PAID'
-  | 'FAILED';
+export type InvoiceStatus = 'DRAFT' | 'SENT' | 'PAID' | 'CANCELLED';
+
+export interface InvoiceItem {
+  description: string;
+  quantity: number;
+  unitPrice: number;
+}
 
 export interface Invoice {
   id: string;
   userId: string;
-  fileName: string;
-  fileType: string;
+  number: string;
   status: InvoiceStatus;
-  fromName: string | null;
-  toName: string | null;
-  amount: string | null;
-  currency: string | null;
-  reference: string | null;
-  itemTags: string[];
-  bankHolder: string | null;
-  bankStreet: string | null;
-  bankStreetNr: string | null;
-  bankZip: string | null;
-  bankCity: string | null;
-  bankIban: string | null;
-  safeAddress: string | null;
-  paidTxHash: string | null;
-  paidAt: string | null;
-  error: string | null;
+  recipientName: string;
+  recipientEmail: string | null;
+  recipientAddress: string | null;
+  currency: string;
+  issueDate: string;
+  dueDate: string | null;
+  notes: string | null;
+  items: InvoiceItem[];
+  subtotal: string;
+  total: string;
   createdAt: string;
   updatedAt: string;
 }
