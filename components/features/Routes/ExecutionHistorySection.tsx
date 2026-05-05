@@ -6,7 +6,14 @@ import { ButtonInput, TextInput } from '@/components/ui/Input';
 import { Badge, Modal, showToast } from '@/components/ui';
 import { DetailRow } from '@/components/ui/Modal';
 import { TokenLogo, FiatLogo } from '@/components/ui/logo';
-import { AssetCell, Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import {
+  AssetCell,
+  Table,
+  TableBody,
+  TableHead,
+  TableRow,
+  TableRowEmpty,
+} from '@/components/ui/Table';
 import { useSort } from '@/hooks/useSort';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency, FormatType } from '@/lib/utils/format-handling';
@@ -32,7 +39,6 @@ function formatDate(iso: string) {
     minute: '2-digit',
   });
 }
-
 
 interface Props {
   isAdmin: boolean;
@@ -104,7 +110,11 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
       case 'Input':
         return m * (Number(a.depositTokenAmount) - Number(b.depositTokenAmount));
       case 'Output':
-        return m * (Number(a.krakenWithdrawAmount ?? a.krakenFiatAmount ?? 0) - Number(b.krakenWithdrawAmount ?? b.krakenFiatAmount ?? 0));
+        return (
+          m *
+          (Number(a.krakenWithdrawAmount ?? a.krakenFiatAmount ?? 0) -
+            Number(b.krakenWithdrawAmount ?? b.krakenFiatAmount ?? 0))
+        );
       case 'Status':
         return m * a.status.localeCompare(b.status);
       default:
@@ -166,7 +176,8 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                         logo={<TokenLogo currency={ex.depositTokenSymbol} size={4} />}
                         symbol={ex.depositTokenSymbol}
                         amount={
-                          formatCurrency(ex.depositTokenAmount, 2, 2, FormatType.us) ?? ex.depositTokenAmount
+                          formatCurrency(ex.depositTokenAmount, 2, 2, FormatType.us) ??
+                          ex.depositTokenAmount
                         }
                       />
                       <div className="flex items-center justify-end gap-1.5">
@@ -176,7 +187,9 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                             <AssetCell
                               logo={<FiatLogo symbol={fiatCurrency} size={4} />}
                               symbol={fiatCurrency}
-                              amount={formatCurrency(displayAmount, 2, 2, FormatType.us) ?? displayAmount}
+                              amount={
+                                formatCurrency(displayAmount, 2, 2, FormatType.us) ?? displayAmount
+                              }
                             />
                           ) : (
                             <span className="text-sm">—</span>
@@ -215,95 +228,122 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
       </Section>
 
       {/* Detail modal */}
-      {detailTarget && (() => {
-        const dr = routeMap[detailTarget.routeId];
-        const fiatCcy = dr?.targetCurrency ?? DEFAULT_FIAT_CURRENCY;
-        const sc = STATUS_COLORS[detailTarget.status] ?? DEFAULT_STATUS_COLOR;
-        return (
-          <Modal
-            isOpen={!!detailTarget}
-            onClose={() => setDetailTarget(null)}
-            title="Execution Detail"
-            size="md"
-            footer={
-              <ButtonInput
-                label="Close"
-                variant="secondary"
-                onClick={() => setDetailTarget(null)}
-              />
-            }
-          >
-            <div className="space-y-3 text-sm">
-              <DetailRow label="ID" value={detailTarget.id} mono />
-              <DetailRow label="Date" value={formatDate(detailTarget.createdAt)} />
-              <DetailRow label="Route" value={dr?.label ?? detailTarget.routeId} />
-              <DetailRow label="Status">
-                <Badge
-                  text={detailTarget.status.replace(/_/g, ' ')}
-                  variant="custom"
-                  customColor={sc.color}
-                  customBgColor={sc.bg}
-                  size="sm"
+      {detailTarget &&
+        (() => {
+          const dr = routeMap[detailTarget.routeId];
+          const fiatCcy =
+            detailTarget.krakenFiatCurrency ?? dr?.targetCurrency ?? DEFAULT_FIAT_CURRENCY;
+          const sc = STATUS_COLORS[detailTarget.status] ?? DEFAULT_STATUS_COLOR;
+          return (
+            <Modal
+              isOpen={!!detailTarget}
+              onClose={() => setDetailTarget(null)}
+              title="Execution Detail"
+              size="md"
+              footer={
+                <ButtonInput
+                  label="Close"
+                  variant="secondary"
+                  onClick={() => setDetailTarget(null)}
                 />
-              </DetailRow>
-              <DetailRow label="Deposit">
-                <AssetCell
-                  logo={<TokenLogo currency={detailTarget.depositTokenSymbol} size={4} />}
-                  symbol={detailTarget.depositTokenSymbol}
-                  amount={formatCurrency(detailTarget.depositTokenAmount, 2, 6, FormatType.us) ?? detailTarget.depositTokenAmount}
-                />
-              </DetailRow>
-              {detailTarget.krakenTokenSymbol && detailTarget.krakenTokenSymbol !== detailTarget.depositTokenSymbol && (
-                <DetailRow label="Converted To">
-                  <AssetCell
-                    logo={<TokenLogo currency={detailTarget.krakenTokenSymbol} size={4} />}
-                    symbol={detailTarget.krakenTokenSymbol}
-                    amount={formatCurrency(detailTarget.krakenTokenAmount ?? '0', 2, 6, FormatType.us) ?? (detailTarget.krakenTokenAmount ?? '—')}
+              }
+            >
+              <div className="space-y-3 text-sm">
+                <DetailRow label="ID" value={detailTarget.id} mono />
+                <DetailRow label="Date" value={formatDate(detailTarget.createdAt)} />
+                <DetailRow label="Route" value={dr?.label ?? detailTarget.routeId} />
+                <DetailRow label="Status">
+                  <Badge
+                    text={detailTarget.status.replace(/_/g, ' ')}
+                    variant="custom"
+                    customColor={sc.color}
+                    customBgColor={sc.bg}
+                    size="sm"
                   />
                 </DetailRow>
-              )}
-              {detailTarget.krakenPair && (
-                <DetailRow label="Strategy" value={detailTarget.krakenPair} mono />
-              )}
-              {detailTarget.krakenFiatAmount && (
-                <DetailRow label="Kraken Output">
+                <DetailRow label="Deposit">
                   <AssetCell
-                    logo={<FiatLogo symbol={fiatCcy} size={4} />}
-                    symbol={fiatCcy}
-                    amount={formatCurrency(detailTarget.krakenFiatAmount, 2, 2, FormatType.us) ?? detailTarget.krakenFiatAmount}
+                    logo={<TokenLogo currency={detailTarget.depositTokenSymbol} size={4} />}
+                    symbol={detailTarget.depositTokenSymbol}
+                    amount={
+                      formatCurrency(detailTarget.depositTokenAmount, 2, 6, FormatType.us) ??
+                      detailTarget.depositTokenAmount
+                    }
                   />
                 </DetailRow>
-              )}
-              {detailTarget.krakenWithdrawFee && (
-                <DetailRow label="Withdrawal Fee">
-                  <AssetCell
-                    logo={<FiatLogo symbol={fiatCcy} size={4} />}
-                    symbol={fiatCcy}
-                    amount={formatCurrency(detailTarget.krakenWithdrawFee, 2, 4, FormatType.us) ?? detailTarget.krakenWithdrawFee}
-                  />
-                </DetailRow>
-              )}
-              {(detailTarget.krakenWithdrawAmount ?? detailTarget.krakenFiatAmount) && (
-                <DetailRow label="Withdraw Amount">
-                  <AssetCell
-                    logo={<FiatLogo symbol={fiatCcy} size={4} />}
-                    symbol={fiatCcy}
-                    amount={formatCurrency(detailTarget.krakenWithdrawAmount ?? detailTarget.krakenFiatAmount!, 2, 2, FormatType.us) ?? (detailTarget.krakenWithdrawAmount ?? detailTarget.krakenFiatAmount!)}
-                  />
-                </DetailRow>
-              )}
-              {detailTarget.bankTransferRef && (
-                <DetailRow label="Bank Ref" value={detailTarget.bankTransferRef} mono />
-              )}
-              {detailTarget.error && (
-                <DetailRow label="Error">
-                  <span className="text-error break-all">{detailTarget.error}</span>
-                </DetailRow>
-              )}
-            </div>
-          </Modal>
-        );
-      })()}
+                {detailTarget.krakenTokenSymbol &&
+                  detailTarget.krakenTokenSymbol !== detailTarget.depositTokenSymbol && (
+                    <DetailRow label="Converted To">
+                      <AssetCell
+                        logo={<TokenLogo currency={detailTarget.krakenTokenSymbol} size={4} />}
+                        symbol={detailTarget.krakenTokenSymbol}
+                        amount={
+                          formatCurrency(
+                            detailTarget.krakenTokenAmount ?? '0',
+                            2,
+                            6,
+                            FormatType.us
+                          ) ??
+                          detailTarget.krakenTokenAmount ??
+                          '—'
+                        }
+                      />
+                    </DetailRow>
+                  )}
+                {detailTarget.krakenFiatAmount && (
+                  <DetailRow label="Kraken Output">
+                    <AssetCell
+                      logo={<FiatLogo symbol={fiatCcy} size={4} />}
+                      symbol={fiatCcy}
+                      amount={
+                        formatCurrency(detailTarget.krakenFiatAmount, 2, 2, FormatType.us) ??
+                        detailTarget.krakenFiatAmount
+                      }
+                    />
+                  </DetailRow>
+                )}
+                {detailTarget.krakenWithdrawFee && (
+                  <DetailRow label="Withdrawal Fee">
+                    <AssetCell
+                      logo={<FiatLogo symbol={fiatCcy} size={4} />}
+                      symbol={fiatCcy}
+                      amount={
+                        formatCurrency(detailTarget.krakenWithdrawFee, 2, 4, FormatType.us) ??
+                        detailTarget.krakenWithdrawFee
+                      }
+                    />
+                  </DetailRow>
+                )}
+                {(detailTarget.krakenWithdrawAmount ?? detailTarget.krakenFiatAmount) && (
+                  <DetailRow label="Withdraw Amount">
+                    <AssetCell
+                      logo={<FiatLogo symbol={fiatCcy} size={4} />}
+                      symbol={fiatCcy}
+                      amount={
+                        formatCurrency(
+                          detailTarget.krakenWithdrawAmount ?? detailTarget.krakenFiatAmount!,
+                          2,
+                          2,
+                          FormatType.us
+                        ) ??
+                        detailTarget.krakenWithdrawAmount ??
+                        detailTarget.krakenFiatAmount!
+                      }
+                    />
+                  </DetailRow>
+                )}
+                {detailTarget.bankTransferRef && (
+                  <DetailRow label="Bank Ref" value={detailTarget.bankTransferRef} mono />
+                )}
+                {detailTarget.error && (
+                  <DetailRow label="Error">
+                    <span className="text-error break-all">{detailTarget.error}</span>
+                  </DetailRow>
+                )}
+              </div>
+            </Modal>
+          );
+        })()}
 
       <Modal
         isOpen={!!settleTarget}

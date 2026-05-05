@@ -26,6 +26,7 @@ export interface OffRampExecution {
   krakenDepositRef: string | null;
   krakenPair: string | null;
   krakenOrderId: string | null;
+  krakenFiatCurrency: string | null;
   krakenFiatAmount: string | null;
   krakenWithdrawAmount: string | null;
   krakenWithdrawFee: string | null;
