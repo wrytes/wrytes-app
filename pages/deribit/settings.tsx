@@ -152,7 +152,7 @@ export default function DeribitSettingsPage() {
             />
 
             <div>
-              <div className="border-2 rounded-lg px-3 py-1 border-input-border hover:border-text-secondary focus-within:!border-brand transition-colors">
+              <div className="border-2 rounded-lg px-3 py-1 border-input-border hover:border-brand focus-within:!border-brand transition-colors">
                 <div className="text-input-label mt-1 mb-0.5 text-xs">Client Secret</div>
                 <div className="flex items-center gap-2">
                   <input

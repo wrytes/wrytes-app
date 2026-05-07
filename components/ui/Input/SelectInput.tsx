@@ -43,7 +43,7 @@ export function SelectInput({
     <div>
       <div
         className={`border-2 rounded-lg px-3 py-1 transition-colors
-          ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-text-secondary'}
+          ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-brand'}
           ${open ? '!border-brand' : ''}
           ${error ? '!border-error' : ''}`}
       >
