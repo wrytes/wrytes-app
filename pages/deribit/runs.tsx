@@ -1,0 +1,425 @@
+import Head from 'next/head';
+import { useState } from 'react';
+import { AgentError } from '@/components/features/DeribitAgent/AgentError';
+import toast from 'react-hot-toast';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
+import {
+  faRobot, faPlus, faPlay, faPause, faStop, faChevronDown, faChevronUp,
+} from '@fortawesome/free-solid-svg-icons';
+import { Section, PageHeader } from '@/components/ui/Layout';
+import Card from '@/components/ui/Card';
+import { Badge } from '@/components/ui/Badge';
+import TextInput from '@/components/ui/Input/TextInput';
+import { SelectInput } from '@/components/ui/Input/SelectInput';
+import {
+  useDeribitFetch, agentFetch,
+  type AgentRun, type RunStatus, type CreateRunBody, type ExecuteRunBody,
+} from '@/lib/deribit-agent/client';
+import { RUN_STATUS_BADGE, fmtDate, fmtDateTime, fmt } from '@/lib/deribit-agent/ui';
+
+const STATUS_OPTIONS = [
+  { value: '', label: 'All' },
+  { value: 'ACTIVE', label: 'Active' },
+  { value: 'PAUSED', label: 'Paused' },
+  { value: 'STOPPED', label: 'Stopped' },
+  { value: 'COMPLETED', label: 'Completed' },
+  { value: 'ERROR', label: 'Error' },
+];
+
+const CURRENCY_OPTIONS = [
+  { value: 'BTC', label: 'BTC' },
+  { value: 'ETH', label: 'ETH' },
+];
+
+const BLANK_RUN: CreateRunBody = {
+  name: '',
+  currency: 'BTC',
+  isLive: false,
+  initialCapitalBtc: 0.1,
+  sessionId: '',
+  notes: '',
+};
+
+const BLANK_EXEC: ExecuteRunBody & { dataFrom: string; dataTo: string } = {
+  dataFrom: '',
+  dataTo: '',
+  envOverrides: {
+    expiry_days: undefined,
+    position_size_pct: undefined,
+    max_position_btc: undefined,
+    delta_threshold: undefined,
+    delta_penalty_coef: undefined,
+    max_margin_ratio: undefined,
+  },
+};
+
+function numOrUndef(s: string): number | undefined {
+  const n = parseFloat(s);
+  return isNaN(n) ? undefined : n;
+}
+
+export default function DeribitRunsPage() {
+  const [statusFilter, setStatusFilter] = useState('');
+  const [showCreate, setShowCreate] = useState(false);
+  const [form, setForm] = useState<CreateRunBody>(BLANK_RUN);
+  const [submitting, setSubmitting] = useState(false);
+
+  const [expandedRun, setExpandedRun] = useState<string | null>(null);
+  const [execForms, setExecForms] = useState<Record<string, typeof BLANK_EXEC>>({});
+  const [executing, setExecuting] = useState<Record<string, boolean>>({});
+  const [actioning, setActioning] = useState<Record<string, boolean>>({});
+
+  const path = statusFilter ? `/agent/runs?status=${statusFilter}` : '/agent/runs';
+  const { data: runs, loading, error, refetch } = useDeribitFetch<AgentRun[]>(path);
+
+  const patchForm = (k: keyof CreateRunBody, v: unknown) =>
+    setForm(f => ({ ...f, [k]: v }));
+
+  const createRun = async () => {
+    if (!form.name || !form.currency || !form.initialCapitalBtc) {
+      toast.error('Name, currency and capital are required.');
+      return;
+    }
+    setSubmitting(true);
+    try {
+      const body: CreateRunBody = {
+        ...form,
+        sessionId: form.sessionId || undefined,
+        notes: form.notes || undefined,
+      };
+      await agentFetch('/agent/runs', {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      toast.success('Run created.');
+      setForm(BLANK_RUN);
+      setShowCreate(false);
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to create run.');
+    } finally {
+      setSubmitting(false);
+    }
+  };
+
+  const runAction = async (id: string, action: 'stop' | 'pause' | 'resume') => {
+    setActioning(a => ({ ...a, [id]: true }));
+    try {
+      await agentFetch(`/agent/runs/${id}/${action}`, { method: 'POST' });
+      toast.success(`Run ${action}ped.`);
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : `Failed to ${action} run.`);
+    } finally {
+      setActioning(a => ({ ...a, [id]: false }));
+    }
+  };
+
+  const executeRun = async (run: AgentRun) => {
+    const ef = execForms[run.id] ?? BLANK_EXEC;
+    setExecuting(e => ({ ...e, [run.id]: true }));
+    try {
+      const body: ExecuteRunBody = {};
+      if (ef.dataFrom) body.dataFrom = ef.dataFrom;
+      if (ef.dataTo) body.dataTo = ef.dataTo;
+      const ov = ef.envOverrides ?? {};
+      const cleanOv = Object.fromEntries(
+        Object.entries(ov).filter(([, v]) => v !== undefined)
+      );
+      if (Object.keys(cleanOv).length > 0) body.envOverrides = cleanOv as ExecuteRunBody['envOverrides'];
+      await agentFetch(`/agent/runs/${run.id}/execute`, {
+        method: 'POST',
+        body: JSON.stringify(body),
+      });
+      toast.success('Execute triggered.');
+      refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Execute failed.');
+    } finally {
+      setExecuting(e => ({ ...e, [run.id]: false }));
+    }
+  };
+
+  const patchExec = (runId: string, key: string, val: string) => {
+    setExecForms(f => {
+      const base = f[runId] ?? { ...BLANK_EXEC, envOverrides: { ...BLANK_EXEC.envOverrides } };
+      if (key === 'dataFrom' || key === 'dataTo') {
+        return { ...f, [runId]: { ...base, [key]: val } };
+      }
+      return {
+        ...f,
+        [runId]: {
+          ...base,
+          envOverrides: { ...(base.envOverrides ?? {}), [key]: numOrUndef(val) },
+        },
+      };
+    });
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Deribit Agent — Runs</title>
+      </Head>
+
+      <Section>
+        <PageHeader
+          title="Agent Runs"
+          description="Manage and execute agent trading runs."
+          icon={faRobot}
+          actions={
+            <button
+              type="button"
+              onClick={() => setShowCreate(v => !v)}
+              className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
+            >
+              <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+              New Run
+            </button>
+          }
+        />
+
+        {/* Create form */}
+        {showCreate && (
+          <Card className="mt-4">
+            <p className="text-sm font-semibold text-text-primary mb-4">Create Agent Run</p>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <TextInput
+                label="Name"
+                placeholder="btc-ppo-run-1"
+                value={form.name}
+                onChange={v => patchForm('name', v)}
+              />
+              <SelectInput
+                label="Currency"
+                options={CURRENCY_OPTIONS}
+                value={form.currency}
+                onChange={v => patchForm('currency', v)}
+              />
+              <TextInput
+                label="Initial Capital (BTC)"
+                placeholder="0.1"
+                value={String(form.initialCapitalBtc)}
+                onChange={v => patchForm('initialCapitalBtc', parseFloat(v) || 0)}
+              />
+              <TextInput
+                label="Session ID (optional)"
+                placeholder="Trained model session"
+                value={form.sessionId ?? ''}
+                onChange={v => patchForm('sessionId', v)}
+              />
+              <TextInput
+                label="Notes (optional)"
+                placeholder="Any notes..."
+                value={form.notes ?? ''}
+                onChange={v => patchForm('notes', v)}
+              />
+              <div className="flex items-center gap-3 pt-6">
+                <label className="flex items-center gap-2 cursor-pointer text-sm text-text-primary select-none">
+                  <input
+                    type="checkbox"
+                    checked={form.isLive ?? false}
+                    onChange={e => patchForm('isLive', e.target.checked)}
+                    className="w-4 h-4 accent-brand"
+                  />
+                  Live trading (real funds)
+                </label>
+              </div>
+            </div>
+            <div className="flex gap-3 mt-4">
+              <button
+                type="button"
+                onClick={createRun}
+                disabled={submitting}
+                className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
+              >
+                {submitting ? 'Creating…' : 'Create Run'}
+              </button>
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
+                Cancel
+              </button>
+            </div>
+          </Card>
+        )}
+
+        {/* Filter */}
+        <div className="flex items-center gap-3 mt-6">
+          <span className="text-text-muted text-sm">Status:</span>
+          <div className="flex gap-2 flex-wrap">
+            {STATUS_OPTIONS.map(opt => (
+              <button
+                key={opt.value}
+                type="button"
+                onClick={() => setStatusFilter(opt.value)}
+                className={`px-3 py-1 rounded-lg text-xs font-medium transition-colors ${
+                  statusFilter === opt.value
+                    ? 'bg-brand text-white'
+                    : 'bg-surface text-text-secondary hover:text-text-primary'
+                }`}
+              >
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Runs list */}
+        <div className="mt-4 space-y-3">
+          {loading ? (
+            [1, 2, 3].map(i => (
+              <div key={i} className="h-20 bg-card rounded-lg animate-pulse" />
+            ))
+          ) : error ? (
+            <AgentError message={error} onRetry={refetch} />
+          ) : !runs?.length ? (
+            <Card>
+              <p className="text-text-muted text-sm text-center py-4">No runs found.</p>
+            </Card>
+          ) : (
+            runs.map(run => {
+              const isExpanded = expandedRun === run.id;
+              const ef = execForms[run.id] ?? BLANK_EXEC;
+              const ov = ef.envOverrides ?? {};
+              const isExec = executing[run.id];
+              const isAct = actioning[run.id];
+
+              return (
+                <Card key={run.id} className="space-y-0 p-0 overflow-hidden">
+                  {/* Header row */}
+                  <div className="flex items-center justify-between px-4 py-3">
+                    <div className="flex items-center gap-3 min-w-0">
+                      <Badge
+                        text={run.status}
+                        variant="custom"
+                        customColor={RUN_STATUS_BADGE[run.status].color}
+                        customBgColor={RUN_STATUS_BADGE[run.status].bg}
+                      />
+                      <span className="font-medium text-text-primary truncate">{run.name}</span>
+                      <span className="text-text-muted text-xs">{run.currency}</span>
+                      {run.isLive && (
+                        <span className="text-error text-xs font-bold uppercase">Live</span>
+                      )}
+                    </div>
+
+                    <div className="flex items-center gap-2 flex-shrink-0">
+                      {/* Controls */}
+                      {run.status === 'ACTIVE' && (
+                        <button
+                          type="button"
+                          disabled={isAct}
+                          onClick={() => runAction(run.id, 'pause')}
+                          title="Pause"
+                          className="p-1.5 rounded text-yellow-400 hover:bg-yellow-400/20 transition-colors disabled:opacity-50"
+                        >
+                          <FontAwesomeIcon icon={faPause} className="w-3 h-3" />
+                        </button>
+                      )}
+                      {run.status === 'PAUSED' && (
+                        <button
+                          type="button"
+                          disabled={isAct}
+                          onClick={() => runAction(run.id, 'resume')}
+                          title="Resume"
+                          className="p-1.5 rounded text-success hover:bg-success/20 transition-colors disabled:opacity-50"
+                        >
+                          <FontAwesomeIcon icon={faPlay} className="w-3 h-3" />
+                        </button>
+                      )}
+                      {(run.status === 'ACTIVE' || run.status === 'PAUSED') && (
+                        <button
+                          type="button"
+                          disabled={isAct}
+                          onClick={() => runAction(run.id, 'stop')}
+                          title="Stop"
+                          className="p-1.5 rounded text-error hover:bg-error/20 transition-colors disabled:opacity-50"
+                        >
+                          <FontAwesomeIcon icon={faStop} className="w-3 h-3" />
+                        </button>
+                      )}
+                      <button
+                        type="button"
+                        onClick={() => setExpandedRun(isExpanded ? null : run.id)}
+                        className="p-1.5 rounded text-text-secondary hover:text-brand transition-colors"
+                      >
+                        <FontAwesomeIcon
+                          icon={isExpanded ? faChevronUp : faChevronDown}
+                          className="w-3 h-3"
+                        />
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* Meta row */}
+                  <div className="px-4 pb-3 flex gap-6 text-xs text-text-muted border-t border-surface/50">
+                    <span>Capital: {fmt(run.initialCapitalBtc)} BTC</span>
+                    {run.sessionId && <span>Session: {run.sessionId.slice(0, 8)}</span>}
+                    <span>Created {fmtDate(run.createdAt)}</span>
+                  </div>
+
+                  {/* Execute panel */}
+                  {isExpanded && (
+                    <div className="border-t border-surface px-4 py-4 bg-surface/20">
+                      <p className="text-sm font-semibold text-text-primary mb-4">Execute Run</p>
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <TextInput
+                          label="Data From (ISO, optional)"
+                          placeholder="2024-01-01T00:00:00Z"
+                          value={ef.dataFrom}
+                          onChange={v => patchExec(run.id, 'dataFrom', v)}
+                        />
+                        <TextInput
+                          label="Data To (ISO, optional)"
+                          placeholder="2024-12-31T23:59:59Z"
+                          value={ef.dataTo}
+                          onChange={v => patchExec(run.id, 'dataTo', v)}
+                        />
+                      </div>
+
+                      <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mt-4 mb-3">
+                        Env Overrides (optional)
+                      </p>
+                      <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+                        {(
+                          [
+                            ['expiry_days', 'Expiry Days'],
+                            ['position_size_pct', 'Position Size %'],
+                            ['max_position_btc', 'Max Position BTC'],
+                            ['delta_threshold', 'Delta Threshold'],
+                            ['delta_penalty_coef', 'Delta Penalty Coef'],
+                            ['max_margin_ratio', 'Max Margin Ratio'],
+                          ] as const
+                        ).map(([key, label]) => (
+                          <TextInput
+                            key={key}
+                            label={label}
+                            placeholder="—"
+                            value={ov[key] !== undefined ? String(ov[key]) : ''}
+                            onChange={v => patchExec(run.id, key, v)}
+                          />
+                        ))}
+                      </div>
+
+                      <button
+                        type="button"
+                        disabled={isExec}
+                        onClick={() => executeRun(run)}
+                        className="mt-4 inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faPlay} className="w-3 h-3" />
+                        {isExec ? 'Executing…' : 'Execute'}
+                      </button>
+                    </div>
+                  )}
+                </Card>
+              );
+            })
+          )}
+        </div>
+      </Section>
+    </>
+  );
+}
