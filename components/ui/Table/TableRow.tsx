@@ -32,7 +32,7 @@ export default function TableRow({
   return (
     <div
       className={`${className ?? ''} ${
-        paddingY ?? 'py-4'
+        paddingY ?? 'py-1'
       } bg-card md:hover:bg-surface p-4 xl:px-6 border-t border-table-alt last:rounded-b-lg duration-300 ${
         onClick ? 'cursor-pointer' : 'cursor-default'
       }`}
@@ -47,7 +47,9 @@ export default function TableRow({
           {childArray.map((child, idx) => (
             <div
               key={child.key ?? `row-desktop-${idx}`}
-              className={headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'}
+              className={
+                headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'
+              }
             >
               {child}
             </div>

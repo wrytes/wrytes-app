@@ -49,7 +49,7 @@ export default function AddressInput({
     <div className={className}>
       <div
         className={`group border-input-border ${
-          disabled ? 'bg-surface' : 'hover:border-text-secondary'
+          disabled ? 'bg-surface' : 'hover:border-brand'
         } focus-within:!border-brand ${
           error ? '!border-error' : ''
         } text-text-secondary border-2 rounded-lg px-3 py-1`}

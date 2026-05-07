@@ -29,7 +29,7 @@ export default function TextInput({
     <div className={className}>
       <div
         className={`border-2 rounded-lg px-3 py-1 transition-colors
-          ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-text-secondary'}
+          ${disabled ? 'bg-surface border-input-border' : 'border-input-border hover:border-brand'}
           focus-within:!border-brand
           ${error ? '!border-error' : ''}`}
       >
