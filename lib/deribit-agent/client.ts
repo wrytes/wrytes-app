@@ -151,6 +151,7 @@ export interface TrainedModel {
   maxDrawdown?: number;
   winRate?: number;
   createdAt: string;
+  session?: { name: string; algorithm: string; currency: string };
 }
 
 export interface DeribitAccount {
