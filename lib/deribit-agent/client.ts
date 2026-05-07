@@ -93,6 +93,7 @@ export interface AccountSummariesResponse {
 }
 
 export type RunStatus = 'ACTIVE' | 'PAUSED' | 'STOPPED' | 'COMPLETED' | 'ERROR';
+export type RunType = 'BACKTEST' | 'PAPER' | 'LIVE';
 export type SessionStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
 export interface AgentRun {
@@ -100,7 +101,8 @@ export interface AgentRun {
   name: string;
   currency: string;
   status: RunStatus;
-  isLive: boolean;
+  runType: RunType;
+  deribitAccountId?: string;
   initialCapitalBtc: number;
   notes?: string;
   sessionId?: string;
@@ -153,9 +155,12 @@ export interface TrainedModel {
 
 export interface DeribitAccount {
   id: string;
+  userId: string;
+  label: string;
   clientId: string;
   baseUrl: string;
   isTestnet: boolean;
+  isDefault: boolean;
   createdAt: string;
   updatedAt: string;
 }
@@ -174,7 +179,8 @@ export interface DataStatus {
 export interface CreateRunBody {
   name: string;
   currency: string;
-  isLive?: boolean;
+  runType?: RunType;
+  deribitAccountId?: string;
   initialCapitalBtc: number;
   sessionId?: string;
   notes?: string;
@@ -197,6 +203,11 @@ export interface ExecuteRunBody {
   };
 }
 
+export interface RiskProfile {
+  maxDrawdown?: number;
+  aggressionLevel?: number;
+}
+
 export interface CreateSessionBody {
   name: string;
   description?: string;
@@ -205,11 +216,23 @@ export interface CreateSessionBody {
   dataTo: string;
   resolution?: string;
   algorithm?: string;
+  allowedStrategies?: string[];
+  riskProfile?: RiskProfile;
 }
 
-export interface UpsertAccountBody {
+export interface CreateAccountBody {
+  label?: string;
   clientId: string;
   clientSecret: string;
+  baseUrl?: string;
+  isTestnet?: boolean;
+  isDefault?: boolean;
+}
+
+export interface UpdateAccountBody {
+  label?: string;
+  clientId?: string;
+  clientSecret?: string;
   baseUrl?: string;
   isTestnet?: boolean;
 }
