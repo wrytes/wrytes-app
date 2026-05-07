@@ -49,8 +49,8 @@ const BLANK_SESSION: CreateSessionBody & { allowedStrategies: string[]; riskProf
   name: '',
   description: '',
   currency: 'BTC',
-  dataFrom: '',
-  dataTo: '',
+  dataFrom: '2022-01-01',
+  dataTo: new Date().toISOString().slice(0, 10),
   resolution: '1D',
   algorithm: 'PPO',
   allowedStrategies: ['STRANGLE', 'DELTA_NEUTRAL'],
@@ -193,8 +193,8 @@ export default function ModelsPage() {
           name: form.name,
           description: form.description || undefined,
           currency: form.currency,
-          dataFrom: form.dataFrom,
-          dataTo: form.dataTo,
+          dataFrom: new Date(form.dataFrom).toISOString(),
+          dataTo: new Date(form.dataTo + 'T23:59:59').toISOString(),
           resolution: form.resolution,
           algorithm: form.algorithm,
           allowedStrategies: form.allowedStrategies,
@@ -275,8 +275,8 @@ export default function ModelsPage() {
               <TextInput label="Description (optional)" placeholder="Short description" value={form.description ?? ''} onChange={v => patchForm('description', v)} />
               <SelectInput label="Currency" options={CURRENCY_OPTIONS} value={form.currency} onChange={v => patchForm('currency', v)} />
               <SelectInput label="Algorithm" options={ALGORITHM_OPTIONS} value={form.algorithm ?? 'PPO'} onChange={v => patchForm('algorithm', v)} />
-              <TextInput label="Data From (ISO)" placeholder="2024-01-01T00:00:00Z" value={form.dataFrom} onChange={v => patchForm('dataFrom', v)} />
-              <TextInput label="Data To (ISO)" placeholder="2024-12-31T23:59:59Z" value={form.dataTo} onChange={v => patchForm('dataTo', v)} />
+              <TextInput label="Data From" type="date" value={form.dataFrom} onChange={v => patchForm('dataFrom', v)} />
+              <TextInput label="Data To" type="date" value={form.dataTo} onChange={v => patchForm('dataTo', v)} />
             </div>
 
             <div className="mt-5">
