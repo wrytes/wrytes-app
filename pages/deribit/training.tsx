@@ -3,7 +3,7 @@ import { useState } from 'react';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faPlus, faTrash, faDatabase } from '@fortawesome/free-solid-svg-icons';
+import { faBrain, faPlus, faTrash, faDatabase, faBan } from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -57,6 +57,7 @@ export default function DeribitTrainingPage() {
   const [form, setForm] = useState<CreateSessionBody>(BLANK_SESSION);
   const [submitting, setSubmitting] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
+  const [deleting, setDeleting] = useState<string | null>(null);
 
   const sessionPath = statusFilter
     ? `/training/sessions?status=${statusFilter}`
@@ -97,13 +98,28 @@ export default function DeribitTrainingPage() {
   const cancelSession = async (id: string) => {
     setCancelling(id);
     try {
-      await agentFetch(`/training/sessions/${id}`, { method: 'DELETE' });
+      await agentFetch(`/training/sessions/${id}/cancel`, { method: 'POST' });
       toast.success('Session cancelled.');
       sessions.refetch();
     } catch (e) {
       toast.error(e instanceof Error ? e.message : 'Failed to cancel session.');
     } finally {
       setCancelling(null);
+    }
+  };
+
+  const deleteSession = async (id: string) => {
+    if (!confirm('Hard-delete this session? This also removes its model and all associated agent runs.')) return;
+    setDeleting(id);
+    try {
+      await agentFetch(`/training/sessions/${id}`, { method: 'DELETE' });
+      toast.success('Session deleted.');
+      sessions.refetch();
+      models.refetch();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to delete session.');
+    } finally {
+      setDeleting(null);
     }
   };
 
@@ -269,17 +285,28 @@ export default function DeribitTrainingPage() {
                       </td>
                       <td className="px-4 py-3 text-text-muted">{fmtDate(s.createdAt)}</td>
                       <td className="px-4 py-3">
-                        {(s.status === 'QUEUED' || s.status === 'RUNNING') && (
+                        <div className="flex items-center gap-1">
+                          {(s.status === 'QUEUED' || s.status === 'RUNNING') && (
+                            <button
+                              type="button"
+                              disabled={cancelling === s.id}
+                              onClick={() => cancelSession(s.id)}
+                              title="Cancel"
+                              className="p-1.5 rounded text-yellow-400 hover:bg-yellow-400/20 transition-colors disabled:opacity-50"
+                            >
+                              <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
+                            </button>
+                          )}
                           <button
                             type="button"
-                            disabled={cancelling === s.id}
-                            onClick={() => cancelSession(s.id)}
-                            title="Cancel"
+                            disabled={deleting === s.id}
+                            onClick={() => deleteSession(s.id)}
+                            title="Hard delete (cascades model + runs)"
                             className="p-1.5 rounded text-error hover:bg-error/20 transition-colors disabled:opacity-50"
                           >
                             <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
                           </button>
-                        )}
+                        </div>
                       </td>
                     </tr>
                   ))}

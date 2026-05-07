@@ -1,10 +1,11 @@
 import Head from 'next/head';
 import { useState } from 'react';
+import { useRouter } from 'next/router';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
-  faRobot, faPlus, faPlay, faPause, faStop, faChevronDown, faChevronUp,
+  faRobot, faPlus, faPlay, faPause, faStop, faChevronDown, faChevronUp, faArrowUpRightFromSquare,
 } from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
@@ -59,6 +60,7 @@ function numOrUndef(s: string): number | undefined {
 }
 
 export default function DeribitRunsPage() {
+  const router = useRouter();
   const [statusFilter, setStatusFilter] = useState('');
   const [showCreate, setShowCreate] = useState(false);
   const [form, setForm] = useState<CreateRunBody>(BLANK_RUN);
@@ -340,6 +342,14 @@ export default function DeribitRunsPage() {
                           <FontAwesomeIcon icon={faStop} className="w-3 h-3" />
                         </button>
                       )}
+                      <button
+                        type="button"
+                        onClick={() => router.push(`/deribit/runs/${run.id}`)}
+                        title="View detail"
+                        className="p-1.5 rounded text-text-secondary hover:text-brand transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 h-3" />
+                      </button>
                       <button
                         type="button"
                         onClick={() => setExpandedRun(isExpanded ? null : run.id)}
