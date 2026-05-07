@@ -17,31 +17,31 @@ export interface DeribitNavItem {
 export const DERIBIT_NAVIGATION: DeribitNavItem[] = [
   {
     label: 'Overview',
-    path: '/deribit',
+    path: '/deribit-agent',
     icon: faChartLine,
     description: 'Agent status and account summary',
   },
   {
-    label: 'Positions',
-    path: '/deribit/positions',
-    icon: faLayerGroup,
-    description: 'Open positions and Greeks',
-  },
-  {
-    label: 'Agent Runs',
-    path: '/deribit/runs',
-    icon: faRobot,
-    description: 'Agent execution history and decisions',
-  },
-  {
-    label: 'Training',
-    path: '/deribit/training',
+    label: 'Models',
+    path: '/deribit-agent/models',
     icon: faBrain,
     description: 'Train and manage ML models',
   },
   {
+    label: 'Agents',
+    path: '/deribit-agent/runs',
+    icon: faRobot,
+    description: 'Agent execution history and decisions',
+  },
+  {
+    label: 'Positions',
+    path: '/deribit-agent/positions',
+    icon: faLayerGroup,
+    description: 'Open positions and Greeks',
+  },
+  {
     label: 'Settings',
-    path: '/deribit/settings',
+    path: '/deribit-agent/settings',
     icon: faSliders,
     description: 'Agent configuration and parameters',
   },

@@ -180,12 +180,12 @@ export default function DeribitRunsPage() {
   return (
     <>
       <Head>
-        <title>Deribit Agent — Runs</title>
+        <title>Deribit Agent — Agents</title>
       </Head>
 
       <Section>
         <PageHeader
-          title="Agent Runs"
+          title="Agents"
           description="Manage and execute backtest, paper, and live trading runs."
           icon={faRobot}
           actions={

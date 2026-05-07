@@ -5,7 +5,7 @@ import DashboardLayout from './DashboardLayout';
 import DocsLayout from './DocsLayout';
 import SimpleLayout from './SimpleLayout';
 import CenterLayout from './CenterLayout';
-import LayoutDeribitAgent from './LayoutDeribitAgent';
+import DeribitAgentLayout from './DeribitAgentLayout';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -18,8 +18,8 @@ export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const pathname = router.pathname;
 
-  if (pathname.startsWith('/deribit')) {
-    return <LayoutDeribitAgent>{children}</LayoutDeribitAgent>;
+  if (pathname.startsWith('/deribit-agent')) {
+    return <DeribitAgentLayout>{children}</DeribitAgentLayout>;
   }
 
   if (pathname.startsWith('/dashboard') || pathname.startsWith('/admin')) {
