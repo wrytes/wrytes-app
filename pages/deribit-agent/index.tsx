@@ -8,12 +8,9 @@ import { Badge } from '@/components/ui/Badge';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import {
   useDeribitFetch,
-  type AccountSummary,
   type AccountSummariesResponse,
   type AgentRun,
   type TrainedModel,
-  type DataStatus,
-  type TrackedInstrument,
 } from '@/lib/deribit-agent/client';
 import { RUN_STATUS_BADGE, fmt, fmtDate } from '@/lib/deribit-agent/ui';
 
@@ -21,7 +18,6 @@ export default function DeribitOverviewPage() {
   const summaries = useDeribitFetch<AccountSummariesResponse>('/account/summaries');
   const runs = useDeribitFetch<AgentRun[]>('/agent/runs');
   const models = useDeribitFetch<TrainedModel[]>('/training/models');
-  const dataStatus = useDeribitFetch<DataStatus>('/data/status');
 
   const btc = summaries.data?.summaries?.find(s => s.currency === 'BTC');
   const eth = summaries.data?.summaries?.find(s => s.currency === 'ETH');
@@ -176,31 +172,6 @@ export default function DeribitOverviewPage() {
           )}
         </div>
 
-        {/* Data status */}
-        {!dataStatus.loading && dataStatus.data && (
-          <div className="mt-8">
-            <p className="text-text-secondary text-xs font-semibold uppercase tracking-wider mb-3">
-              Data Ingestion — Tracked Instruments
-            </p>
-            <Card>
-              {dataStatus.data.tracked.length === 0 ? (
-                <p className="text-text-muted text-sm">No instruments tracked.</p>
-              ) : (
-                <div className="flex flex-wrap gap-2">
-                  {dataStatus.data.tracked.map((item: TrackedInstrument) => (
-                    <span
-                      key={`${item.instrument}-${item.resolution}`}
-                      className="text-xs font-mono bg-surface px-2 py-1 rounded text-text-secondary"
-                    >
-                      {item.instrument}
-                      <span className="text-text-muted ml-1 opacity-60">{item.resolution}</span>
-                    </span>
-                  ))}
-                </div>
-              )}
-            </Card>
-          </div>
-        )}
       </Section>
     </>
   );
