@@ -4,8 +4,8 @@ export function useActiveNavigation() {
   const router = useRouter();
   
   const isActive = (path: string) => {
-    if (path === '/dashboard') {
-      return router.pathname === '/dashboard';
+    if (path === '/dashboard' || path === '/deribit') {
+      return router.pathname === path;
     }
     return router.pathname.startsWith(path);
   };
