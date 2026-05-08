@@ -372,7 +372,7 @@ export default function DeribitRunsPage() {
                                   <FontAwesomeIcon icon={faStop} className="w-3 h-3" />
                                 </button>
                               )}
-                              <button type="button" onClick={() => router.push(`/deribit-agent/runs/${run.id}`)}
+                              <button type="button" onClick={() => router.push(`/deribit-agent/agents/${run.id}`)}
                                 title="View detail" className="p-1.5 rounded text-text-secondary hover:text-brand transition-colors">
                                 <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 h-3" />
                               </button>

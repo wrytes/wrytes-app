@@ -29,7 +29,7 @@ export const DERIBIT_NAVIGATION: DeribitNavItem[] = [
   },
   {
     label: 'Agents',
-    path: '/deribit-agent/runs',
+    path: '/deribit-agent/agents',
     icon: faRobot,
     description: 'Agent execution history and decisions',
   },
