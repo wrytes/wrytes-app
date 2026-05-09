@@ -53,9 +53,7 @@ const MODEL_HEADERS = [
   'Obs Space',
   'Policy',
   'Algorithm',
-  'Sharpe',
-  'Max DD',
-  'Win Rate',
+  'Trained On',
   'Mean Reward',
   'Size',
   'Created',
@@ -93,6 +91,13 @@ function aggressionLabel(level: number): string {
 // show the session name as the human-readable fallback.
 function resolveModelName(m: TrainedModel): string {
   return /_(ppo|dqn|a2c)$/i.test(m.name) ? (m.session?.name ?? m.name) : m.name;
+}
+
+function fmtSteps(n?: number | null): string {
+  if (!n) return '—';
+  if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
+  if (n >= 1_000)     return `${Math.round(n / 1_000)}k`;
+  return String(n);
 }
 
 function fmtSize(bytes?: number): string {
@@ -205,14 +210,8 @@ export default function ModelsPage() {
         case 'Algorithm':
           cmp = (a.session?.algorithm ?? '').localeCompare(b.session?.algorithm ?? '');
           break;
-        case 'Sharpe':
-          cmp = (a.sharpeRatio ?? -Infinity) - (b.sharpeRatio ?? -Infinity);
-          break;
-        case 'Max DD':
-          cmp = (a.maxDrawdown ?? -Infinity) - (b.maxDrawdown ?? -Infinity);
-          break;
-        case 'Win Rate':
-          cmp = (a.winRate ?? -Infinity) - (b.winRate ?? -Infinity);
+        case 'Trained On':
+          cmp = (a.session?.totalTimesteps ?? 0) - (b.session?.totalTimesteps ?? 0);
           break;
         case 'Mean Reward':
           cmp = (a.meanReward ?? -Infinity) - (b.meanReward ?? -Infinity);
@@ -696,18 +695,10 @@ export default function ModelsPage() {
                         </div>
                       }
                     >
-                      <div className="text-left">
-                        <CellEditable
-                          value={resolveModelName(m)}
-                          onSave={v => renameModel(m.id, v)}
-                        />
-                        <div
-                          className="text-text-muted text-xs font-mono truncate max-w-[16rem]"
-                          title={m.storagePath}
-                        >
-                          {m.storagePath}
-                        </div>
-                      </div>
+                      <CellEditable
+                        value={resolveModelName(m)}
+                        onSave={v => renameModel(m.id, v)}
+                      />
                       <div className="font-mono text-xs">
                         {m.metadata?.obs_version && m.metadata?.obs_dims ? (
                           <>
@@ -723,30 +714,8 @@ export default function ModelsPage() {
                         {m.metadata?.policy ?? '—'}
                       </span>
                       <span className="text-text-secondary">{m.session?.algorithm ?? '—'}</span>
-                      <span
-                        className={
-                          m.sharpeRatio !== undefined
-                            ? m.sharpeRatio >= 1
-                              ? 'text-success font-mono'
-                              : 'text-text-primary font-mono'
-                            : 'text-text-muted'
-                        }
-                      >
-                        {m.sharpeRatio !== undefined ? fmt(m.sharpeRatio, 2) : '—'}
-                      </span>
-                      <span className="font-mono text-text-primary">
-                        {m.maxDrawdown !== undefined ? `${fmt(m.maxDrawdown, 1)}%` : '—'}
-                      </span>
-                      <span
-                        className={
-                          m.winRate !== undefined
-                            ? m.winRate >= 0.5
-                              ? 'text-success font-mono'
-                              : 'text-text-primary font-mono'
-                            : 'text-text-muted'
-                        }
-                      >
-                        {m.winRate !== undefined ? `${fmt(m.winRate * 100, 1)}%` : '—'}
+                      <span className="font-mono text-text-secondary">
+                        {fmtSteps(m.session?.totalTimesteps)}
                       </span>
                       <span className="font-mono text-text-primary">
                         {m.meanReward !== undefined ? fmt(m.meanReward, 3) : '—'}

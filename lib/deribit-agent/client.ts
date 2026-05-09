@@ -170,7 +170,7 @@ export interface TrainedModel {
   winRate?: number;
   metadata?: Partial<ModelManifest>;
   createdAt: string;
-  session?: { name: string; algorithm: string; currency: string };
+  session?: { name: string; algorithm: string; currency: string; totalTimesteps?: number | null };
 }
 
 export interface DeribitAccount {
