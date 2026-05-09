@@ -146,6 +146,16 @@ export interface TrainingSession {
   };
 }
 
+export interface ModelManifest {
+  obs_version:  string;
+  obs_dims:     number;
+  obs_features: string[];
+  action_dims:  number;
+  data_columns: string[];
+  env_version:  string;
+  policy:       string;
+}
+
 export interface TrainedModel {
   id: string;
   name: string;
@@ -158,6 +168,7 @@ export interface TrainedModel {
   sharpeRatio?: number;
   maxDrawdown?: number;
   winRate?: number;
+  metadata?: Partial<ModelManifest>;
   createdAt: string;
   session?: { name: string; algorithm: string; currency: string };
 }
@@ -199,6 +210,12 @@ export interface ExecuteRunBody {
   dataFrom?: string;
   dataTo?: string;
   envOverrides?: {
+    // Conditioning inputs (set at inference time)
+    max_drawdown_limit?: number;
+    aggression_level?: number;
+    allowed_actions?: string[];
+    randomize_conditioning?: boolean;
+    // Core env params
     expiry_days?: number;
     position_size_pct?: number;
     max_position_btc?: number;
@@ -227,6 +244,7 @@ export interface CreateSessionBody {
   algorithm?: string;
   allowedStrategies?: string[];
   riskProfile?: RiskProfile;
+  hyperparams?: Record<string, any>;
 }
 
 export interface CreateAccountBody {

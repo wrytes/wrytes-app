@@ -18,13 +18,57 @@ import {
   type ChartConfiguration,
 } from 'chart.js';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faArrowLeft, faRobot } from '@fortawesome/free-solid-svg-icons';
+import {
+  faArrowLeft,
+  faRobot,
+  faChevronDown,
+  faChevronUp,
+  faPlay,
+  faPause,
+  faStop,
+} from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
-import { useDeribitFetch, type AgentRun, type AgentAction } from '@/lib/deribit-agent/client';
+import TextInput from '@/components/ui/Input/TextInput';
+import SliderInput from '@/components/ui/Input/SliderInput';
+import { useDeribitFetch, agentFetch, type AgentRun, type AgentAction } from '@/lib/deribit-agent/client';
 import { RUN_STATUS_BADGE } from '@/lib/deribit-agent/ui';
+
+const EXEC_STRATEGY_OPTIONS = [
+  { value: 'short_call', label: 'Short Call', desc: 'Sell calls Δ20–Δ80' },
+  { value: 'short_put', label: 'Short Put', desc: 'Sell puts Δ10–Δ50' },
+  { value: 'delta_neutral', label: 'Delta Neutral', desc: 'Balanced call + put' },
+];
+
+function aggressionLabel(v: number) {
+  if (v <= 0.2) return 'Very Passive';
+  if (v <= 0.4) return 'Passive';
+  if (v <= 0.6) return 'Balanced';
+  if (v <= 0.8) return 'Aggressive';
+  return 'Very Aggressive';
+}
+
+function mkBlankExec() {
+  const today = new Date();
+  return {
+    dataFrom:          '2022-03-01',
+    dataTo:            today.toISOString().slice(0, 10),
+    allowedStrategies: ['short_call', 'short_put', 'delta_neutral'] as string[],
+    maxDrawdownLimit:  0.20,
+    aggressionLevel:   0.5,
+    positionSizePct:   1.0,
+    maxPositionBtc:    5.0,
+    minOrderSize:      0.1,
+    expiryDays:        7,
+    maxMarginRatio:    0.8,
+    deltaThreshold:    0.30,
+    deltaPenaltyCoef:  0.002,
+    riskFreeRate:      0.05,
+    fastMargin:        false,
+  };
+}
 
 ChartJS.register(
   LineController,
@@ -177,6 +221,80 @@ export default function RunDetailPage() {
   const [chartsReady, setChartsReady] = useState(false);
   const [logTypeFilter, setLogTypeFilter] = useState('');
   const [logSearch, setLogSearch] = useState('');
+
+  // Execution accordion
+  const [showExec, setShowExec] = useState(false);
+  const [showAdvanced, setShowAdvanced] = useState(false);
+  const [execForm, setExecForm] = useState(mkBlankExec);
+  const [executing, setExecuting] = useState(false);
+  const [actioning, setActioning] = useState(false);
+
+  const toggleExecStrategy = (s: string) => {
+    setExecForm(f => ({
+      ...f,
+      allowedStrategies: f.allowedStrategies.includes(s)
+        ? f.allowedStrategies.filter(x => x !== s)
+        : [...f.allowedStrategies, s],
+    }));
+  };
+
+  const executeRun = async () => {
+    if (!runId) return;
+    if (!execForm.allowedStrategies.length) {
+      const { toast } = await import('react-hot-toast');
+      toast.error('Enable at least one strategy.');
+      return;
+    }
+    setExecuting(true);
+    try {
+      await agentFetch(`/agent/runs/${runId}/execute`, {
+        method: 'POST',
+        body: JSON.stringify({
+          dataFrom: execForm.dataFrom || undefined,
+          dataTo: execForm.dataTo || undefined,
+          envOverrides: {
+            allowed_actions:       execForm.allowedStrategies,
+            randomize_conditioning: false,
+            max_drawdown_limit:    execForm.maxDrawdownLimit,
+            aggression_level:      execForm.aggressionLevel,
+            position_size_pct:     execForm.positionSizePct,
+            max_position_btc:      execForm.maxPositionBtc,
+            min_order_size:        execForm.minOrderSize,
+            expiry_days:           execForm.expiryDays,
+            max_margin_ratio:      execForm.maxMarginRatio,
+            delta_threshold:       execForm.deltaThreshold,
+            delta_penalty_coef:    execForm.deltaPenaltyCoef,
+            risk_free_rate:        execForm.riskFreeRate,
+            fast_margin:           execForm.fastMargin,
+          },
+        }),
+      });
+      const { toast } = await import('react-hot-toast');
+      toast.success('Execution queued.');
+      run.refetch();
+    } catch (e) {
+      const { toast } = await import('react-hot-toast');
+      toast.error(e instanceof Error ? e.message : 'Execute failed.');
+    } finally {
+      setExecuting(false);
+    }
+  };
+
+  const runControl = async (action: 'pause' | 'resume' | 'stop') => {
+    if (!runId) return;
+    setActioning(true);
+    try {
+      await agentFetch(`/agent/runs/${runId}/${action}`, { method: 'POST' });
+      const { toast } = await import('react-hot-toast');
+      toast.success(`Agent ${action === 'stop' ? 'stopped' : action === 'pause' ? 'paused' : 'resumed'}.`);
+      run.refetch();
+    } catch (e) {
+      const { toast } = await import('react-hot-toast');
+      toast.error(e instanceof Error ? e.message : `Failed to ${action}.`);
+    } finally {
+      setActioning(false);
+    }
+  };
 
   const destroyCharts = () => {
     Object.values(chartsRef.current).forEach(c => c.destroy());
@@ -642,6 +760,268 @@ export default function RunDetailPage() {
                 )}
               </div>
             )}
+
+            {/* Execution Settings accordion */}
+            <Card className="mt-4">
+              <button
+                type="button"
+                className="w-full flex items-center justify-between"
+                onClick={() => setShowExec(v => !v)}
+              >
+                <span className="text-sm font-semibold text-text-primary">Execution Settings</span>
+                <FontAwesomeIcon
+                  icon={showExec ? faChevronUp : faChevronDown}
+                  className="w-3.5 h-3.5 text-text-muted"
+                />
+              </button>
+
+              {showExec && (
+                <div className="mt-5 space-y-6">
+
+                  {/* ── Date range ───────────────────────────────────────────── */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <TextInput
+                      label="Data From"
+                      type="date"
+                      value={execForm.dataFrom}
+                      onChange={v => setExecForm(f => ({ ...f, dataFrom: v }))}
+                    />
+                    <TextInput
+                      label="Data To"
+                      type="date"
+                      value={execForm.dataTo}
+                      onChange={v => setExecForm(f => ({ ...f, dataTo: v }))}
+                    />
+                  </div>
+
+                  {/* ── Strategies ───────────────────────────────────────────── */}
+                  <div>
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                      Strategies
+                    </p>
+                    <div className="grid grid-cols-3 gap-2">
+                      {EXEC_STRATEGY_OPTIONS.map(s => {
+                        const active = execForm.allowedStrategies.includes(s.value);
+                        return (
+                          <button
+                            key={s.value}
+                            type="button"
+                            onClick={() => toggleExecStrategy(s.value)}
+                            className={`text-left px-3 py-2.5 rounded-lg border-2 transition-colors ${
+                              active
+                                ? 'border-brand bg-brand/5 text-brand'
+                                : 'border-input-border text-text-secondary hover:border-brand/50'
+                            }`}
+                          >
+                            <div className="text-sm font-medium">{s.label}</div>
+                            <div className="text-xs text-text-muted mt-0.5">{s.desc}</div>
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+
+                  {/* ── Risk & aggression ────────────────────────────────────── */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SliderInput
+                      label="Max Drawdown Limit"
+                      value={execForm.maxDrawdownLimit * 100}
+                      onChange={v => setExecForm(f => ({ ...f, maxDrawdownLimit: v / 100 }))}
+                      min={5} max={50} step={5}
+                      formatValue={v => `${v.toFixed(0)}%`}
+                      minLabel="5% (tight)" maxLabel="50% (loose)"
+                      hint="Stop trading when peak-to-trough equity loss exceeds this."
+                    />
+                    <SliderInput
+                      label="Aggression Level"
+                      value={execForm.aggressionLevel * 100}
+                      onChange={v => setExecForm(f => ({ ...f, aggressionLevel: v / 100 }))}
+                      min={0} max={100} step={10}
+                      formatValue={v => aggressionLabel(v / 100)}
+                      minLabel="Passive" maxLabel="Aggressive"
+                      hint="Scales position size 30%–100% of configured max."
+                    />
+                  </div>
+
+                  {/* ── Position sizing ──────────────────────────────────────── */}
+                  <div>
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                      Position Sizing
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <SliderInput
+                        label="Position Size %"
+                        value={execForm.positionSizePct * 100}
+                        onChange={v => setExecForm(f => ({ ...f, positionSizePct: v / 100 }))}
+                        min={5} max={100} step={5}
+                        formatValue={v => `${v.toFixed(0)}%`}
+                        minLabel="5%" maxLabel="100%"
+                        hint="Fraction of margin allocated per leg."
+                      />
+                      <TextInput
+                        label="Max Position BTC"
+                        placeholder="5.0"
+                        value={String(execForm.maxPositionBtc)}
+                        onChange={v => setExecForm(f => ({ ...f, maxPositionBtc: parseFloat(v) || f.maxPositionBtc }))}
+                      />
+                      <TextInput
+                        label="Min Order Size BTC"
+                        placeholder="0.1"
+                        value={String(execForm.minOrderSize)}
+                        onChange={v => setExecForm(f => ({ ...f, minOrderSize: parseFloat(v) || f.minOrderSize }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* ── Options structure ────────────────────────────────────── */}
+                  <div>
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                      Options Structure
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <div>
+                        <p className="text-xs text-text-muted mb-2">Expiry (DTE)</p>
+                        <div className="flex gap-2">
+                          {[7, 14, 21, 30].map(d => (
+                            <button
+                              key={d}
+                              type="button"
+                              onClick={() => setExecForm(f => ({ ...f, expiryDays: d }))}
+                              className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
+                                execForm.expiryDays === d
+                                  ? 'border-brand bg-brand/5 text-brand'
+                                  : 'border-input-border text-text-secondary hover:border-brand/50'
+                              }`}
+                            >
+                              {d}d
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                      <SliderInput
+                        label="Max Margin Ratio"
+                        value={execForm.maxMarginRatio * 100}
+                        onChange={v => setExecForm(f => ({ ...f, maxMarginRatio: v / 100 }))}
+                        min={50} max={95} step={5}
+                        formatValue={v => `${v.toFixed(0)}%`}
+                        minLabel="50%" maxLabel="95%"
+                        hint="Max portfolio margin utilization before blocking new trades."
+                      />
+                    </div>
+                  </div>
+
+                  {/* ── Delta management ─────────────────────────────────────── */}
+                  <div>
+                    <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                      Delta Management
+                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                      <SliderInput
+                        label="Delta Threshold"
+                        value={execForm.deltaThreshold * 100}
+                        onChange={v => setExecForm(f => ({ ...f, deltaThreshold: v / 100 }))}
+                        min={10} max={80} step={5}
+                        formatValue={v => `${v.toFixed(0)}%`}
+                        minLabel="10% (strict)" maxLabel="80% (loose)"
+                        hint="Net delta overshoot allowed before penalty kicks in."
+                      />
+                      <TextInput
+                        label="Delta Penalty Coef"
+                        placeholder="0.002"
+                        value={String(execForm.deltaPenaltyCoef)}
+                        onChange={v => setExecForm(f => ({ ...f, deltaPenaltyCoef: parseFloat(v) || f.deltaPenaltyCoef }))}
+                      />
+                    </div>
+                  </div>
+
+                  {/* ── Advanced (collapsible) ───────────────────────────────── */}
+                  <div>
+                    <button
+                      type="button"
+                      className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors"
+                      onClick={() => setShowAdvanced(v => !v)}
+                    >
+                      <FontAwesomeIcon icon={showAdvanced ? faChevronUp : faChevronDown} className="w-3 h-3" />
+                      Advanced
+                    </button>
+                    {showAdvanced && (
+                      <div className="mt-3 grid grid-cols-1 md:grid-cols-2 gap-4 pl-1">
+                        <TextInput
+                          label="Risk Free Rate"
+                          placeholder="0.05"
+                          value={String(execForm.riskFreeRate)}
+                          onChange={v => setExecForm(f => ({ ...f, riskFreeRate: parseFloat(v) || f.riskFreeRate }))}
+                        />
+                        <div>
+                          <p className="text-xs text-text-muted mb-2">Fast Margin</p>
+                          <button
+                            type="button"
+                            onClick={() => setExecForm(f => ({ ...f, fastMargin: !f.fastMargin }))}
+                            className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
+                              execForm.fastMargin ? 'bg-brand' : 'bg-input-border'
+                            }`}
+                          >
+                            <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
+                              execForm.fastMargin ? 'translate-x-6' : 'translate-x-1'
+                            }`} />
+                          </button>
+                          <p className="text-xs text-text-muted mt-1">
+                            Skip IV shocks in margin calc — faster, less precise.
+                          </p>
+                        </div>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* ── Action buttons ───────────────────────────────────────── */}
+                  <div className="flex gap-3 flex-wrap pt-1 border-t border-surface">
+                    <button
+                      type="button"
+                      disabled={executing}
+                      onClick={executeRun}
+                      className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
+                    >
+                      <FontAwesomeIcon icon={faPlay} className="w-3 h-3" />
+                      {executing ? 'Queuing…' : 'Execute'}
+                    </button>
+                    {runData.status === 'ACTIVE' && (
+                      <button
+                        type="button"
+                        disabled={actioning}
+                        onClick={() => runControl('pause')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-yellow-400/50 text-yellow-400 hover:bg-yellow-400/10 disabled:opacity-50 transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faPause} className="w-3 h-3" />
+                        Pause
+                      </button>
+                    )}
+                    {runData.status === 'PAUSED' && (
+                      <button
+                        type="button"
+                        disabled={actioning}
+                        onClick={() => runControl('resume')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-success/50 text-success hover:bg-success/10 disabled:opacity-50 transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faPlay} className="w-3 h-3" />
+                        Resume
+                      </button>
+                    )}
+                    {(runData.status === 'ACTIVE' || runData.status === 'PAUSED') && (
+                      <button
+                        type="button"
+                        disabled={actioning}
+                        onClick={() => runControl('stop')}
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-lg text-sm font-medium border border-error/50 text-error hover:bg-error/10 disabled:opacity-50 transition-colors"
+                      >
+                        <FontAwesomeIcon icon={faStop} className="w-3 h-3" />
+                        Stop
+                      </button>
+                    )}
+                  </div>
+
+                </div>
+              )}
+            </Card>
 
             {/* Stat cards */}
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mt-5">
