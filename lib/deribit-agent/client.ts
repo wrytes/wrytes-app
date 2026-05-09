@@ -104,6 +104,8 @@ export interface AgentRun {
   runType: RunType;
   deribitAccountId?: string;
   initialCapitalBtc: number;
+  currentCapitalBtc?: number;
+  realizedPnlBtc?: number;
   notes?: string;
   sessionId?: string;
   createdAt: string;
@@ -121,6 +123,7 @@ export interface AgentAction {
   delta?: number;
   ivRank?: number;
   pnlBtc?: number;
+  marginBalanceBtc?: number;
   reason?: string;
 }
 
@@ -136,6 +139,11 @@ export interface TrainingSession {
   resolution: string;
   createdAt: string;
   updatedAt: string;
+  model?: { id: string; name: string } | null;
+  hyperparams?: {
+    env?: Record<string, unknown>;
+    training?: Record<string, unknown>;
+  };
 }
 
 export interface TrainedModel {

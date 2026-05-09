@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faPlus, faBan, faTrash } from '@fortawesome/free-solid-svg-icons';
+import { faBrain, faPlus, faBan, faTrash, faPlay } from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -14,9 +14,14 @@ import TableHeadSearchable from '@/components/ui/Table/TableHeadSearchable';
 import TableBody from '@/components/ui/Table/TableBody';
 import TableRow from '@/components/ui/Table/TableRow';
 import TableRowEmpty from '@/components/ui/Table/TableRowEmpty';
+import { CellEditable } from '@/components/ui/CellEditable';
 import {
-  useDeribitFetch, agentFetch,
-  type TrainingSession, type TrainedModel, type CreateSessionBody, type RiskProfile,
+  useDeribitFetch,
+  agentFetch,
+  type TrainingSession,
+  type TrainedModel,
+  type CreateSessionBody,
+  type RiskProfile,
 } from '@/lib/deribit-agent/client';
 import { SESSION_STATUS_BADGE, fmt, fmtDate } from '@/lib/deribit-agent/ui';
 
@@ -32,20 +37,36 @@ const ALGORITHM_OPTIONS = [
 ];
 
 const STRATEGY_OPTIONS = [
-  { value: 'STRANGLE',        label: 'Strangle',         desc: 'Sell OTM call + put simultaneously' },
-  { value: 'STRADDLE',        label: 'Straddle',         desc: 'Sell ATM call + put' },
-  { value: 'DELTA_NEUTRAL',   label: 'Delta Neutral',    desc: 'Hedge to near-zero net delta' },
-  { value: 'COVERED_CALL',    label: 'Covered Call',     desc: 'Sell calls against a long position' },
-  { value: 'CASH_SECURED_PUT',label: 'Cash-Secured Put', desc: 'Sell puts with full margin reserved' },
-  { value: 'IRON_CONDOR',     label: 'Iron Condor',      desc: 'Sell OTM strangle, buy further OTM wings' },
+  { value: 'STRANGLE', label: 'Strangle', desc: 'Sell OTM call + put simultaneously' },
+  { value: 'STRADDLE', label: 'Straddle', desc: 'Sell ATM call + put' },
+  { value: 'DELTA_NEUTRAL', label: 'Delta Neutral', desc: 'Hedge to near-zero net delta' },
+  { value: 'COVERED_CALL', label: 'Covered Call', desc: 'Sell calls against a long position' },
+  {
+    value: 'CASH_SECURED_PUT',
+    label: 'Cash-Secured Put',
+    desc: 'Sell puts with full margin reserved',
+  },
+  { value: 'IRON_CONDOR', label: 'Iron Condor', desc: 'Sell OTM strangle, buy further OTM wings' },
 ];
 
-const SESSION_STATUSES   = ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'];
-const SESSION_HEADERS    = ['Name', 'Currency', 'Algorithm', 'Status', 'Created'];
-const MODEL_HEADERS      = ['Name', 'Algorithm', 'Sharpe', 'Max DD', 'Win Rate', 'Mean Reward', 'Size', 'Created'];
+const SESSION_STATUSES = ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'];
+const SESSION_HEADERS = ['Name', 'Currency', 'Algorithm', 'Status', 'Created'];
+const MODEL_HEADERS = [
+  'Name',
+  'Algorithm',
+  'Sharpe',
+  'Max DD',
+  'Win Rate',
+  'Mean Reward',
+  'Size',
+  'Created',
+];
 const MODEL_STORAGE_TYPES = ['local', 's3'];
 
-const BLANK_SESSION: CreateSessionBody & { allowedStrategies: string[]; riskProfile: Required<RiskProfile> } = {
+const BLANK_SESSION: CreateSessionBody & {
+  allowedStrategies: string[];
+  riskProfile: Required<RiskProfile>;
+} = {
   name: '',
   description: '',
   currency: 'BTC',
@@ -54,7 +75,7 @@ const BLANK_SESSION: CreateSessionBody & { allowedStrategies: string[]; riskProf
   resolution: '1D',
   algorithm: 'PPO',
   allowedStrategies: ['STRANGLE', 'DELTA_NEUTRAL'],
-  riskProfile: { maxDrawdown: 0.20, aggressionLevel: 0.5 },
+  riskProfile: { maxDrawdown: 0.2, aggressionLevel: 0.5 },
 };
 
 function aggressionLabel(level: number): string {
@@ -63,6 +84,12 @@ function aggressionLabel(level: number): string {
   if (level <= 0.6) return 'Balanced';
   if (level <= 0.8) return 'Aggressive';
   return 'Very Aggressive';
+}
+
+// If model.name is still the trainer's auto-generated filename (e.g. cmowte83_ppo),
+// show the session name as the human-readable fallback.
+function resolveModelName(m: TrainedModel): string {
+  return /_(ppo|dqn|a2c)$/i.test(m.name) ? (m.session?.name ?? m.name) : m.name;
 }
 
 function fmtSize(bytes?: number): string {
@@ -77,6 +104,7 @@ export default function ModelsPage() {
   const [submitting, setSubmitting] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [pushingBacktest, setPushingBacktest] = useState<string | null>(null);
 
   // Session table controls
   const [sessionSearch, setSessionSearch] = useState('');
@@ -91,7 +119,7 @@ export default function ModelsPage() {
   const [modelSortReverse, setModelSortReverse] = useState(true);
 
   const sessions = useDeribitFetch<TrainingSession[]>('/training/sessions');
-  const models   = useDeribitFetch<TrainedModel[]>('/training/models');
+  const models = useDeribitFetch<TrainedModel[]>('/training/models');
 
   // ── Session filtering / sorting ─────────────────────────────────────────────
 
@@ -99,10 +127,11 @@ export default function ModelsPage() {
     let data = sessions.data ?? [];
     if (sessionSearch) {
       const q = sessionSearch.toLowerCase();
-      data = data.filter(s =>
-        s.name.toLowerCase().includes(q) ||
-        s.description?.toLowerCase().includes(q) ||
-        s.algorithm.toLowerCase().includes(q)
+      data = data.filter(
+        s =>
+          s.name.toLowerCase().includes(q) ||
+          s.description?.toLowerCase().includes(q) ||
+          s.algorithm.toLowerCase().includes(q)
       );
     }
     if (activeStatuses.length) {
@@ -111,11 +140,24 @@ export default function ModelsPage() {
     return [...data].sort((a, b) => {
       let cmp = 0;
       switch (sessionSortCol) {
-        case 'Name':      cmp = a.name.localeCompare(b.name); break;
-        case 'Currency':  cmp = a.currency.localeCompare(b.currency); break;
-        case 'Algorithm': cmp = a.algorithm.localeCompare(b.algorithm); break;
-        case 'Status':    cmp = a.status.localeCompare(b.status); break;
-        case 'Created':   cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
+        case 'Name':
+          cmp = a.name.localeCompare(b.name);
+          break;
+        case 'Model Name':
+          cmp = (a.model?.name ?? '').localeCompare(b.model?.name ?? '');
+          break;
+        case 'Currency':
+          cmp = a.currency.localeCompare(b.currency);
+          break;
+        case 'Algorithm':
+          cmp = a.algorithm.localeCompare(b.algorithm);
+          break;
+        case 'Status':
+          cmp = a.status.localeCompare(b.status);
+          break;
+        case 'Created':
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
       }
       return sessionSortReverse ? -cmp : cmp;
     });
@@ -123,7 +165,10 @@ export default function ModelsPage() {
 
   const handleSessionSort = (col: string) => {
     if (sessionSortCol === col) setSessionSortReverse(r => !r);
-    else { setSessionSortCol(col); setSessionSortReverse(false); }
+    else {
+      setSessionSortCol(col);
+      setSessionSortReverse(false);
+    }
   };
 
   // ── Model filtering / sorting ────────────────────────────────────────────────
@@ -132,10 +177,11 @@ export default function ModelsPage() {
     let data = models.data ?? [];
     if (modelSearch) {
       const q = modelSearch.toLowerCase();
-      data = data.filter(m =>
-        m.name.toLowerCase().includes(q) ||
-        m.session?.name.toLowerCase().includes(q) ||
-        m.session?.algorithm.toLowerCase().includes(q)
+      data = data.filter(
+        m =>
+          m.name.toLowerCase().includes(q) ||
+          m.session?.name.toLowerCase().includes(q) ||
+          m.session?.algorithm.toLowerCase().includes(q)
       );
     }
     if (activeStorageTypes.length) {
@@ -144,14 +190,30 @@ export default function ModelsPage() {
     return [...data].sort((a, b) => {
       let cmp = 0;
       switch (modelSortCol) {
-        case 'Name':        cmp = a.name.localeCompare(b.name); break;
-        case 'Algorithm':   cmp = (a.session?.algorithm ?? '').localeCompare(b.session?.algorithm ?? ''); break;
-        case 'Sharpe':      cmp = (a.sharpeRatio ?? -Infinity) - (b.sharpeRatio ?? -Infinity); break;
-        case 'Max DD':      cmp = (a.maxDrawdown ?? -Infinity) - (b.maxDrawdown ?? -Infinity); break;
-        case 'Win Rate':    cmp = (a.winRate ?? -Infinity) - (b.winRate ?? -Infinity); break;
-        case 'Mean Reward': cmp = (a.meanReward ?? -Infinity) - (b.meanReward ?? -Infinity); break;
-        case 'Size':        cmp = (a.sizeBytes ?? 0) - (b.sizeBytes ?? 0); break;
-        case 'Created':     cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime(); break;
+        case 'Name':
+          cmp = a.name.localeCompare(b.name);
+          break;
+        case 'Algorithm':
+          cmp = (a.session?.algorithm ?? '').localeCompare(b.session?.algorithm ?? '');
+          break;
+        case 'Sharpe':
+          cmp = (a.sharpeRatio ?? -Infinity) - (b.sharpeRatio ?? -Infinity);
+          break;
+        case 'Max DD':
+          cmp = (a.maxDrawdown ?? -Infinity) - (b.maxDrawdown ?? -Infinity);
+          break;
+        case 'Win Rate':
+          cmp = (a.winRate ?? -Infinity) - (b.winRate ?? -Infinity);
+          break;
+        case 'Mean Reward':
+          cmp = (a.meanReward ?? -Infinity) - (b.meanReward ?? -Infinity);
+          break;
+        case 'Size':
+          cmp = (a.sizeBytes ?? 0) - (b.sizeBytes ?? 0);
+          break;
+        case 'Created':
+          cmp = new Date(a.createdAt).getTime() - new Date(b.createdAt).getTime();
+          break;
       }
       return modelSortReverse ? -cmp : cmp;
     });
@@ -159,13 +221,15 @@ export default function ModelsPage() {
 
   const handleModelSort = (col: string) => {
     if (modelSortCol === col) setModelSortReverse(r => !r);
-    else { setModelSortCol(col); setModelSortReverse(false); }
+    else {
+      setModelSortCol(col);
+      setModelSortReverse(false);
+    }
   };
 
   // ── Actions ──────────────────────────────────────────────────────────────────
 
-  const patchForm = (k: keyof typeof form, v: unknown) =>
-    setForm(f => ({ ...f, [k]: v }));
+  const patchForm = (k: keyof typeof form, v: unknown) => setForm(f => ({ ...f, [k]: v }));
 
   const toggleStrategy = (strategy: string) => {
     setForm(f => ({
@@ -226,7 +290,12 @@ export default function ModelsPage() {
   };
 
   const deleteSession = async (id: string) => {
-    if (!confirm('Hard-delete this session? This also removes its model and all associated agent runs.')) return;
+    if (
+      !confirm(
+        'Hard-delete this session? This also removes its model and all associated agent runs.'
+      )
+    )
+      return;
     setDeleting(id);
     try {
       await agentFetch(`/training/sessions/${id}`, { method: 'DELETE' });
@@ -237,6 +306,44 @@ export default function ModelsPage() {
       toast.error(e instanceof Error ? e.message : 'Failed to delete session.');
     } finally {
       setDeleting(null);
+    }
+  };
+
+  const renameSession = async (id: string, name: string) => {
+    await agentFetch(`/training/sessions/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+    sessions.refetch();
+  };
+
+  const renameModel = async (id: string, name: string) => {
+    await agentFetch(`/training/models/${id}`, {
+      method: 'PATCH',
+      body: JSON.stringify({ name }),
+    });
+    models.refetch();
+    sessions.refetch();
+  };
+
+  const pushToBacktest = async (m: TrainedModel) => {
+    setPushingBacktest(m.id);
+    try {
+      await agentFetch('/agent/runs', {
+        method: 'POST',
+        body: JSON.stringify({
+          sessionId: m.sessionId,
+          name: `${m.name} — backtest`,
+          currency: m.session?.currency ?? 'BTC',
+          runType: 'BACKTEST',
+          initialCapitalBtc: 1,
+        }),
+      });
+      toast.success('Backtest queued — check the Agents page.');
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : 'Failed to queue backtest.');
+    } finally {
+      setPushingBacktest(null);
     }
   };
 
@@ -271,16 +378,48 @@ export default function ModelsPage() {
             <p className="text-sm font-semibold text-text-primary mb-4">Create Training Model</p>
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <TextInput label="Name" placeholder="btc-ppo-v1" value={form.name} onChange={v => patchForm('name', v)} />
-              <TextInput label="Description (optional)" placeholder="Short description" value={form.description ?? ''} onChange={v => patchForm('description', v)} />
-              <SelectInput label="Currency" options={CURRENCY_OPTIONS} value={form.currency} onChange={v => patchForm('currency', v)} />
-              <SelectInput label="Algorithm" options={ALGORITHM_OPTIONS} value={form.algorithm ?? 'PPO'} onChange={v => patchForm('algorithm', v)} />
-              <TextInput label="Data From" type="date" value={form.dataFrom} onChange={v => patchForm('dataFrom', v)} />
-              <TextInput label="Data To" type="date" value={form.dataTo} onChange={v => patchForm('dataTo', v)} />
+              <TextInput
+                label="Name"
+                placeholder="btc-ppo-v1"
+                value={form.name}
+                onChange={v => patchForm('name', v)}
+              />
+              <TextInput
+                label="Description (optional)"
+                placeholder="Short description"
+                value={form.description ?? ''}
+                onChange={v => patchForm('description', v)}
+              />
+              <SelectInput
+                label="Currency"
+                options={CURRENCY_OPTIONS}
+                value={form.currency}
+                onChange={v => patchForm('currency', v)}
+              />
+              <SelectInput
+                label="Algorithm"
+                options={ALGORITHM_OPTIONS}
+                value={form.algorithm ?? 'PPO'}
+                onChange={v => patchForm('algorithm', v)}
+              />
+              <TextInput
+                label="Data From"
+                type="date"
+                value={form.dataFrom}
+                onChange={v => patchForm('dataFrom', v)}
+              />
+              <TextInput
+                label="Data To"
+                type="date"
+                value={form.dataTo}
+                onChange={v => patchForm('dataTo', v)}
+              />
             </div>
 
             <div className="mt-5">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Allowed Strategies</p>
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                Allowed Strategies
+              </p>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
                 {STRATEGY_OPTIONS.map(s => {
                   const checked = form.allowedStrategies.includes(s.value);
@@ -290,7 +429,9 @@ export default function ModelsPage() {
                       type="button"
                       onClick={() => toggleStrategy(s.value)}
                       className={`text-left px-3 py-2.5 rounded-lg border-2 transition-colors ${
-                        checked ? 'border-brand bg-brand/5 text-brand' : 'border-input-border text-text-secondary hover:border-brand/50'
+                        checked
+                          ? 'border-brand bg-brand/5 text-brand'
+                          : 'border-input-border text-text-secondary hover:border-brand/50'
                       }`}
                     >
                       <div className="text-sm font-medium">{s.label}</div>
@@ -302,13 +443,22 @@ export default function ModelsPage() {
             </div>
 
             <div className="mt-5">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">Risk Profile</p>
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                Risk Profile
+              </p>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <SliderInput
                   label="Max Drawdown"
                   value={form.riskProfile.maxDrawdown * 100}
-                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 } }))}
-                  min={5} max={50} step={5}
+                  onChange={v =>
+                    setForm(f => ({
+                      ...f,
+                      riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 },
+                    }))
+                  }
+                  min={5}
+                  max={50}
+                  step={5}
                   formatValue={v => `${v.toFixed(0)}%`}
                   minLabel="5% (tight)"
                   maxLabel="50% (loose)"
@@ -317,8 +467,15 @@ export default function ModelsPage() {
                 <SliderInput
                   label="Aggression Level"
                   value={form.riskProfile.aggressionLevel * 100}
-                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 } }))}
-                  min={0} max={100} step={10}
+                  onChange={v =>
+                    setForm(f => ({
+                      ...f,
+                      riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 },
+                    }))
+                  }
+                  min={0}
+                  max={100}
+                  step={10}
                   formatValue={v => aggressionLabel(v / 100)}
                   minLabel="Passive"
                   maxLabel="Aggressive"
@@ -328,12 +485,19 @@ export default function ModelsPage() {
             </div>
 
             <div className="flex gap-3 mt-5">
-              <button type="button" onClick={createSession} disabled={submitting}
-                className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors">
+              <button
+                type="button"
+                onClick={createSession}
+                disabled={submitting}
+                className="bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 disabled:opacity-50 transition-colors"
+              >
                 {submitting ? 'Queueing…' : 'Start Training'}
               </button>
-              <button type="button" onClick={() => setShowCreate(false)}
-                className="px-4 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary transition-colors">
+              <button
+                type="button"
+                onClick={() => setShowCreate(false)}
+                className="px-4 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary transition-colors"
+              >
                 Cancel
               </button>
             </div>
@@ -348,7 +512,9 @@ export default function ModelsPage() {
 
           {sessions.loading ? (
             <div className="space-y-2">
-              {[1, 2, 3].map(i => <div key={i} className="h-14 bg-card rounded-lg animate-pulse" />)}
+              {[1, 2, 3].map(i => (
+                <div key={i} className="h-14 bg-card rounded-lg animate-pulse" />
+              ))}
             </div>
           ) : sessions.error ? (
             <AgentError message={sessions.error} onRetry={sessions.refetch} />
@@ -381,7 +547,7 @@ export default function ModelsPage() {
                     {sessions.data?.length ? 'No sessions match your filters.' : 'No sessions yet.'}
                   </TableRowEmpty>
                 ) : (
-                  visibleSessions.map(s => (
+                  (visibleSessions.map(s => (
                     <TableRow
                       key={s.id}
                       colSpan={SESSION_HEADERS.length}
@@ -390,35 +556,47 @@ export default function ModelsPage() {
                       actionCol={
                         <div className="flex items-center justify-end gap-1">
                           {(s.status === 'QUEUED' || s.status === 'RUNNING') && (
-                            <button type="button" disabled={cancelling === s.id} onClick={() => cancelSession(s.id)}
+                            <button
+                              type="button"
+                              disabled={cancelling === s.id}
+                              onClick={() => cancelSession(s.id)}
                               title="Cancel"
-                              className="p-1.5 rounded text-yellow-400 hover:bg-yellow-400/20 transition-colors disabled:opacity-50">
+                              className="p-1.5 rounded text-yellow-400 hover:bg-yellow-400/20 transition-colors disabled:opacity-50"
+                            >
                               <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
                             </button>
                           )}
-                          <button type="button" disabled={deleting === s.id} onClick={() => deleteSession(s.id)}
+                          <button
+                            type="button"
+                            disabled={deleting === s.id}
+                            onClick={() => deleteSession(s.id)}
                             title="Hard delete"
-                            className="p-1.5 rounded text-error hover:bg-error/20 transition-colors disabled:opacity-50">
+                            className="p-1.5 rounded text-error hover:bg-error/20 transition-colors disabled:opacity-50"
+                          >
                             <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
                           </button>
                         </div>
                       }
                     >
                       <div className="text-left">
-                        <div className="font-medium text-text-primary">{s.name}</div>
-                        {s.description && <div className="text-text-muted text-xs">{s.description}</div>}
+                        <CellEditable value={s.name} onSave={v => renameSession(s.id, v)} />
+                        {s.description && (
+                          <div className="text-text-muted text-xs mt-0.5">{s.description}</div>
+                        )}
                       </div>
                       <span>{s.currency}</span>
                       <span>{s.algorithm}</span>
                       <span>
-                        <Badge text={s.status} variant="custom"
+                        <Badge
+                          text={s.status}
+                          variant="custom"
                           customColor={SESSION_STATUS_BADGE[s.status].color}
                           customBgColor={SESSION_STATUS_BADGE[s.status].bg}
                         />
                       </span>
                       <span className="text-text-muted">{fmtDate(s.createdAt)}</span>
                     </TableRow>
-                  )) as any
+                  )) as any)
                 )}
               </TableBody>
             </div>
@@ -433,7 +611,9 @@ export default function ModelsPage() {
 
           {models.loading ? (
             <div className="space-y-2">
-              {[1, 2].map(i => <div key={i} className="h-14 bg-card rounded-lg animate-pulse" />)}
+              {[1, 2].map(i => (
+                <div key={i} className="h-14 bg-card rounded-lg animate-pulse" />
+              ))}
             </div>
           ) : models.error ? (
             <AgentError message={models.error} onRetry={models.refetch} />
@@ -458,34 +638,73 @@ export default function ModelsPage() {
                 tab={modelSortCol}
                 reverse={modelSortReverse}
                 tabOnChange={handleModelSort}
+                actionCol
               />
               <TableBody>
                 {visibleModels.length === 0 ? (
                   <TableRowEmpty>
-                    {models.data?.length ? 'No models match your filters.' : 'No trained models yet.'}
+                    {models.data?.length
+                      ? 'No models match your filters.'
+                      : 'No trained models yet.'}
                   </TableRowEmpty>
                 ) : (
-                  visibleModels.map(m => (
+                  (visibleModels.map(m => (
                     <TableRow
                       key={m.id}
                       colSpan={MODEL_HEADERS.length}
                       headers={MODEL_HEADERS}
                       tab={modelSortCol}
+                      actionCol={
+                        <div className="flex items-center justify-end">
+                          <button
+                            type="button"
+                            disabled={pushingBacktest === m.id}
+                            onClick={() => pushToBacktest(m)}
+                            title="Push to backtest"
+                            className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded text-xs font-medium text-brand border border-brand/30 hover:bg-brand/10 transition-colors disabled:opacity-50"
+                          >
+                            <FontAwesomeIcon icon={faPlay} className="w-2.5 h-2.5" />
+                            {pushingBacktest === m.id ? 'Queuing…' : 'Backtest'}
+                          </button>
+                        </div>
+                      }
                     >
                       <div className="text-left">
-                        <div className="font-medium text-text-primary">{m.name}</div>
-                        <div className="text-text-muted text-xs font-mono truncate max-w-[16rem]" title={m.storagePath}>
+                        <CellEditable
+                          value={resolveModelName(m)}
+                          onSave={v => renameModel(m.id, v)}
+                        />
+                        <div
+                          className="text-text-muted text-xs font-mono truncate max-w-[16rem]"
+                          title={m.storagePath}
+                        >
                           {m.storagePath}
                         </div>
                       </div>
                       <span className="text-text-secondary">{m.session?.algorithm ?? '—'}</span>
-                      <span className={m.sharpeRatio !== undefined ? (m.sharpeRatio >= 1 ? 'text-success font-mono' : 'text-text-primary font-mono') : 'text-text-muted'}>
+                      <span
+                        className={
+                          m.sharpeRatio !== undefined
+                            ? m.sharpeRatio >= 1
+                              ? 'text-success font-mono'
+                              : 'text-text-primary font-mono'
+                            : 'text-text-muted'
+                        }
+                      >
                         {m.sharpeRatio !== undefined ? fmt(m.sharpeRatio, 2) : '—'}
                       </span>
                       <span className="font-mono text-text-primary">
                         {m.maxDrawdown !== undefined ? `${fmt(m.maxDrawdown, 1)}%` : '—'}
                       </span>
-                      <span className={m.winRate !== undefined ? (m.winRate >= 0.5 ? 'text-success font-mono' : 'text-text-primary font-mono') : 'text-text-muted'}>
+                      <span
+                        className={
+                          m.winRate !== undefined
+                            ? m.winRate >= 0.5
+                              ? 'text-success font-mono'
+                              : 'text-text-primary font-mono'
+                            : 'text-text-muted'
+                        }
+                      >
                         {m.winRate !== undefined ? `${fmt(m.winRate * 100, 1)}%` : '—'}
                       </span>
                       <span className="font-mono text-text-primary">
@@ -494,7 +713,7 @@ export default function ModelsPage() {
                       <span className="text-text-secondary">{fmtSize(m.sizeBytes)}</span>
                       <span className="text-text-muted">{fmtDate(m.createdAt)}</span>
                     </TableRow>
-                  )) as any
+                  )) as any)
                 )}
               </TableBody>
             </div>

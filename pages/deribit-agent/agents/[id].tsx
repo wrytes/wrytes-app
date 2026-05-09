@@ -511,12 +511,47 @@ export default function RunDetailPage() {
     typeSummary[a.actionType].total += Number(a.pnlBtc) || 0;
   });
 
-  // cumulative pnl for the log table
+  // cumulative pnl + running open-position state for the log table
   const actionLog = (() => {
     let c = 0;
+    let openPut: string | null = null;
+    let openCall: string | null = null;
+    let openPutSize: number | null = null;
+    let openCallSize: number | null = null;
+    let openPutStrike: number | null = null;
+    let openCallStrike: number | null = null;
+
     return actions.map(a => {
       c += Number(a.pnlBtc) || 0;
-      return { ...a, cumPnl: c, equity: initCap + c };
+      const legs = parseLegs(a.instrument);
+      const qty = a.quantity != null ? Number(a.quantity) : null;
+      const t = a.actionType;
+
+      if (t === 'sell_put') {
+        openPut = legs.putInstrument;
+        openPutStrike = legs.put;
+        openPutSize = -(legs.putSize ?? qty ?? 0);
+      } else if (t === 'sell_call') {
+        openCall = legs.callInstrument;
+        openCallStrike = legs.call;
+        openCallSize = -(legs.callSize ?? qty ?? 0);
+      } else if (t === 'sell_strangle') {
+        openPut = legs.putInstrument;
+        openCall = legs.callInstrument;
+        openPutStrike = legs.put;
+        openCallStrike = legs.call;
+        openPutSize = -(legs.putSize ?? qty ?? 0);
+        openCallSize = -(legs.callSize ?? qty ?? 0);
+      } else if (t === 'close' || t.startsWith('close_')) {
+        openPut = null; openCall = null;
+        openPutSize = null; openCallSize = null;
+        openPutStrike = null; openCallStrike = null;
+      }
+
+      return {
+        ...a, cumPnl: c, equity: initCap + c,
+        openPut, openCall, openPutSize, openCallSize, openPutStrike, openCallStrike,
+      };
     });
   })();
 
@@ -539,12 +574,12 @@ export default function RunDetailPage() {
   return (
     <>
       <Head>
-        <title>Deribit Agent — Run {runId?.slice(0, 8)}</title>
+        <title>Deribit Agent — Agent {runId?.slice(0, 8)}</title>
       </Head>
 
       <Section>
         <PageHeader
-          title={runData?.name ?? 'Agent Run'}
+          title={runData?.name ?? 'Agent'}
           description={
             runData
               ? `${runData.currency} · ${runData.runType ?? 'PAPER'} · ${runData.status}`
@@ -753,6 +788,7 @@ export default function RunDetailPage() {
                           ['Delta', 'text-right'],
                           ['PnL (₿)', 'text-right'],
                           ['Cum PnL (₿)', 'text-right'],
+                          ['Margin Bal (₿)', 'text-right'],
                           ['Equity (₿)', 'text-right'],
                           ['Equity (USD)', 'text-right'],
                         ] as const
@@ -768,7 +804,6 @@ export default function RunDetailPage() {
                   </thead>
                   <tbody>
                     {filteredLog.map((a, i) => {
-                      const legs = parseLegs(a.instrument);
                       const btcP = a.btcPrice != null ? Number(a.btcPrice) : null;
                       const style = ACTION_BADGE[a.actionType] ?? {
                         color: 'text-text-secondary',
@@ -788,12 +823,11 @@ export default function RunDetailPage() {
                             />
                           </td>
                           <td className={`px-3 py-1.5 text-left font-mono ${
-                            legs.putInstrument && btcP && legs.put != null && legs.put > btcP
-                              ? 'text-error'
-                              : 'text-text-primary'
+                            a.openPut && btcP && a.openPutStrike != null && a.openPutStrike > btcP
+                              ? 'text-error' : 'text-text-primary'
                           }`}>
-                            {legs.putInstrument
-                              ? sizedInstrument(legs.putInstrument, legs.putSize ?? a.quantity, a.actionType)
+                            {a.openPut && a.openPutSize != null
+                              ? `${a.openPutSize.toFixed(1)} ${a.openPut}`
                               : '—'}
                           </td>
                           <td className="px-3 py-1.5 text-right text-text-primary font-mono">
@@ -802,12 +836,11 @@ export default function RunDetailPage() {
                               : '—'}
                           </td>
                           <td className={`px-3 py-1.5 text-left font-mono ${
-                            legs.callInstrument && btcP && legs.call != null && legs.call < btcP
-                              ? 'text-error'
-                              : 'text-text-primary'
+                            a.openCall && btcP && a.openCallStrike != null && a.openCallStrike < btcP
+                              ? 'text-error' : 'text-text-primary'
                           }`}>
-                            {legs.callInstrument
-                              ? sizedInstrument(legs.callInstrument, legs.callSize ?? a.quantity, a.actionType)
+                            {a.openCall && a.openCallSize != null
+                              ? `${a.openCallSize.toFixed(1)} ${a.openCall}`
                               : '—'}
                           </td>
                           <td className="px-3 py-1.5 text-right">
@@ -823,6 +856,9 @@ export default function RunDetailPage() {
                           </td>
                           <td className={`px-3 py-1.5 text-right font-mono ${clsColor(a.cumPnl)}`}>
                             {n(a.cumPnl)}
+                          </td>
+                          <td className="px-3 py-1.5 text-right font-mono">
+                            {a.marginBalanceBtc != null ? n(a.marginBalanceBtc, 4) : '—'}
                           </td>
                           <td className="px-3 py-1.5 text-right font-mono">{n(a.equity, 4)}</td>
                           <td className="px-3 py-1.5 text-right">
