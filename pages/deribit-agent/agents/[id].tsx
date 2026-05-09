@@ -219,13 +219,21 @@ export default function RunDetailPage() {
 
   const chartsRef = useRef<Record<string, ChartJS>>({});
   const [chartsReady, setChartsReady] = useState(false);
+  const [yearFilter, setYearFilter] = useState('');
   const [logTypeFilter, setLogTypeFilter] = useState('');
   const [logSearch, setLogSearch] = useState('');
 
   // Execution accordion
   const [showExec, setShowExec] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [execForm, setExecForm] = useState(mkBlankExec);
+  const [execForm, setExecForm] = useState<ReturnType<typeof mkBlankExec>>(() => {
+    if (typeof window === 'undefined') return mkBlankExec();
+    try {
+      const saved = localStorage.getItem('deribit:exec-settings');
+      if (saved) return { ...mkBlankExec(), ...JSON.parse(saved) };
+    } catch {}
+    return mkBlankExec();
+  });
   const [executing, setExecuting] = useState(false);
   const [actioning, setActioning] = useState(false);
 
@@ -302,21 +310,32 @@ export default function RunDetailPage() {
   };
 
   useEffect(() => {
-    if (!run.data || !actionsReq.data) return;
+    try { localStorage.setItem('deribit:exec-settings', JSON.stringify(execForm)); } catch {}
+  }, [execForm]);
 
-    // slight delay so canvas elements are mounted
+  useEffect(() => {
+    if (!run.data || !actionsReq.data) return;
+    const allActions = [...actionsReq.data].reverse();
+    const filtered = yearFilter
+      ? allActions.filter(a => new Date(a.timestamp).getFullYear().toString() === yearFilter)
+      : allActions;
+    const opening = yearFilter
+      ? Number(run.data.initialCapitalBtc) + allActions
+          .filter(a => new Date(a.timestamp).getFullYear() < parseInt(yearFilter))
+          .reduce((s, a) => s + (Number(a.pnlBtc) || 0), 0)
+      : Number(run.data.initialCapitalBtc);
     const t = setTimeout(() => {
       destroyCharts();
-      buildCharts(run.data!, [...actionsReq.data!].reverse());
+      buildCharts(run.data!, filtered, opening);
       setChartsReady(true);
     }, 50);
     return () => clearTimeout(t);
-  }, [run.data, actionsReq.data]);
+  }, [run.data, actionsReq.data, yearFilter]);
 
   useEffect(() => () => destroyCharts(), []);
 
-  function buildCharts(runData: RunDetail, actions: AgentAction[]) {
-    const initCap = Number(runData.initialCapitalBtc);
+  function buildCharts(runData: RunDetail, actions: AgentAction[], openingBalance?: number) {
+    const initCap = openingBalance ?? Number(runData.initialCapitalBtc);
     const labels = actions.map(a => fmtDate(a.timestamp));
 
     let cum = 0;
@@ -610,20 +629,37 @@ export default function RunDetailPage() {
   const actions = actionsReq.data ? [...actionsReq.data].reverse() : [];
   const runData = run.data;
   const initCap = runData ? Number(runData.initialCapitalBtc) : 0;
-  const tradeActions = actions.filter(a => a.actionType !== 'hold');
+
+  // All years available from the full dataset (for tab list)
+  const uniqueYears = Array.from(
+    new Set(actions.map(a => new Date(a.timestamp).getFullYear().toString()))
+  ).sort();
+
+  // Accounting carry-over: opening balance = prior year(s) cumulative equity
+  const openingBalance = yearFilter
+    ? initCap + actions
+        .filter(a => new Date(a.timestamp).getFullYear() < parseInt(yearFilter))
+        .reduce((s, a) => s + (Number(a.pnlBtc) || 0), 0)
+    : initCap;
+
+  // All page content scoped to selected year
+  const yearActions = yearFilter
+    ? actions.filter(a => new Date(a.timestamp).getFullYear().toString() === yearFilter)
+    : actions;
+
+  const tradeActions = yearActions.filter(a => a.actionType !== 'hold');
   const tradePnls = tradeActions.map(a => Number(a.pnlBtc) || 0);
-  // Total P&L includes hold rows — they now carry real unrealized equity changes
-  const totalPnl = actions.reduce((s, a) => s + (Number(a.pnlBtc) || 0), 0);
+  const totalPnl = yearActions.reduce((s, a) => s + (Number(a.pnlBtc) || 0), 0);
   const wins = tradePnls.filter(v => v > 0).length;
   const winRate = tradeActions.length ? (wins / tradeActions.length) * 100 : 0;
   const best = tradePnls.length ? Math.max(...tradePnls) : 0;
   const worst = tradePnls.length ? Math.min(...tradePnls) : 0;
-  const lastBtc = actions.length ? Number(actions[actions.length - 1].btcPrice) || 0 : 0;
-  const finalEq = initCap + totalPnl;
+  const lastBtc = yearActions.length ? Number(yearActions[yearActions.length - 1].btcPrice) || 0 : 0;
+  const finalEq = openingBalance + totalPnl;
 
   // type breakdown
   const typeSummary: Record<string, { count: number; total: number }> = {};
-  actions.forEach(a => {
+  yearActions.forEach(a => {
     if (!typeSummary[a.actionType]) typeSummary[a.actionType] = { count: 0, total: 0 };
     typeSummary[a.actionType].count++;
     typeSummary[a.actionType].total += Number(a.pnlBtc) || 0;
@@ -639,7 +675,7 @@ export default function RunDetailPage() {
     let openPutStrike: number | null = null;
     let openCallStrike: number | null = null;
 
-    return actions.map(a => {
+    return yearActions.map(a => {
       c += Number(a.pnlBtc) || 0;
       const legs = parseLegs(a.instrument);
       const qty = a.quantity != null ? Number(a.quantity) : null;
@@ -667,16 +703,16 @@ export default function RunDetailPage() {
       }
 
       return {
-        ...a, cumPnl: c, equity: initCap + c,
+        ...a, cumPnl: c, equity: openingBalance + c,
         openPut, openCall, openPutSize, openCallSize, openPutStrike, openCallStrike,
       };
     });
   })();
 
-  // unique action types for filter chips (stable order)
-  const uniqueTypes = Array.from(new Set(actions.map(a => a.actionType)));
+  // unique action types within selected year
+  const uniqueTypes = Array.from(new Set(yearActions.map(a => a.actionType)));
 
-  // filtered + reversed log (newest first)
+  // filtered log (newest first) — year already scoped via yearActions
   const filteredLog = [...actionLog].filter(a => {
     if (logTypeFilter && a.actionType !== logTypeFilter) return false;
     if (logSearch) {
@@ -1047,7 +1083,7 @@ export default function RunDetailPage() {
                 },
                 { label: 'Best Trade', value: `${n(best)} ₿`, cls: 'text-success' },
                 { label: 'Worst Trade', value: `${n(worst)} ₿`, cls: 'text-error' },
-                { label: 'Capital', value: `${n(initCap, 4)} ₿`, cls: '' },
+                { label: yearFilter ? 'Begin Equity' : 'Capital', value: `${n(yearFilter ? openingBalance : initCap, 4)} ₿`, cls: '' },
               ].map(s => (
                 <Card key={s.label} className="flex flex-col gap-1">
                   <span className="text-text-muted text-xs uppercase tracking-wide">{s.label}</span>
@@ -1056,6 +1092,26 @@ export default function RunDetailPage() {
                 </Card>
               ))}
             </div>
+
+            {/* Year filter tabs */}
+            {uniqueYears.length > 1 && (
+              <div className="mt-6 flex items-center gap-1 border-b border-surface pb-1">
+                {['All', ...uniqueYears].map(y => (
+                  <button
+                    key={y}
+                    type="button"
+                    onClick={() => setYearFilter(y === 'All' ? '' : y)}
+                    className={`px-3 py-1.5 rounded-t text-xs font-semibold transition-colors ${
+                      (y === 'All' ? !yearFilter : yearFilter === y)
+                        ? 'text-brand border-b-2 border-brand -mb-px'
+                        : 'text-text-muted hover:text-text-primary'
+                    }`}
+                  >
+                    {y}
+                  </button>
+                ))}
+              </div>
+            )}
 
             {/* Primary charts */}
             <div className="mt-6 space-y-4">
