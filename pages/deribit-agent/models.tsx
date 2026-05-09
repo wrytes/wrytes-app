@@ -37,22 +37,21 @@ const ALGORITHM_OPTIONS = [
 ];
 
 const STRATEGY_OPTIONS = [
-  { value: 'STRANGLE', label: 'Strangle', desc: 'Sell OTM call + put simultaneously' },
-  { value: 'STRADDLE', label: 'Straddle', desc: 'Sell ATM call + put' },
-  { value: 'DELTA_NEUTRAL', label: 'Delta Neutral', desc: 'Hedge to near-zero net delta' },
-  { value: 'COVERED_CALL', label: 'Covered Call', desc: 'Sell calls against a long position' },
+  { value: 'short_call', label: 'Short Call', desc: 'Sell calls at any delta (Δ20–Δ80)' },
+  { value: 'short_put', label: 'Short Put', desc: 'Sell puts at any delta (Δ10–Δ50)' },
   {
-    value: 'CASH_SECURED_PUT',
-    label: 'Cash-Secured Put',
-    desc: 'Sell puts with full margin reserved',
+    value: 'delta_neutral',
+    label: 'Delta Neutral',
+    desc: 'Balanced call + put positioning, including one-action strangles',
   },
-  { value: 'IRON_CONDOR', label: 'Iron Condor', desc: 'Sell OTM strangle, buy further OTM wings' },
 ];
 
 const SESSION_STATUSES = ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'];
 const SESSION_HEADERS = ['Name', 'Currency', 'Algorithm', 'Status', 'Created'];
 const MODEL_HEADERS = [
   'Name',
+  'Obs Space',
+  'Policy',
   'Algorithm',
   'Sharpe',
   'Max DD',
@@ -66,6 +65,8 @@ const MODEL_STORAGE_TYPES = ['local', 's3'];
 const BLANK_SESSION: CreateSessionBody & {
   allowedStrategies: string[];
   riskProfile: Required<RiskProfile>;
+  totalTimesteps: number;
+  learningRate: number;
 } = {
   name: '',
   description: '',
@@ -74,8 +75,10 @@ const BLANK_SESSION: CreateSessionBody & {
   dataTo: new Date().toISOString().slice(0, 10),
   resolution: '1D',
   algorithm: 'PPO',
-  allowedStrategies: ['STRANGLE', 'DELTA_NEUTRAL'],
+  allowedStrategies: ['short_call', 'short_put', 'delta_neutral'],
   riskProfile: { maxDrawdown: 0.2, aggressionLevel: 0.5 },
+  totalTimesteps: 100_000,
+  learningRate: 0.005,
 };
 
 function aggressionLabel(level: number): string {
@@ -193,6 +196,12 @@ export default function ModelsPage() {
         case 'Name':
           cmp = a.name.localeCompare(b.name);
           break;
+        case 'Obs Space':
+          cmp = (a.metadata?.obs_dims ?? 0) - (b.metadata?.obs_dims ?? 0);
+          break;
+        case 'Policy':
+          cmp = (a.metadata?.policy ?? '').localeCompare(b.metadata?.policy ?? '');
+          break;
         case 'Algorithm':
           cmp = (a.session?.algorithm ?? '').localeCompare(b.session?.algorithm ?? '');
           break;
@@ -263,6 +272,12 @@ export default function ModelsPage() {
           algorithm: form.algorithm,
           allowedStrategies: form.allowedStrategies,
           riskProfile: form.riskProfile,
+          hyperparams: {
+            training: {
+              total_timesteps: form.totalTimesteps,
+              learning_rate:   form.learningRate,
+            },
+          },
         } satisfies CreateSessionBody),
       });
       toast.success('Training session queued.');
@@ -413,6 +428,18 @@ export default function ModelsPage() {
                 type="date"
                 value={form.dataTo}
                 onChange={v => patchForm('dataTo', v)}
+              />
+              <TextInput
+                label="Total Timesteps"
+                type="number"
+                value={String(form.totalTimesteps)}
+                onChange={v => patchForm('totalTimesteps', Math.max(1, parseInt(v) || 100_000))}
+              />
+              <TextInput
+                label="Learning Rate"
+                type="number"
+                value={String(form.learningRate)}
+                onChange={v => patchForm('learningRate', Math.max(0, parseFloat(v) || 0.005))}
               />
             </div>
 
@@ -681,6 +708,20 @@ export default function ModelsPage() {
                           {m.storagePath}
                         </div>
                       </div>
+                      <div className="font-mono text-xs">
+                        {m.metadata?.obs_version && m.metadata?.obs_dims ? (
+                          <>
+                            <span className="text-text-secondary">{m.metadata.obs_version}</span>
+                            <span className="text-text-muted mx-1">·</span>
+                            <span className="text-text-primary">{m.metadata.obs_dims}f</span>
+                          </>
+                        ) : (
+                          <span className="text-text-muted">—</span>
+                        )}
+                      </div>
+                      <span className="text-text-secondary text-xs font-mono">
+                        {m.metadata?.policy ?? '—'}
+                      </span>
                       <span className="text-text-secondary">{m.session?.algorithm ?? '—'}</span>
                       <span
                         className={
