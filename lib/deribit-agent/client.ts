@@ -96,6 +96,25 @@ export type RunStatus = 'ACTIVE' | 'PAUSED' | 'STOPPED' | 'COMPLETED' | 'ERROR';
 export type RunType = 'BACKTEST' | 'PAPER' | 'LIVE';
 export type SessionStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
+export interface ExecutionSettings {
+  dataFrom?: string;
+  dataTo?: string;
+  allowed_actions?: number[];
+  max_drawdown_limit?: number;
+  aggression_level?: number;
+  position_size_pct?: number;
+  max_position_btc?: number;
+  min_order_size?: number;
+  expiry_days_min?: number;
+  expiry_days_max?: number;
+  roll_dte_threshold?: number;
+  max_margin_ratio?: number;
+  delta_threshold?: number;
+  delta_penalty_coef?: number;
+  risk_free_rate?: number;
+  fast_margin?: boolean;
+}
+
 export interface AgentRun {
   id: string;
   name: string;
@@ -108,6 +127,7 @@ export interface AgentRun {
   realizedPnlBtc?: number;
   notes?: string;
   sessionId?: string;
+  executionSettings?: ExecutionSettings;
   createdAt: string;
   updatedAt: string;
 }
@@ -156,7 +176,7 @@ export interface TrainingSession {
   updatedAt: string;
   model?: { id: string; name: string } | null;
   hyperparams?: {
-    env?: Record<string, unknown>;
+    env?: ExecutionSettings & Record<string, unknown>;
     training?: Record<string, unknown>;
   };
 }
@@ -224,24 +244,6 @@ export interface CreateRunBody {
 export interface ExecuteRunBody {
   dataFrom?: string;
   dataTo?: string;
-  envOverrides?: {
-    // Conditioning inputs (set at inference time)
-    max_drawdown_limit?: number;
-    aggression_level?: number;
-    allowed_actions?: string[];
-    randomize_conditioning?: boolean;
-    // Core env params
-    expiry_days?: number;
-    position_size_pct?: number;
-    max_position_btc?: number;
-    delta_threshold?: number;
-    delta_penalty_coef?: number;
-    max_margin_ratio?: number;
-    risk_free_rate?: number;
-    loss_multiplier?: number;
-    loss_threshold?: number;
-    capital_eff_bonus?: number;
-  };
 }
 
 export interface RiskProfile {
@@ -257,7 +259,11 @@ export interface CreateSessionBody {
   dataTo: string;
   resolution?: string;
   algorithm?: string;
-  allowedStrategies?: string[];
+  allowedStrategies?: string[];  // legacy
+  allowedActions?: number[];
+  expiryDaysMin?: number;
+  expiryDaysMax?: number;
+  rollDteThreshold?: number;
   riskProfile?: RiskProfile;
   hyperparams?: Record<string, any>;
 }

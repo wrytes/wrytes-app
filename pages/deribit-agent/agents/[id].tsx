@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import {
   Chart as ChartJS,
   LineController,
@@ -26,6 +26,7 @@ import {
   faPlay,
   faPause,
   faStop,
+  faRotateRight,
 } from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
@@ -33,14 +34,15 @@ import { Badge } from '@/components/ui/Badge';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import TextInput from '@/components/ui/Input/TextInput';
 import SliderInput from '@/components/ui/Input/SliderInput';
-import { useDeribitFetch, agentFetch, type AgentRun, type AgentAction } from '@/lib/deribit-agent/client';
+import { useDeribitFetch, agentFetch, type AgentRun, type AgentAction, type ExecutionSettings } from '@/lib/deribit-agent/client';
 import { RUN_STATUS_BADGE } from '@/lib/deribit-agent/ui';
 
-const EXEC_STRATEGY_OPTIONS = [
-  { value: 'short_call', label: 'Short Call', desc: 'Sell calls Δ20–Δ80' },
-  { value: 'short_put', label: 'Short Put', desc: 'Sell puts Δ10–Δ50' },
-  { value: 'delta_neutral', label: 'Delta Neutral', desc: 'Balanced call + put' },
+const EXEC_STRATEGY_CHIPS = [
+  { value: 'short_call',    label: 'Short Call',    desc: 'Calls Δ20–Δ80', ids: [1,2,3,4,5,6,7] },
+  { value: 'short_put',     label: 'Short Put',     desc: 'Puts Δ10–Δ50',  ids: [8,9,10,11,12] },
+  { value: 'delta_neutral', label: 'Delta Neutral', desc: 'Balanced call + put', ids: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] },
 ];
+const ALL_EXEC_ACTION_IDS = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21,22,23,24,25,26];
 
 function aggressionLabel(v: number) {
   if (v <= 0.2) return 'Very Passive';
@@ -53,20 +55,43 @@ function aggressionLabel(v: number) {
 function mkBlankExec() {
   const today = new Date();
   return {
-    dataFrom:          '2022-03-01',
-    dataTo:            today.toISOString().slice(0, 10),
-    allowedStrategies: ['short_call', 'short_put', 'delta_neutral'] as string[],
-    maxDrawdownLimit:  0.20,
-    aggressionLevel:   0.5,
-    positionSizePct:   1.0,
-    maxPositionBtc:    5.0,
-    minOrderSize:      0.1,
-    expiryDays:        7,
-    maxMarginRatio:    0.8,
-    deltaThreshold:    0.30,
-    deltaPenaltyCoef:  0.002,
-    riskFreeRate:      0.05,
-    fastMargin:        false,
+    dataFrom:         '2022-03-01',
+    dataTo:           today.toISOString().slice(0, 10),
+    allowed_actions:  [...ALL_EXEC_ACTION_IDS] as number[],
+    max_drawdown_limit: 0.20,
+    aggression_level:   0.5,
+    position_size_pct:  1.0,
+    max_position_btc:   5.0,
+    min_order_size:     0.1,
+    expiry_days_min:    7,
+    expiry_days_max:    7,
+    roll_dte_threshold: 0,
+    max_margin_ratio:   0.8,
+    delta_threshold:    0.30,
+    delta_penalty_coef: 0.002,
+    risk_free_rate:     0.05,
+    fast_margin:        false,
+  };
+}
+
+function execFormFromSettings(s: ExecutionSettings, fallback: ReturnType<typeof mkBlankExec>): ReturnType<typeof mkBlankExec> {
+  return {
+    dataFrom:           (s.dataFrom           ?? fallback.dataFrom),
+    dataTo:             (s.dataTo             ?? fallback.dataTo),
+    allowed_actions:    (s.allowed_actions     ?? fallback.allowed_actions),
+    max_drawdown_limit: (s.max_drawdown_limit  ?? fallback.max_drawdown_limit),
+    aggression_level:   (s.aggression_level    ?? fallback.aggression_level),
+    position_size_pct:  (s.position_size_pct   ?? fallback.position_size_pct),
+    max_position_btc:   (s.max_position_btc    ?? fallback.max_position_btc),
+    min_order_size:     (s.min_order_size       ?? fallback.min_order_size),
+    expiry_days_min:    (s.expiry_days_min      ?? fallback.expiry_days_min),
+    expiry_days_max:    (s.expiry_days_max      ?? fallback.expiry_days_max),
+    roll_dte_threshold: (s.roll_dte_threshold   ?? fallback.roll_dte_threshold),
+    max_margin_ratio:   (s.max_margin_ratio     ?? fallback.max_margin_ratio),
+    delta_threshold:    (s.delta_threshold      ?? fallback.delta_threshold),
+    delta_penalty_coef: (s.delta_penalty_coef   ?? fallback.delta_penalty_coef),
+    risk_free_rate:     (s.risk_free_rate        ?? fallback.risk_free_rate),
+    fast_margin:        (s.fast_margin           ?? fallback.fast_margin),
   };
 }
 
@@ -155,20 +180,20 @@ const OPTION_CATEGORIES = [
 
 const OPTION_COLORS: Record<string, string> = {
   'Calls Opened':  '#22c55e',
-  'Calls Closed':  '#ef4444',
-  'Calls Expired': '#f59e0b',
-  'Puts Opened':   '#3b82f6',
-  'Puts Closed':   '#8b5cf6',
-  'Puts Expired':  '#f97316',
+  'Calls Closed':  '#15803d',
+  'Calls Expired': '#86efac',
+  'Puts Opened':   '#ef4444',
+  'Puts Closed':   '#b91c1c',
+  'Puts Expired':  '#fca5a5',
 };
 
 const OPTION_BADGE: Record<string, { color: string; bg: string }> = {
-  'Calls Opened':  { color: 'text-success',       bg: 'bg-success/10'       },
-  'Calls Closed':  { color: 'text-error',         bg: 'bg-error/10'         },
-  'Calls Expired': { color: 'text-amber-600',     bg: 'bg-amber-100/80'     },
-  'Puts Opened':   { color: 'text-blue-600',      bg: 'bg-blue-100/80'      },
-  'Puts Closed':   { color: 'text-violet-600',    bg: 'bg-violet-100/80'    },
-  'Puts Expired':  { color: 'text-orange-600',    bg: 'bg-orange-100/80'    },
+  'Calls Opened':  { color: 'text-green-600',     bg: 'bg-green-100/80'     },
+  'Calls Closed':  { color: 'text-green-800',     bg: 'bg-green-200/80'     },
+  'Calls Expired': { color: 'text-green-500',     bg: 'bg-green-50'         },
+  'Puts Opened':   { color: 'text-red-600',       bg: 'bg-red-100/80'       },
+  'Puts Closed':   { color: 'text-red-800',       bg: 'bg-red-200/80'       },
+  'Puts Expired':  { color: 'text-red-400',       bg: 'bg-red-50'           },
 };
 
 function optionCategory(a: AgentAction): string | null {
@@ -210,7 +235,7 @@ function ChartBox({ title, id, height = 200 }: { title: string; id: string; heig
 
 interface RunDetail extends AgentRun {
   startedAt?: string;
-  session?: { name: string; algorithm: string } | null;
+  session?: { name: string; algorithm: string; hyperparams?: { env?: ExecutionSettings } } | null;
   actions?: AgentAction[];
 }
 
@@ -233,31 +258,66 @@ export default function RunDetailPage() {
   // Execution accordion
   const [showExec, setShowExec] = useState(false);
   const [showAdvanced, setShowAdvanced] = useState(false);
-  const [execForm, setExecForm] = useState<ReturnType<typeof mkBlankExec>>(() => {
-    if (typeof window === 'undefined') return mkBlankExec();
-    try {
-      const saved = localStorage.getItem('deribit:exec-settings');
-      if (saved) return { ...mkBlankExec(), ...JSON.parse(saved) };
-    } catch {}
-    return mkBlankExec();
-  });
+  const [execForm, setExecForm] = useState<ReturnType<typeof mkBlankExec>>(mkBlankExec);
   const [executing, setExecuting] = useState(false);
   const [actioning, setActioning] = useState(false);
+  const [settingsSaved, setSettingsSaved] = useState(false);
+  const debounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const execFormLoaded = useRef(false);
 
-  const toggleExecStrategy = (s: string) => {
-    setExecForm(f => ({
-      ...f,
-      allowedStrategies: f.allowedStrategies.includes(s)
-        ? f.allowedStrategies.filter(x => x !== s)
-        : [...f.allowedStrategies, s],
-    }));
+  // Strategy chip helpers
+  const isChipActive = (ids: number[]) => ids.every(id => execForm.allowed_actions.includes(id));
+  const toggleChip = (ids: number[]) => {
+    if (isChipActive(ids)) {
+      setExecForm(f => ({ ...f, allowed_actions: f.allowed_actions.filter(id => !ids.includes(id)) }));
+    } else {
+      setExecForm(f => ({ ...f, allowed_actions: [...new Set([...f.allowed_actions, ...ids])] }));
+    }
   };
+
+  // Populate execForm from DB settings once run data is available
+  useEffect(() => {
+    if (!run.data || execFormLoaded.current) return;
+    execFormLoaded.current = true;
+    const stored = run.data.executionSettings;
+    const sessionEnv = (run.data as any).session?.hyperparams?.env as ExecutionSettings | undefined;
+    const source = stored && Object.keys(stored).length > 0 ? stored : sessionEnv;
+    if (source) setExecForm(execFormFromSettings(source, mkBlankExec()));
+  }, [run.data]);
+
+  // Debounce-save execForm to DB
+  const saveSettings = useCallback((form: ReturnType<typeof mkBlankExec>) => {
+    if (!runId || !execFormLoaded.current) return;
+    if (debounceRef.current) clearTimeout(debounceRef.current);
+    debounceRef.current = setTimeout(async () => {
+      try {
+        await agentFetch(`/agent/runs/${runId}/settings`, {
+          method: 'PATCH',
+          body: JSON.stringify(form),
+        });
+        setSettingsSaved(true);
+        setTimeout(() => setSettingsSaved(false), 1500);
+      } catch {}
+    }, 800);
+  }, [runId]);
+
+  useEffect(() => {
+    if (!execFormLoaded.current) return;
+    saveSettings(execForm);
+  }, [execForm, saveSettings]);
+
+  // Polling — refetch every 5s while ACTIVE
+  useEffect(() => {
+    if (run.data?.status !== 'ACTIVE') return;
+    const interval = setInterval(() => { run.refetch(); }, 5_000);
+    return () => clearInterval(interval);
+  }, [run.data?.status, run.refetch]);
 
   const executeRun = async () => {
     if (!runId) return;
-    if (!execForm.allowedStrategies.length) {
+    if (!execForm.allowed_actions.length) {
       const { toast } = await import('react-hot-toast');
-      toast.error('Enable at least one strategy.');
+      toast.error('Enable at least one action.');
       return;
     }
     setExecuting(true);
@@ -266,27 +326,11 @@ export default function RunDetailPage() {
         method: 'POST',
         body: JSON.stringify({
           dataFrom: execForm.dataFrom || undefined,
-          dataTo: execForm.dataTo || undefined,
-          envOverrides: {
-            allowed_actions:       execForm.allowedStrategies,
-            randomize_conditioning: false,
-            max_drawdown_limit:    execForm.maxDrawdownLimit,
-            aggression_level:      execForm.aggressionLevel,
-            position_size_pct:     execForm.positionSizePct,
-            max_position_btc:      execForm.maxPositionBtc,
-            min_order_size:        execForm.minOrderSize,
-            expiry_days:           execForm.expiryDays,
-            max_margin_ratio:      execForm.maxMarginRatio,
-            delta_threshold:       execForm.deltaThreshold,
-            delta_penalty_coef:    execForm.deltaPenaltyCoef,
-            risk_free_rate:        execForm.riskFreeRate,
-            fast_margin:           execForm.fastMargin,
-          },
+          dataTo:   execForm.dataTo   || undefined,
         }),
       });
       const { toast } = await import('react-hot-toast');
       toast.success('Execution queued.');
-      run.refetch();
     } catch (e) {
       const { toast } = await import('react-hot-toast');
       toast.error(e instanceof Error ? e.message : 'Execute failed.');
@@ -315,10 +359,6 @@ export default function RunDetailPage() {
     Object.values(chartsRef.current).forEach(c => c.destroy());
     chartsRef.current = {};
   };
-
-  useEffect(() => {
-    try { localStorage.setItem('deribit:exec-settings', JSON.stringify(execForm)); } catch {}
-  }, [execForm]);
 
   useEffect(() => {
     if (!run.data || !actionsReq.data) return;
@@ -594,40 +634,6 @@ export default function RunDetailPage() {
       },
     });
 
-    // 7. Doughnut — option type breakdown
-    const optCnt: Record<string, number> = {};
-    actions.forEach(a => {
-      const cat = optionCategory(a);
-      if (cat) optCnt[cat] = (optCnt[cat] || 0) + 1;
-    });
-    const pieL = OPTION_CATEGORIES.filter(k => (optCnt[k] ?? 0) > 0).sort((a, b) => optCnt[b] - optCnt[a]);
-    const el7 = document.getElementById('c-pie') as HTMLCanvasElement | null;
-    if (el7) {
-      chartsRef.current['c-pie'] = new ChartJS<'doughnut'>(el7, {
-        type: 'doughnut',
-        data: {
-          labels: pieL,
-          datasets: [
-            {
-              data: pieL.map(k => optCnt[k]),
-              backgroundColor: pieL.map(k => OPTION_COLORS[k]),
-              borderWidth: 1,
-            },
-          ],
-        },
-        options: {
-          responsive: true,
-          maintainAspectRatio: false,
-          cutout: '60%',
-          plugins: {
-            legend: {
-              position: 'right',
-              labels: { font: { size: 11 }, color: '#9ca3af', padding: 10 },
-            },
-          },
-        },
-      });
-    }
   }
 
   // ── Derived stats ────────────────────────────────────────────────────────────
@@ -685,11 +691,17 @@ export default function RunDetailPage() {
     });
   })();
 
-  // unique action types within selected year
-  const uniqueTypes = Array.from(new Set(yearActions.map(a => a.actionType)));
+  const LOG_TYPE_TABS = [
+    { label: 'Open',    value: 'open'                 },
+    { label: 'Close',   value: 'close'                },
+    { label: 'Mark',    value: 'settlement_unrealized' },
+    { label: 'Expired', value: 'settlement_expired'   },
+  ];
 
   // filtered log (newest first) — year already scoped via yearActions
+  // settlement_init is always represented by the pinned opening-balance row, so exclude it here
   const filteredLog = [...actionLog].filter(a => {
+    if (a.actionType === 'settlement_init') return false;
     if (logTypeFilter && a.actionType !== logTypeFilter) return false;
     if (logSearch) {
       const q = logSearch.toLowerCase();
@@ -770,6 +782,14 @@ export default function RunDetailPage() {
                     Started {new Date(runData.startedAt).toLocaleString()}
                   </span>
                 )}
+                <button
+                  type="button"
+                  title="Reload stats"
+                  onClick={() => { run.refetch(); actionsReq.refetch(); }}
+                  className="ml-auto p-1.5 rounded text-text-muted hover:text-text-primary hover:bg-surface transition-colors"
+                >
+                  <FontAwesomeIcon icon={faRotateRight} className="w-3.5 h-3.5" />
+                </button>
               </div>
             )}
 
@@ -780,7 +800,10 @@ export default function RunDetailPage() {
                 className="w-full flex items-center justify-between"
                 onClick={() => setShowExec(v => !v)}
               >
-                <span className="text-sm font-semibold text-text-primary">Execution Settings</span>
+                <span className="text-sm font-semibold text-text-primary">
+                  Execution Settings
+                  {settingsSaved && <span className="ml-2 text-xs text-success font-normal">Saved</span>}
+                </span>
                 <FontAwesomeIcon
                   icon={showExec ? faChevronUp : faChevronDown}
                   className="w-3.5 h-3.5 text-text-muted"
@@ -809,24 +832,24 @@ export default function RunDetailPage() {
                   {/* ── Strategies ───────────────────────────────────────────── */}
                   <div>
                     <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
-                      Strategies
+                      Open Strategies
                     </p>
-                    <div className="grid grid-cols-3 gap-2">
-                      {EXEC_STRATEGY_OPTIONS.map(s => {
-                        const active = execForm.allowedStrategies.includes(s.value);
+                    <div className="flex gap-2 flex-wrap">
+                      {EXEC_STRATEGY_CHIPS.map(chip => {
+                        const active = isChipActive(chip.ids);
                         return (
                           <button
-                            key={s.value}
+                            key={chip.value}
                             type="button"
-                            onClick={() => toggleExecStrategy(s.value)}
-                            className={`text-left px-3 py-2.5 rounded-lg border-2 transition-colors ${
+                            onClick={() => toggleChip(chip.ids)}
+                            className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
                               active
-                                ? 'border-brand bg-brand/5 text-brand'
-                                : 'border-input-border text-text-secondary hover:border-brand/50'
+                                ? 'border-brand bg-brand/10 text-brand'
+                                : 'border-input-border text-text-secondary hover:border-brand/40'
                             }`}
                           >
-                            <div className="text-sm font-medium">{s.label}</div>
-                            <div className="text-xs text-text-muted mt-0.5">{s.desc}</div>
+                            {chip.label}
+                            <span className="ml-1 text-text-muted font-normal">{chip.desc}</span>
                           </button>
                         );
                       })}
@@ -837,8 +860,8 @@ export default function RunDetailPage() {
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                     <SliderInput
                       label="Max Drawdown Limit"
-                      value={execForm.maxDrawdownLimit * 100}
-                      onChange={v => setExecForm(f => ({ ...f, maxDrawdownLimit: v / 100 }))}
+                      value={execForm.max_drawdown_limit * 100}
+                      onChange={v => setExecForm(f => ({ ...f, max_drawdown_limit: v / 100 }))}
                       min={5} max={50} step={5}
                       formatValue={v => `${v.toFixed(0)}%`}
                       minLabel="5% (tight)" maxLabel="50% (loose)"
@@ -846,8 +869,8 @@ export default function RunDetailPage() {
                     />
                     <SliderInput
                       label="Aggression Level"
-                      value={execForm.aggressionLevel * 100}
-                      onChange={v => setExecForm(f => ({ ...f, aggressionLevel: v / 100 }))}
+                      value={execForm.aggression_level * 100}
+                      onChange={v => setExecForm(f => ({ ...f, aggression_level: v / 100 }))}
                       min={0} max={100} step={10}
                       formatValue={v => aggressionLabel(v / 100)}
                       minLabel="Passive" maxLabel="Aggressive"
@@ -863,8 +886,8 @@ export default function RunDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                       <SliderInput
                         label="Position Size %"
-                        value={execForm.positionSizePct * 100}
-                        onChange={v => setExecForm(f => ({ ...f, positionSizePct: v / 100 }))}
+                        value={execForm.position_size_pct * 100}
+                        onChange={v => setExecForm(f => ({ ...f, position_size_pct: v / 100 }))}
                         min={5} max={100} step={5}
                         formatValue={v => `${v.toFixed(0)}%`}
                         minLabel="5%" maxLabel="100%"
@@ -873,14 +896,14 @@ export default function RunDetailPage() {
                       <TextInput
                         label="Max Position BTC"
                         placeholder="5.0"
-                        value={String(execForm.maxPositionBtc)}
-                        onChange={v => setExecForm(f => ({ ...f, maxPositionBtc: parseFloat(v) || f.maxPositionBtc }))}
+                        value={String(execForm.max_position_btc)}
+                        onChange={v => setExecForm(f => ({ ...f, max_position_btc: parseFloat(v) || f.max_position_btc }))}
                       />
                       <TextInput
                         label="Min Order Size BTC"
                         placeholder="0.1"
-                        value={String(execForm.minOrderSize)}
-                        onChange={v => setExecForm(f => ({ ...f, minOrderSize: parseFloat(v) || f.minOrderSize }))}
+                        value={String(execForm.min_order_size)}
+                        onChange={v => setExecForm(f => ({ ...f, min_order_size: parseFloat(v) || f.min_order_size }))}
                       />
                     </div>
                   </div>
@@ -890,36 +913,36 @@ export default function RunDetailPage() {
                     <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
                       Options Structure
                     </p>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                      <div>
-                        <p className="text-xs text-text-muted mb-2">Expiry (DTE)</p>
-                        <div className="flex gap-2">
-                          {[7, 14, 21, 30].map(d => (
-                            <button
-                              key={d}
-                              type="button"
-                              onClick={() => setExecForm(f => ({ ...f, expiryDays: d }))}
-                              className={`flex-1 py-2 rounded-lg border-2 text-sm font-medium transition-colors ${
-                                execForm.expiryDays === d
-                                  ? 'border-brand bg-brand/5 text-brand'
-                                  : 'border-input-border text-text-secondary hover:border-brand/50'
-                              }`}
-                            >
-                              {d}d
-                            </button>
-                          ))}
-                        </div>
-                      </div>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-4">
+                      <TextInput
+                        label="Min DTE"
+                        value={String(execForm.expiry_days_min)}
+                        onChange={v => setExecForm(f => ({ ...f, expiry_days_min: Math.max(1, parseInt(v) || 7) }))}
+                      />
+                      <TextInput
+                        label="Max DTE"
+                        value={String(execForm.expiry_days_max)}
+                        onChange={v => setExecForm(f => ({ ...f, expiry_days_max: Math.max(f.expiry_days_min, parseInt(v) || 7) }))}
+                      />
                       <SliderInput
-                        label="Max Margin Ratio"
-                        value={execForm.maxMarginRatio * 100}
-                        onChange={v => setExecForm(f => ({ ...f, maxMarginRatio: v / 100 }))}
-                        min={50} max={95} step={5}
-                        formatValue={v => `${v.toFixed(0)}%`}
-                        minLabel="50%" maxLabel="95%"
-                        hint="Max portfolio margin utilization before blocking new trades."
+                        label="Roll threshold (DTE)"
+                        value={execForm.roll_dte_threshold}
+                        onChange={v => setExecForm(f => ({ ...f, roll_dte_threshold: v }))}
+                        min={0} max={7} step={1}
+                        formatValue={v => v === 0 ? 'Hold' : `Roll ≤${v}d`}
+                        minLabel="Hold" maxLabel="Roll early"
+                        hint="Close positions early when DTE reaches this threshold."
                       />
                     </div>
+                    <SliderInput
+                      label="Max Margin Ratio"
+                      value={execForm.max_margin_ratio * 100}
+                      onChange={v => setExecForm(f => ({ ...f, max_margin_ratio: v / 100 }))}
+                      min={50} max={95} step={5}
+                      formatValue={v => `${v.toFixed(0)}%`}
+                      minLabel="50%" maxLabel="95%"
+                      hint="Max portfolio margin utilization before blocking new trades."
+                    />
                   </div>
 
                   {/* ── Delta management ─────────────────────────────────────── */}
@@ -930,8 +953,8 @@ export default function RunDetailPage() {
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                       <SliderInput
                         label="Delta Threshold"
-                        value={execForm.deltaThreshold * 100}
-                        onChange={v => setExecForm(f => ({ ...f, deltaThreshold: v / 100 }))}
+                        value={execForm.delta_threshold * 100}
+                        onChange={v => setExecForm(f => ({ ...f, delta_threshold: v / 100 }))}
                         min={10} max={80} step={5}
                         formatValue={v => `${v.toFixed(0)}%`}
                         minLabel="10% (strict)" maxLabel="80% (loose)"
@@ -940,8 +963,8 @@ export default function RunDetailPage() {
                       <TextInput
                         label="Delta Penalty Coef"
                         placeholder="0.002"
-                        value={String(execForm.deltaPenaltyCoef)}
-                        onChange={v => setExecForm(f => ({ ...f, deltaPenaltyCoef: parseFloat(v) || f.deltaPenaltyCoef }))}
+                        value={String(execForm.delta_penalty_coef)}
+                        onChange={v => setExecForm(f => ({ ...f, delta_penalty_coef: parseFloat(v) || f.delta_penalty_coef }))}
                       />
                     </div>
                   </div>
@@ -961,20 +984,20 @@ export default function RunDetailPage() {
                         <TextInput
                           label="Risk Free Rate"
                           placeholder="0.05"
-                          value={String(execForm.riskFreeRate)}
-                          onChange={v => setExecForm(f => ({ ...f, riskFreeRate: parseFloat(v) || f.riskFreeRate }))}
+                          value={String(execForm.risk_free_rate)}
+                          onChange={v => setExecForm(f => ({ ...f, risk_free_rate: parseFloat(v) || f.risk_free_rate }))}
                         />
                         <div>
                           <p className="text-xs text-text-muted mb-2">Fast Margin</p>
                           <button
                             type="button"
-                            onClick={() => setExecForm(f => ({ ...f, fastMargin: !f.fastMargin }))}
+                            onClick={() => setExecForm(f => ({ ...f, fast_margin: !f.fast_margin }))}
                             className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${
-                              execForm.fastMargin ? 'bg-brand' : 'bg-input-border'
+                              execForm.fast_margin ? 'bg-brand' : 'bg-input-border'
                             }`}
                           >
                             <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${
-                              execForm.fastMargin ? 'translate-x-6' : 'translate-x-1'
+                              execForm.fast_margin ? 'translate-x-6' : 'translate-x-1'
                             }`} />
                           </button>
                           <p className="text-xs text-text-muted mt-1">
@@ -1101,7 +1124,72 @@ export default function RunDetailPage() {
 
             {/* Option breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <ChartBox id="c-pie" title="Option Breakdown" height={200} />
+              <Card>
+                <p className="text-text-secondary text-xs font-semibold uppercase tracking-wider mb-4">
+                  Option Breakdown
+                </p>
+                {(() => {
+                  const s = optionSummary;
+                  const callsTotal = (s['Calls Opened']?.count ?? 0) + (s['Calls Closed']?.count ?? 0) + (s['Calls Expired']?.count ?? 0);
+                  const putsTotal  = (s['Puts Opened']?.count  ?? 0) + (s['Puts Closed']?.count  ?? 0) + (s['Puts Expired']?.count  ?? 0);
+                  const callsExpired = s['Calls Expired']?.count ?? 0;
+                  const callsClosed  = s['Calls Closed']?.count  ?? 0;
+                  const putsExpired  = s['Puts Expired']?.count  ?? 0;
+                  const putsClosed   = s['Puts Closed']?.count   ?? 0;
+
+                  function CompareBar({
+                    labelA, countA, colorA,
+                    labelB, countB, colorB,
+                  }: {
+                    labelA: string; countA: number; colorA: string;
+                    labelB: string; countB: number; colorB: string;
+                  }) {
+                    const total = countA + countB;
+                    const pctA = total ? (countA / total) * 100 : 50;
+                    const pctB = 100 - pctA;
+                    return (
+                      <div className="mb-4 last:mb-0">
+                        <div className="flex justify-between text-xs text-text-muted mb-1.5">
+                          <span>
+                            <span className="font-semibold text-text-primary">{labelA}</span>
+                            <span className="ml-1.5 font-mono">{countA}</span>
+                          </span>
+                          <span className="text-text-muted font-mono">total {total}</span>
+                          <span>
+                            <span className="font-mono mr-1.5">{countB}</span>
+                            <span className="font-semibold text-text-primary">{labelB}</span>
+                          </span>
+                        </div>
+                        <div className="flex h-5 rounded-full overflow-hidden">
+                          <div style={{ width: `${pctA}%`, backgroundColor: colorA }} className="transition-all duration-500" />
+                          <div style={{ width: `${pctB}%`, backgroundColor: colorB }} className="transition-all duration-500" />
+                        </div>
+                        <div className="flex justify-between text-[10px] text-text-muted mt-1 font-mono">
+                          <span>{pctA.toFixed(0)}%</span>
+                          <span>{pctB.toFixed(0)}%</span>
+                        </div>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <>
+                      <CompareBar
+                        labelA="Calls" countA={callsTotal} colorA={OPTION_COLORS['Calls Opened']}
+                        labelB="Puts"  countB={putsTotal}  colorB={OPTION_COLORS['Puts Opened']}
+                      />
+                      <CompareBar
+                        labelA="Calls Expired" countA={callsExpired} colorA={OPTION_COLORS['Calls Expired']}
+                        labelB="Calls Closed"  countB={callsClosed}  colorB={OPTION_COLORS['Calls Closed']}
+                      />
+                      <CompareBar
+                        labelA="Puts Expired" countA={putsExpired} colorA={OPTION_COLORS['Puts Expired']}
+                        labelB="Puts Closed"  countB={putsClosed}  colorB={OPTION_COLORS['Puts Closed']}
+                      />
+                    </>
+                  );
+                })()}
+              </Card>
               <Card>
                 <p className="text-text-secondary text-xs font-semibold uppercase tracking-wider mb-3">
                   By Option Type
@@ -1164,18 +1252,18 @@ export default function RunDetailPage() {
                   />
                 </div>
                 <div className="flex gap-2 flex-wrap">
-                  {['All', ...uniqueTypes].map(t => (
+                  {[{ label: 'All', value: '' }, ...LOG_TYPE_TABS].map(t => (
                     <button
-                      key={t}
+                      key={t.value || 'all'}
                       type="button"
-                      onClick={() => setLogTypeFilter(t === 'All' ? '' : t)}
+                      onClick={() => setLogTypeFilter(t.value)}
                       className={`px-2.5 py-1 rounded-lg text-xs font-medium transition-colors ${
-                        (t === 'All' ? !logTypeFilter : logTypeFilter === t)
+                        logTypeFilter === t.value
                           ? 'bg-brand text-white'
                           : 'bg-surface text-text-secondary hover:text-text-primary'
                       }`}
                     >
-                      {t}
+                      {t.label}
                     </button>
                   ))}
                 </div>
@@ -1212,6 +1300,33 @@ export default function RunDetailPage() {
                     </tr>
                   </thead>
                   <tbody>
+                    {/* Pinned opening-balance row — always shown regardless of filters */}
+                    {(() => {
+                      const initTs = yearActions.find(a => a.actionType === 'settlement_init')?.timestamp
+                        ?? yearActions[0]?.timestamp;
+                      const badge = ACTION_BADGE['settlement_init'];
+                      const dash = <span className="text-text-muted">—</span>;
+                      return (
+                        <tr className="bg-surface/30">
+                          <td className="px-3 py-1.5 text-text-muted whitespace-nowrap">{initTs ? fmtShort(initTs) : '—'}</td>
+                          <td className="px-3 py-1.5"><Badge text={badge.label} variant="custom" customColor={badge.color} customBgColor={badge.bg} /></td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right">{dash}</td>
+                          <td className="px-3 py-1.5 text-right font-mono text-text-muted">{n(0)}</td>
+                          <td className="px-3 py-1.5 text-right font-mono">{n(openingBalance, 4)}</td>
+                          <td className="px-3 py-1.5 text-right font-mono">{n(openingBalance, 4)}</td>
+                        </tr>
+                      );
+                    })()}
                     {filteredLog.map((a, i) => {
                       const btcP  = a.btcPrice != null ? Number(a.btcPrice) : null;
                       const style = ACTION_BADGE[a.actionType] ?? { color: 'text-text-secondary', bg: 'bg-surface', label: a.actionType };

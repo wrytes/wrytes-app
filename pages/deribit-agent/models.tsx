@@ -3,7 +3,7 @@ import { useState, useMemo } from 'react';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faPlus, faBan, faTrash, faPlay } from '@fortawesome/free-solid-svg-icons';
+import { faBrain, faPlus, faBan, faTrash, faPlay, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -36,15 +36,58 @@ const ALGORITHM_OPTIONS = [
   { value: 'A2C', label: 'A2C' },
 ];
 
-const STRATEGY_OPTIONS = [
-  { value: 'short_call', label: 'Short Call', desc: 'Sell calls at any delta (Δ20–Δ80)' },
-  { value: 'short_put', label: 'Short Put', desc: 'Sell puts at any delta (Δ10–Δ50)' },
+// Quick-selector chips — check/uncheck all actions in the group
+const STRATEGY_CHIPS = [
+  { value: 'short_call',    label: 'Short Call',    ids: [1,2,3,4,5,6,7] },
+  { value: 'short_put',     label: 'Short Put',     ids: [8,9,10,11,12] },
+  { value: 'delta_neutral', label: 'Delta Neutral', ids: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] },
+];
+
+// 27-action list grouped for display
+const ACTION_GROUPS = [
   {
-    value: 'delta_neutral',
-    label: 'Delta Neutral',
-    desc: 'Balanced call + put positioning, including one-action strangles',
+    label: 'Open Calls',
+    actions: [
+      { id: 1, label: 'ATM (Δ50)' }, { id: 2, label: 'OTM Δ40' }, { id: 3, label: 'OTM Δ30' },
+      { id: 4, label: 'OTM Δ20' },   { id: 5, label: 'ITM Δ60' }, { id: 6, label: 'ITM Δ70' },
+      { id: 7, label: 'ITM Δ80' },
+    ],
+  },
+  {
+    label: 'Open Puts',
+    actions: [
+      { id: 8, label: 'ATM (Δ50)' },     { id: 9, label: 'OTM Δ40' },
+      { id: 10, label: 'OTM Δ30' },      { id: 11, label: 'OTM Δ20' },
+      { id: 12, label: 'Far OTM Δ10' },
+    ],
+  },
+  {
+    label: 'Strangles',
+    actions: [
+      { id: 13, label: 'Δ40/Δ40' }, { id: 14, label: 'Δ30/Δ30' }, { id: 15, label: 'Δ20/Δ20' },
+    ],
+  },
+  {
+    label: 'Close All',
+    actions: [{ id: 16, label: 'Close all positions' }],
+  },
+  {
+    label: 'Close Call at Profit',
+    actions: [
+      { id: 17, label: '≥25%' }, { id: 18, label: '≥50%' }, { id: 19, label: '≥60%' },
+      { id: 20, label: '≥70%' }, { id: 21, label: '≥80%' },
+    ],
+  },
+  {
+    label: 'Close Put at Profit',
+    actions: [
+      { id: 22, label: '≥25%' }, { id: 23, label: '≥50%' }, { id: 24, label: '≥60%' },
+      { id: 25, label: '≥70%' }, { id: 26, label: '≥80%' },
+    ],
   },
 ];
+
+const ALL_ACTION_IDS = ACTION_GROUPS.flatMap(g => g.actions.map(a => a.id));
 
 const SESSION_STATUSES = ['QUEUED', 'RUNNING', 'COMPLETED', 'FAILED', 'CANCELLED'];
 const SESSION_HEADERS = ['Name', 'Currency', 'Algorithm', 'Status', 'Created'];
@@ -60,12 +103,7 @@ const MODEL_HEADERS = [
 ];
 const MODEL_STORAGE_TYPES = ['local', 's3'];
 
-const BLANK_SESSION: CreateSessionBody & {
-  allowedStrategies: string[];
-  riskProfile: Required<RiskProfile>;
-  totalTimesteps: number;
-  learningRate: number;
-} = {
+const BLANK_SESSION = {
   name: '',
   description: '',
   currency: 'BTC',
@@ -73,10 +111,23 @@ const BLANK_SESSION: CreateSessionBody & {
   dataTo: new Date().toISOString().slice(0, 10),
   resolution: '1D',
   algorithm: 'PPO',
-  allowedStrategies: ['short_call', 'short_put', 'delta_neutral'],
-  riskProfile: { maxDrawdown: 0.2, aggressionLevel: 0.5 },
+  allowedActions: [...ALL_ACTION_IDS] as number[],
+  expiryDaysMin: 7,
+  expiryDaysMax: 7,
+  rollDteThreshold: 0,
+  riskProfile: { maxDrawdown: 0.2, aggressionLevel: 0.5 } as Required<RiskProfile>,
   totalTimesteps: 100_000,
   learningRate: 0.005,
+  // Execution defaults (stored in hyperparams.env)
+  positionSizePct: 1.0,
+  maxPositionBtc: 5.0,
+  minOrderSize: 0.1,
+  maxMarginRatio: 0.8,
+  deltaThreshold: 0.30,
+  deltaPenaltyCoef: 0.002,
+  riskFreeRate: 0.05,
+  fastMargin: true,
+  showExecDefaults: false,
 };
 
 function aggressionLabel(level: number): string {
@@ -239,12 +290,22 @@ export default function ModelsPage() {
 
   const patchForm = (k: keyof typeof form, v: unknown) => setForm(f => ({ ...f, [k]: v }));
 
-  const toggleStrategy = (strategy: string) => {
+  const isChipActive = (ids: number[]) => ids.every(id => form.allowedActions.includes(id));
+
+  const toggleChip = (ids: number[]) => {
+    if (isChipActive(ids)) {
+      setForm(f => ({ ...f, allowedActions: f.allowedActions.filter(id => !ids.includes(id)) }));
+    } else {
+      setForm(f => ({ ...f, allowedActions: [...new Set([...f.allowedActions, ...ids])] }));
+    }
+  };
+
+  const toggleAction = (id: number) => {
     setForm(f => ({
       ...f,
-      allowedStrategies: f.allowedStrategies.includes(strategy)
-        ? f.allowedStrategies.filter(s => s !== strategy)
-        : [...f.allowedStrategies, strategy],
+      allowedActions: f.allowedActions.includes(id)
+        ? f.allowedActions.filter(x => x !== id)
+        : [...f.allowedActions, id],
     }));
   };
 
@@ -253,8 +314,8 @@ export default function ModelsPage() {
       toast.error('Name, currency, data from and data to are required.');
       return;
     }
-    if (!form.allowedStrategies.length) {
-      toast.error('Select at least one strategy to allow during training.');
+    if (!form.allowedActions.length) {
+      toast.error('Select at least one action to allow during training.');
       return;
     }
     setSubmitting(true);
@@ -262,19 +323,32 @@ export default function ModelsPage() {
       await agentFetch('/training/sessions', {
         method: 'POST',
         body: JSON.stringify({
-          name: form.name,
-          description: form.description || undefined,
-          currency: form.currency,
-          dataFrom: new Date(form.dataFrom).toISOString(),
-          dataTo: new Date(form.dataTo + 'T23:59:59').toISOString(),
-          resolution: form.resolution,
-          algorithm: form.algorithm,
-          allowedStrategies: form.allowedStrategies,
-          riskProfile: form.riskProfile,
+          name:             form.name,
+          description:      form.description || undefined,
+          currency:         form.currency,
+          dataFrom:         new Date(form.dataFrom).toISOString(),
+          dataTo:           new Date(form.dataTo + 'T23:59:59').toISOString(),
+          resolution:       form.resolution,
+          algorithm:        form.algorithm,
+          allowedActions:   form.allowedActions,
+          expiryDaysMin:    form.expiryDaysMin,
+          expiryDaysMax:    form.expiryDaysMax,
+          rollDteThreshold: form.rollDteThreshold,
+          riskProfile:      form.riskProfile,
           hyperparams: {
             training: {
               total_timesteps: form.totalTimesteps,
               learning_rate:   form.learningRate,
+            },
+            env: {
+              position_size_pct:  form.positionSizePct,
+              max_position_btc:   form.maxPositionBtc,
+              min_order_size:     form.minOrderSize,
+              max_margin_ratio:   form.maxMarginRatio,
+              delta_threshold:    form.deltaThreshold,
+              delta_penalty_coef: form.deltaPenaltyCoef,
+              risk_free_rate:     form.riskFreeRate,
+              fast_margin:        form.fastMargin,
             },
           },
         } satisfies CreateSessionBody),
@@ -430,44 +504,112 @@ export default function ModelsPage() {
               />
               <TextInput
                 label="Total Timesteps"
-                type="number"
                 value={String(form.totalTimesteps)}
                 onChange={v => patchForm('totalTimesteps', Math.max(1, parseInt(v) || 100_000))}
               />
               <TextInput
                 label="Learning Rate"
-                type="number"
                 value={String(form.learningRate)}
                 onChange={v => patchForm('learningRate', Math.max(0, parseFloat(v) || 0.005))}
               />
             </div>
 
+            {/* ── Allowed Actions ────────────────────────────────────────── */}
             <div className="mt-5">
-              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
-                Allowed Strategies
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-2">
+                Allowed Actions
               </p>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-2">
-                {STRATEGY_OPTIONS.map(s => {
-                  const checked = form.allowedStrategies.includes(s.value);
+              {/* Quick-selector chips */}
+              <div className="flex gap-2 flex-wrap mb-3">
+                {STRATEGY_CHIPS.map(chip => {
+                  const active = isChipActive(chip.ids);
                   return (
                     <button
-                      key={s.value}
+                      key={chip.value}
                       type="button"
-                      onClick={() => toggleStrategy(s.value)}
-                      className={`text-left px-3 py-2.5 rounded-lg border-2 transition-colors ${
-                        checked
-                          ? 'border-brand bg-brand/5 text-brand'
-                          : 'border-input-border text-text-secondary hover:border-brand/50'
+                      onClick={() => toggleChip(chip.ids)}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-colors ${
+                        active
+                          ? 'border-brand bg-brand/10 text-brand'
+                          : 'border-input-border text-text-secondary hover:border-brand/40'
                       }`}
                     >
-                      <div className="text-sm font-medium">{s.label}</div>
-                      <div className="text-xs text-text-muted mt-0.5">{s.desc}</div>
+                      {chip.label}
                     </button>
                   );
                 })}
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, allowedActions: [...ALL_ACTION_IDS] }))}
+                  className="px-3 py-1.5 rounded-full border border-input-border text-xs text-text-muted hover:text-text-primary transition-colors"
+                >
+                  All
+                </button>
+                <button
+                  type="button"
+                  onClick={() => setForm(f => ({ ...f, allowedActions: [] }))}
+                  className="px-3 py-1.5 rounded-full border border-input-border text-xs text-text-muted hover:text-text-primary transition-colors"
+                >
+                  None
+                </button>
+              </div>
+              {/* Per-action checkboxes grouped */}
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-x-6 gap-y-3">
+                {ACTION_GROUPS.map(group => (
+                  <div key={group.label}>
+                    <p className="text-xs text-text-muted font-medium mb-1">{group.label}</p>
+                    <div className="space-y-1">
+                      {group.actions.map(a => (
+                        <label key={a.id} className="flex items-center gap-2 cursor-pointer group">
+                          <input
+                            type="checkbox"
+                            checked={form.allowedActions.includes(a.id)}
+                            onChange={() => toggleAction(a.id)}
+                            className="w-3.5 h-3.5 accent-brand"
+                          />
+                          <span className="text-xs text-text-secondary group-hover:text-text-primary transition-colors">
+                            {a.label}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
 
+            {/* ── DTE Range ─────────────────────────────────────────────── */}
+            <div className="mt-5">
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
+                Expiry (DTE)
+              </p>
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+                <TextInput
+                  label="Min DTE"
+                  value={String(form.expiryDaysMin)}
+                  onChange={v => patchForm('expiryDaysMin', Math.max(1, parseInt(v) || 7))}
+                />
+                <TextInput
+                  label="Max DTE"
+                  value={String(form.expiryDaysMax)}
+                  onChange={v => patchForm('expiryDaysMax', Math.max(form.expiryDaysMin, parseInt(v) || 7))}
+                />
+                <SliderInput
+                  label="Roll threshold (DTE)"
+                  value={form.rollDteThreshold}
+                  onChange={v => patchForm('rollDteThreshold', v)}
+                  min={0}
+                  max={7}
+                  step={1}
+                  formatValue={v => v === 0 ? 'Hold to expiry' : `Roll at ≤${v}d`}
+                  minLabel="Hold"
+                  maxLabel="Roll early"
+                  hint="Close positions early when DTE reaches this threshold."
+                />
+              </div>
+            </div>
+
+            {/* ── Risk Profile ──────────────────────────────────────────── */}
             <div className="mt-5">
               <p className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3">
                 Risk Profile
@@ -476,38 +618,105 @@ export default function ModelsPage() {
                 <SliderInput
                   label="Max Drawdown"
                   value={form.riskProfile.maxDrawdown * 100}
-                  onChange={v =>
-                    setForm(f => ({
-                      ...f,
-                      riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 },
-                    }))
-                  }
-                  min={5}
-                  max={50}
-                  step={5}
+                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 } }))}
+                  min={5} max={50} step={5}
                   formatValue={v => `${v.toFixed(0)}%`}
-                  minLabel="5% (tight)"
-                  maxLabel="50% (loose)"
+                  minLabel="5% (tight)" maxLabel="50% (loose)"
                   hint="Episode ends early when cumulative loss exceeds this threshold."
                 />
                 <SliderInput
                   label="Aggression Level"
                   value={form.riskProfile.aggressionLevel * 100}
-                  onChange={v =>
-                    setForm(f => ({
-                      ...f,
-                      riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 },
-                    }))
-                  }
-                  min={0}
-                  max={100}
-                  step={10}
+                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 } }))}
+                  min={0} max={100} step={10}
                   formatValue={v => aggressionLabel(v / 100)}
-                  minLabel="Passive"
-                  maxLabel="Aggressive"
+                  minLabel="Passive" maxLabel="Aggressive"
                   hint="Scales position size, exploration rate, and loss penalty."
                 />
               </div>
+            </div>
+
+            {/* ── Execution Defaults (collapsible) ──────────────────────── */}
+            <div className="mt-5 border-t border-surface pt-4">
+              <button
+                type="button"
+                className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors"
+                onClick={() => patchForm('showExecDefaults', !form.showExecDefaults)}
+              >
+                <FontAwesomeIcon icon={form.showExecDefaults ? faChevronUp : faChevronDown} className="w-3 h-3" />
+                Execution Defaults
+              </button>
+              {form.showExecDefaults && (
+                <div className="mt-4 space-y-5">
+                  <div>
+                    <p className="text-xs text-text-muted mb-3">Position Sizing</p>
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                      <SliderInput
+                        label="Position Size %"
+                        value={form.positionSizePct * 100}
+                        onChange={v => patchForm('positionSizePct', v / 100)}
+                        min={5} max={100} step={5}
+                        formatValue={v => `${v.toFixed(0)}%`}
+                        minLabel="5%" maxLabel="100%"
+                        hint="Fraction of margin allocated per leg."
+                      />
+                      <TextInput
+                        label="Max Position BTC"
+                        value={String(form.maxPositionBtc)}
+                        onChange={v => patchForm('maxPositionBtc', parseFloat(v) || 5)}
+                      />
+                      <TextInput
+                        label="Min Order Size BTC"
+                        value={String(form.minOrderSize)}
+                        onChange={v => patchForm('minOrderSize', parseFloat(v) || 0.1)}
+                      />
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <SliderInput
+                      label="Max Margin Ratio"
+                      value={form.maxMarginRatio * 100}
+                      onChange={v => patchForm('maxMarginRatio', v / 100)}
+                      min={50} max={95} step={5}
+                      formatValue={v => `${v.toFixed(0)}%`}
+                      minLabel="50%" maxLabel="95%"
+                      hint="Max portfolio margin utilization before blocking new trades."
+                    />
+                    <SliderInput
+                      label="Delta Threshold"
+                      value={form.deltaThreshold * 100}
+                      onChange={v => patchForm('deltaThreshold', v / 100)}
+                      min={10} max={80} step={5}
+                      formatValue={v => `${v.toFixed(0)}%`}
+                      minLabel="10% (strict)" maxLabel="80% (loose)"
+                      hint="Net delta overshoot allowed before penalty kicks in."
+                    />
+                  </div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                    <TextInput
+                      label="Delta Penalty Coef"
+                      value={String(form.deltaPenaltyCoef)}
+                      onChange={v => patchForm('deltaPenaltyCoef', parseFloat(v) || 0.002)}
+                    />
+                    <TextInput
+                      label="Risk Free Rate"
+                      value={String(form.riskFreeRate)}
+                      onChange={v => patchForm('riskFreeRate', parseFloat(v) || 0.05)}
+                    />
+                    <div>
+                      <p className="text-xs text-text-muted mb-2">Fast Margin</p>
+                      <button
+                        type="button"
+                        onClick={() => patchForm('fastMargin', !form.fastMargin)}
+                        className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.fastMargin ? 'bg-brand' : 'bg-input-border'}`}
+                      >
+                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.fastMargin ? 'translate-x-6' : 'translate-x-1'}`} />
+                      </button>
+                      <p className="text-xs text-text-muted mt-1">Skip IV shocks — faster, less precise.</p>
+                    </div>
+                  </div>
+                </div>
+              )}
             </div>
 
             <div className="flex gap-3 mt-5">
