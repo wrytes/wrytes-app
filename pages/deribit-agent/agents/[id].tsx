@@ -167,6 +167,7 @@ const ACTION_BADGE: Record<string, { color: string; bg: string; label: string }>
   settlement_expired:    { color: 'text-amber-600',  bg: 'bg-amber-100/80',  label: 'Expired'  },
   open:                  { color: 'text-success',    bg: 'bg-success/10',    label: 'Open'     },
   close:                 { color: 'text-error',      bg: 'bg-error/10',      label: 'Close'    },
+  hold:                  { color: 'text-slate-400',  bg: 'bg-slate-100/40',  label: 'Hold'     },
 };
 
 const OPTION_CATEGORIES = [
@@ -385,18 +386,21 @@ export default function RunDetailPage() {
     const initCap = openingBalance ?? Number(runData.initialCapitalBtc);
     const labels = actions.map(a => fmtDate(a.timestamp));
 
+    // Use stored equityBtc (computed by run_session.py) for precise P&L tracking against
+    // openingBalance. Falls back to cumulative pnlBtc sum only for actions missing equityBtc.
     let cum = 0;
-    const cumPnlBtc = actions.map(a => {
+    const cumPnlBtc: (number | null)[] = actions.map(a => {
+      if (a.equityBtc != null) return +(Number(a.equityBtc) - initCap).toFixed(6);
       cum += Number(a.pnlBtc) || 0;
       return +cum.toFixed(6);
     });
-    const equityBtc = cumPnlBtc.map(c => +(initCap + c).toFixed(6));
+    const equityBtc = cumPnlBtc.map(c => c != null ? +(initCap + c).toFixed(6) : null);
     const btcPrice = actions.map(a => (a.btcPrice != null ? Number(a.btcPrice) : null));
     const equityUsd = equityBtc.map((e, i) =>
-      btcPrice[i] != null ? +(e * btcPrice[i]!).toFixed(0) : null
+      e != null && btcPrice[i] != null ? +(e * btcPrice[i]!).toFixed(0) : null
     );
     const cumPnlUsd = cumPnlBtc.map((p, i) =>
-      btcPrice[i] != null ? +(p * btcPrice[i]!).toFixed(0) : null
+      p != null && btcPrice[i] != null ? +(p * btcPrice[i]!).toFixed(0) : null
     );
     const rewardBar = actions.map(a => Number(a.pnlBtc) || 0);
     const ivData = actions.map(a => (a.ivRank != null ? Number(a.ivRank) : null));
@@ -681,13 +685,29 @@ export default function RunDetailPage() {
     optionSummary[cat].total += (Number(a.cashflowBtc) || 0) - (Number(a.feeBtc) || 0);
   });
 
-  // equity and cashflowBtc are computed by run_session.py and stored in the DB.
-  // The app only needs to derive cumPnl = equity − openingBalance.
+  // equity and cashflowBtc are computed by run_session.py and stored in the DB as absolute
+  // values — no offset needed. prevEpochLast seeds the synthetic Init row so it shows the
+  // actual closing state of the prior epoch rather than the computed openingBalance.
+  const prevEpochLast = (() => {
+    if (!yearFilter) return null;
+    const prev = actions.filter(
+      a => new Date(a.timestamp).getFullYear() < parseInt(yearFilter) && a.actionType !== 'settlement_init'
+    );
+    if (!prev.length) return null;
+    const last = prev[prev.length - 1];
+    const equity = last.equityBtc != null
+      ? Number(last.equityBtc)
+      : (last.marginBalanceBtc != null ? Number(last.marginBalanceBtc) : null);
+    const margin = last.marginBalanceBtc != null ? Number(last.marginBalanceBtc) : equity;
+    return { equity, margin };
+  })();
+
   const actionLog = (() => {
     return yearActions.map(a => {
-      const equity = a.equityBtc != null ? Number(a.equityBtc) : (a.marginBalanceBtc != null ? Number(a.marginBalanceBtc) : 0);
+      const marginBalance = a.marginBalanceBtc != null ? Number(a.marginBalanceBtc) : null;
+      const equity = a.equityBtc != null ? Number(a.equityBtc) : (marginBalance ?? 0);
       const cumPnl = equity - openingBalance;
-      return { ...a, equity, cumPnl };
+      return { ...a, equity, cumPnl, marginBalance };
     });
   })();
 
@@ -701,7 +721,7 @@ export default function RunDetailPage() {
   // filtered log (newest first) — year already scoped via yearActions
   // settlement_init is always represented by the pinned opening-balance row, so exclude it here
   const filteredLog = [...actionLog].filter(a => {
-    if (a.actionType === 'settlement_init') return false;
+    if (a.actionType === 'settlement_init' || a.actionType === 'hold') return false;
     if (logTypeFilter && a.actionType !== logTypeFilter) return false;
     if (logSearch) {
       const q = logSearch.toLowerCase();
@@ -1322,8 +1342,8 @@ export default function RunDetailPage() {
                           <td className="px-3 py-1.5 text-right">{dash}</td>
                           <td className="px-3 py-1.5 text-right">{dash}</td>
                           <td className="px-3 py-1.5 text-right font-mono text-text-muted">{n(0)}</td>
-                          <td className="px-3 py-1.5 text-right font-mono">{n(openingBalance, 4)}</td>
-                          <td className="px-3 py-1.5 text-right font-mono">{n(openingBalance, 4)}</td>
+                          <td className="px-3 py-1.5 text-right font-mono">{n(prevEpochLast?.margin ?? openingBalance, 4)}</td>
+                          <td className="px-3 py-1.5 text-right font-mono">{n(prevEpochLast?.equity ?? openingBalance, 4)}</td>
                         </tr>
                       );
                     })()}
@@ -1413,7 +1433,7 @@ export default function RunDetailPage() {
                           </td>
                           {/* Margin */}
                           <td className="px-3 py-1.5 text-right font-mono">
-                            {a.marginBalanceBtc != null ? n(a.marginBalanceBtc, 4) : '—'}
+                            {a.marginBalance != null ? n(a.marginBalance, 4) : '—'}
                           </td>
                           {/* Equity */}
                           <td className="px-3 py-1.5 text-right font-mono">
