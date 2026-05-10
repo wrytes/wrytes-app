@@ -132,8 +132,12 @@ export interface AgentAction {
   pnlBtc?: number | null;
   /** Fee paid in BTC. Present on open and close events; 0 on settlement_expired; null on marks. */
   feeBtc?: number | null;
-  /** Daily time decay in BTC per unit (negative value — option loses this much per day). Present on open and settlement_unrealized. */
+  /** Daily time decay in BTC per unit (negative). Present on open and settlement_unrealized. */
   thetaBtc?: number | null;
+  /** Gross BTC in (open) or out (close/expired) before fees. Null on marks and init. */
+  cashflowBtc?: number | null;
+  /** margin − Σ(mktPrem × size for open positions) at event time. The true economic value. */
+  equityBtc?: number | null;
   marginBalanceBtc?: number;
   reason?: string;
 }

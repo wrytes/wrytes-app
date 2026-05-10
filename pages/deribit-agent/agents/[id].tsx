@@ -136,14 +136,6 @@ function instrStrike(instrument?: string | null): number | null {
   return isNaN(k) ? null : k;
 }
 
-const ACTION_COLORS: Record<string, string> = {
-  settlement_init:       '#64748b',
-  settlement_unrealized: '#0ea5e9',
-  settlement_expired:    '#f59e0b',
-  open:                  '#22c55e',
-  close:                 '#ef4444',
-};
-
 const ACTION_BADGE: Record<string, { color: string; bg: string; label: string }> = {
   settlement_init:       { color: 'text-slate-500',  bg: 'bg-slate-100/60',  label: 'Init'     },
   settlement_unrealized: { color: 'text-sky-600',    bg: 'bg-sky-100/80',    label: 'Mark'     },
@@ -152,31 +144,49 @@ const ACTION_BADGE: Record<string, { color: string; bg: string; label: string }>
   close:                 { color: 'text-error',      bg: 'bg-error/10',      label: 'Close'    },
 };
 
-function cashflow(a: AgentAction): number | null {
-  const qty = a.quantity != null ? Number(a.quantity) : null;
-  const p   = a.price   != null ? Number(a.price)    : null;
-  if (qty == null || p == null) return null;
-  if (a.actionType === 'open')               return  p * qty;   // premium inflow
-  if (a.actionType === 'close')              return -(p * qty);  // buyback outflow
-  if (a.actionType === 'settlement_expired') return -(p * qty);  // settlement payout (0 if OTM)
+const OPTION_CATEGORIES = [
+  'Calls Opened',
+  'Calls Closed',
+  'Calls Expired',
+  'Puts Opened',
+  'Puts Closed',
+  'Puts Expired',
+] as const;
+
+const OPTION_COLORS: Record<string, string> = {
+  'Calls Opened':  '#22c55e',
+  'Calls Closed':  '#ef4444',
+  'Calls Expired': '#f59e0b',
+  'Puts Opened':   '#3b82f6',
+  'Puts Closed':   '#8b5cf6',
+  'Puts Expired':  '#f97316',
+};
+
+const OPTION_BADGE: Record<string, { color: string; bg: string }> = {
+  'Calls Opened':  { color: 'text-success',       bg: 'bg-success/10'       },
+  'Calls Closed':  { color: 'text-error',         bg: 'bg-error/10'         },
+  'Calls Expired': { color: 'text-amber-600',     bg: 'bg-amber-100/80'     },
+  'Puts Opened':   { color: 'text-blue-600',      bg: 'bg-blue-100/80'      },
+  'Puts Closed':   { color: 'text-violet-600',    bg: 'bg-violet-100/80'    },
+  'Puts Expired':  { color: 'text-orange-600',    bg: 'bg-orange-100/80'    },
+};
+
+function optionCategory(a: AgentAction): string | null {
+  if (!a.instrument) return null;
+  const parts = a.instrument.split('-');
+  const optType = parts[parts.length - 1];
+  if (optType !== 'C' && optType !== 'P') return null;
+  const kind = optType === 'C' ? 'Calls' : 'Puts';
+  if (a.actionType === 'open') return `${kind} Opened`;
+  if (a.actionType === 'close') return `${kind} Closed`;
+  if (a.actionType === 'settlement_expired') return `${kind} Expired`;
   return null;
 }
 
-// Within-day event order: settlement phase first, then trade actions
-const TYPE_ORDER: Record<string, number> = {
-  settlement_init:       0,
-  settlement_expired:    1,
-  settlement_unrealized: 2,
-  open:                  3,
-  close:                 4,
-};
-
+// Events are stored with sequential millisecond timestamps by run_session.py,
+// so a simple ascending sort is sufficient — no type-based secondary key needed.
 function sortActions(raw: AgentAction[]): AgentAction[] {
-  return [...raw].sort((a, b) => {
-    const dt = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
-    if (dt !== 0) return dt;
-    return (TYPE_ORDER[a.actionType] ?? 5) - (TYPE_ORDER[b.actionType] ?? 5);
-  });
+  return [...raw].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 }
 
 const COMMON_LINE = { pointRadius: 0, borderWidth: 1.5, tension: 0.3 };
@@ -584,12 +594,13 @@ export default function RunDetailPage() {
       },
     });
 
-    // 7. Doughnut
-    const typeCnt: Record<string, number> = {};
+    // 7. Doughnut — option type breakdown
+    const optCnt: Record<string, number> = {};
     actions.forEach(a => {
-      typeCnt[a.actionType] = (typeCnt[a.actionType] || 0) + 1;
+      const cat = optionCategory(a);
+      if (cat) optCnt[cat] = (optCnt[cat] || 0) + 1;
     });
-    const pieL = Object.keys(typeCnt);
+    const pieL = OPTION_CATEGORIES.filter(k => (optCnt[k] ?? 0) > 0);
     const el7 = document.getElementById('c-pie') as HTMLCanvasElement | null;
     if (el7) {
       chartsRef.current['c-pie'] = new ChartJS<'doughnut'>(el7, {
@@ -598,8 +609,8 @@ export default function RunDetailPage() {
           labels: pieL,
           datasets: [
             {
-              data: pieL.map(k => typeCnt[k]),
-              backgroundColor: pieL.map(k => ACTION_COLORS[k] || '#94a3b8'),
+              data: pieL.map(k => optCnt[k]),
+              backgroundColor: pieL.map(k => OPTION_COLORS[k]),
               borderWidth: 1,
             },
           ],
@@ -654,45 +665,23 @@ export default function RunDetailPage() {
   const lastBtc = yearActions.length ? Number(yearActions[yearActions.length - 1].btcPrice) || 0 : 0;
   const finalEq = openingBalance + totalPnl;
 
-  // type breakdown
-  const typeSummary: Record<string, { count: number; total: number }> = {};
+  // option-type breakdown
+  const optionSummary: Record<string, { count: number; total: number }> = {};
   yearActions.forEach(a => {
-    if (!typeSummary[a.actionType]) typeSummary[a.actionType] = { count: 0, total: 0 };
-    typeSummary[a.actionType].count++;
-    typeSummary[a.actionType].total += Number(a.pnlBtc) || 0;
+    const cat = optionCategory(a);
+    if (!cat) return;
+    if (!optionSummary[cat]) optionSummary[cat] = { count: 0, total: 0 };
+    optionSummary[cat].count++;
+    optionSummary[cat].total += Number(a.pnlBtc) || 0;
   });
 
-  // cumulative realized pnl + per-row equity
-  // equity = margin − Σ(mktPrem × size) for open positions
-  // mirrors the env: equity_btc = margin_balance + unrealized_btc, where unrealized_btc = −liability
+  // equity and cashflowBtc are computed by run_session.py and stored in the DB.
+  // The app only needs to derive cumPnl = equity − openingBalance.
   const actionLog = (() => {
-    let realizedPnl = 0; // used only as fallback when marginBalanceBtc is missing
-    const openPos = new Map<string, { size: number; mktPrem: number }>();
-
     return yearActions.map(a => {
-      realizedPnl += Number(a.pnlBtc) || 0;
-
-      const instr = a.instrument ?? '';
-      const qty   = a.quantity != null ? Number(a.quantity) : 0;
-      const price = a.price    != null ? Number(a.price)    : 0;
-
-      if (a.actionType === 'open') {
-        openPos.set(instr, { size: qty, mktPrem: price });
-      } else if (a.actionType === 'settlement_unrealized') {
-        const existing = openPos.get(instr);
-        openPos.set(instr, { size: existing?.size ?? qty, mktPrem: price });
-      } else if (a.actionType === 'close' || a.actionType === 'settlement_expired') {
-        openPos.delete(instr);
-      }
-
-      let totalLiability = 0;
-      for (const pos of openPos.values()) totalLiability += pos.mktPrem * pos.size;
-
-      const margin = a.marginBalanceBtc != null ? Number(a.marginBalanceBtc) : openingBalance + realizedPnl;
-      const equity = margin - totalLiability;
-      const cumPnl = equity - openingBalance; // total P&L = equity change from opening balance
-
-      return { ...a, cumPnl, equity };
+      const equity = a.equityBtc != null ? Number(a.equityBtc) : (a.marginBalanceBtc != null ? Number(a.marginBalanceBtc) : 0);
+      const cumPnl = equity - openingBalance;
+      return { ...a, equity, cumPnl };
     });
   })();
 
@@ -1110,46 +1099,45 @@ export default function RunDetailPage() {
               <ChartBox id="c-iv" title="IV Rank & Portfolio Delta" height={200} />
             </div>
 
-            {/* Action breakdown */}
+            {/* Option breakdown */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
-              <ChartBox id="c-pie" title="Action Breakdown" height={200} />
+              <ChartBox id="c-pie" title="Option Breakdown" height={200} />
               <Card>
                 <p className="text-text-secondary text-xs font-semibold uppercase tracking-wider mb-3">
-                  By Action Type
+                  By Option Type
                 </p>
                 <table className="w-full text-sm">
                   <thead>
                     <tr className="border-b border-surface">
-                      <th className="text-left text-text-muted font-medium py-2">Type</th>
+                      <th className="text-left text-text-muted font-medium py-2">Category</th>
                       <th className="text-right text-text-muted font-medium py-2">Count</th>
                       <th className="text-right text-text-muted font-medium py-2">Total (₿)</th>
                       <th className="text-right text-text-muted font-medium py-2">Avg (₿)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {Object.entries(typeSummary)
-                      .sort((a, b) => b[1].count - a[1].count)
-                      .map(([type, s]) => {
-                        const avg = s.total / s.count;
-                        const style = ACTION_BADGE[type] ?? { color: 'text-text-secondary', bg: 'bg-surface', label: type };
-                        return (
-                          <tr key={type} className="border-b border-surface/50">
-                            <td className="py-2">
-                              <Badge
-                                text={style.label}
-                                variant="custom"
-                                customColor={style.color}
-                                customBgColor={style.bg}
-                              />
-                            </td>
-                            <td className="text-right text-text-primary font-mono">{s.count}</td>
-                            <td className={`text-right font-mono ${clsColor(s.total)}`}>
-                              {n(s.total)}
-                            </td>
-                            <td className={`text-right font-mono ${clsColor(avg)}`}>{n(avg)}</td>
-                          </tr>
-                        );
-                      })}
+                    {OPTION_CATEGORIES.map(cat => {
+                      const s = optionSummary[cat] ?? { count: 0, total: 0 };
+                      const avg = s.count ? s.total / s.count : 0;
+                      const style = OPTION_BADGE[cat];
+                      return (
+                        <tr key={cat} className="border-b border-surface/50">
+                          <td className="py-2">
+                            <Badge
+                              text={cat}
+                              variant="custom"
+                              customColor={style.color}
+                              customBgColor={style.bg}
+                            />
+                          </td>
+                          <td className="text-right text-text-primary font-mono">{s.count}</td>
+                          <td className={`text-right font-mono ${clsColor(s.total)}`}>
+                            {n(s.total)}
+                          </td>
+                          <td className={`text-right font-mono ${clsColor(avg)}`}>{n(avg)}</td>
+                        </tr>
+                      );
+                    })}
                   </tbody>
                 </table>
               </Card>
@@ -1235,15 +1223,13 @@ export default function RunDetailPage() {
                           ? (btcP != null && k != null && k > btcP)
                           : false;
 
-                      // For open: price = original premium (executedPrice not set yet).
-                      // For mark/expired/close: executedPrice = original premium, price = current mark/intrinsic/buyback.
-                      // At open, mktPrem = origPrem (just sold at market → size×(orig−mkt) = 0).
-                      const isOpen   = a.actionType === 'open';
-                      const origPrem = isOpen ? a.price : a.executedPrice;
-                      const mktPrem  = isOpen ? a.price : a.price;   // open: same as orig; others: current mark
+                      // executedPrice is always the original premium (set by run_session for all types).
+                      // price is the current mark/intrinsic/buyback depending on event type.
+                      // At open, both are equal (just sold at market → unrealized = 0).
+                      const origPrem = a.executedPrice;
+                      const mktPrem  = a.price;
 
-                      // PnL: for unrealized marks, derive from size × (orig − mkt) since pnlBtc is null.
-                      // For open: size×(orig−mkt) = 0, which is intentional.
+                      // For unrealized marks pnlBtc is null — derive display PnL from size × (orig − mkt).
                       const unrealPnl =
                         a.pnlBtc == null && origPrem != null && mktPrem != null && a.quantity != null
                           ? Number(a.quantity) * (Number(origPrem) - Number(mktPrem))
@@ -1292,15 +1278,10 @@ export default function RunDetailPage() {
                           <td className="px-3 py-1.5 text-right font-mono text-text-muted">
                             {mktPrem != null ? n(mktPrem, 6) : '—'}
                           </td>
-                          {/* Cashflow: actual BTC in (+) or out (−) */}
-                          {(() => {
-                            const cf = cashflow(a);
-                            return (
-                              <td className={`px-3 py-1.5 text-right font-mono ${cf != null ? clsColor(cf) : 'text-text-muted'}`}>
-                                {cf != null ? n(cf) : '—'}
-                              </td>
-                            );
-                          })()}
+                          {/* Cashflow: actual BTC in (+) or out (−), stored by run_session */}
+                          <td className={`px-3 py-1.5 text-right font-mono ${a.cashflowBtc != null ? clsColor(Number(a.cashflowBtc)) : 'text-text-muted'}`}>
+                            {a.cashflowBtc != null ? n(a.cashflowBtc) : '—'}
+                          </td>
                           {/* Fee — shown as negative (it's a cost) */}
                           <td className="px-3 py-1.5 text-right font-mono text-error">
                             {a.feeBtc != null && Number(a.feeBtc) !== 0
