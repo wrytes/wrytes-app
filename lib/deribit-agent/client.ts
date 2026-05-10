@@ -254,7 +254,7 @@ export interface RiskProfile {
 export interface CreateSessionBody {
   name: string;
   description?: string;
-  currency: string;
+  currency?: string;             // optional when resumeFromModelId is set
   dataFrom: string;
   dataTo: string;
   resolution?: string;
@@ -266,6 +266,7 @@ export interface CreateSessionBody {
   rollDteThreshold?: number;
   riskProfile?: RiskProfile;
   hyperparams?: Record<string, any>;
+  resumeFromModelId?: string;
 }
 
 export interface CreateAccountBody {

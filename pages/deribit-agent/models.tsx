@@ -3,7 +3,15 @@ import { useState, useMemo } from 'react';
 import { AgentError } from '@/components/features/DeribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBrain, faPlus, faBan, faTrash, faPlay, faChevronDown, faChevronUp } from '@fortawesome/free-solid-svg-icons';
+import {
+  faBrain,
+  faPlus,
+  faBan,
+  faTrash,
+  faPlay,
+  faChevronDown,
+  faChevronUp,
+} from '@fortawesome/free-solid-svg-icons';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
@@ -38,9 +46,13 @@ const ALGORITHM_OPTIONS = [
 
 // Quick-selector chips — check/uncheck all actions in the group
 const STRATEGY_CHIPS = [
-  { value: 'short_call',    label: 'Short Call',    ids: [1,2,3,4,5,6,7] },
-  { value: 'short_put',     label: 'Short Put',     ids: [8,9,10,11,12] },
-  { value: 'delta_neutral', label: 'Delta Neutral', ids: [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15] },
+  { value: 'short_call', label: 'Short Call', ids: [1, 2, 3, 4, 5, 6, 7] },
+  { value: 'short_put', label: 'Short Put', ids: [8, 9, 10, 11, 12] },
+  {
+    value: 'delta_neutral',
+    label: 'Delta Neutral',
+    ids: [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15],
+  },
 ];
 
 // 27-action list grouped for display
@@ -48,23 +60,31 @@ const ACTION_GROUPS = [
   {
     label: 'Open Calls',
     actions: [
-      { id: 1, label: 'ATM (Δ50)' }, { id: 2, label: 'OTM Δ40' }, { id: 3, label: 'OTM Δ30' },
-      { id: 4, label: 'OTM Δ20' },   { id: 5, label: 'ITM Δ60' }, { id: 6, label: 'ITM Δ70' },
+      { id: 1, label: 'ATM (Δ50)' },
+      { id: 2, label: 'OTM Δ40' },
+      { id: 3, label: 'OTM Δ30' },
+      { id: 4, label: 'OTM Δ20' },
+      { id: 5, label: 'ITM Δ60' },
+      { id: 6, label: 'ITM Δ70' },
       { id: 7, label: 'ITM Δ80' },
     ],
   },
   {
     label: 'Open Puts',
     actions: [
-      { id: 8, label: 'ATM (Δ50)' },     { id: 9, label: 'OTM Δ40' },
-      { id: 10, label: 'OTM Δ30' },      { id: 11, label: 'OTM Δ20' },
+      { id: 8, label: 'ATM (Δ50)' },
+      { id: 9, label: 'OTM Δ40' },
+      { id: 10, label: 'OTM Δ30' },
+      { id: 11, label: 'OTM Δ20' },
       { id: 12, label: 'Far OTM Δ10' },
     ],
   },
   {
     label: 'Strangles',
     actions: [
-      { id: 13, label: 'Δ40/Δ40' }, { id: 14, label: 'Δ30/Δ30' }, { id: 15, label: 'Δ20/Δ20' },
+      { id: 13, label: 'Δ40/Δ40' },
+      { id: 14, label: 'Δ30/Δ30' },
+      { id: 15, label: 'Δ20/Δ20' },
     ],
   },
   {
@@ -74,15 +94,21 @@ const ACTION_GROUPS = [
   {
     label: 'Close Call at Profit',
     actions: [
-      { id: 17, label: '≥25%' }, { id: 18, label: '≥50%' }, { id: 19, label: '≥60%' },
-      { id: 20, label: '≥70%' }, { id: 21, label: '≥80%' },
+      { id: 17, label: '≥25%' },
+      { id: 18, label: '≥50%' },
+      { id: 19, label: '≥60%' },
+      { id: 20, label: '≥70%' },
+      { id: 21, label: '≥80%' },
     ],
   },
   {
     label: 'Close Put at Profit',
     actions: [
-      { id: 22, label: '≥25%' }, { id: 23, label: '≥50%' }, { id: 24, label: '≥60%' },
-      { id: 25, label: '≥70%' }, { id: 26, label: '≥80%' },
+      { id: 22, label: '≥25%' },
+      { id: 23, label: '≥50%' },
+      { id: 24, label: '≥60%' },
+      { id: 25, label: '≥70%' },
+      { id: 26, label: '≥80%' },
     ],
   },
 ];
@@ -119,15 +145,17 @@ const BLANK_SESSION = {
   totalTimesteps: 100_000,
   learningRate: 0.005,
   // Execution defaults (stored in hyperparams.env)
-  positionSizePct: 1.0,
+  positionSizePct: 0.8,
   maxPositionBtc: 5.0,
   minOrderSize: 0.1,
   maxMarginRatio: 0.8,
-  deltaThreshold: 0.30,
+  deltaThreshold: 0.3,
   deltaPenaltyCoef: 0.002,
   riskFreeRate: 0.05,
   fastMargin: true,
   showExecDefaults: false,
+  // Continue-training fields
+  resumeFromModelId: '',
 };
 
 function aggressionLabel(level: number): string {
@@ -147,7 +175,7 @@ function resolveModelName(m: TrainedModel): string {
 function fmtSteps(n?: number | null): string {
   if (!n) return '—';
   if (n >= 1_000_000) return `${(n / 1_000_000).toFixed(1)}M`;
-  if (n >= 1_000)     return `${Math.round(n / 1_000)}k`;
+  if (n >= 1_000) return `${Math.round(n / 1_000)}k`;
   return String(n);
 }
 
@@ -159,6 +187,7 @@ function fmtSize(bytes?: number): string {
 
 export default function ModelsPage() {
   const [showCreate, setShowCreate] = useState(false);
+  const [createMode, setCreateMode] = useState<'new' | 'continue'>('new');
   const [form, setForm] = useState(BLANK_SESSION);
   const [submitting, setSubmitting] = useState(false);
   const [cancelling, setCancelling] = useState<string | null>(null);
@@ -310,8 +339,16 @@ export default function ModelsPage() {
   };
 
   const createSession = async () => {
-    if (!form.name || !form.currency || !form.dataFrom || !form.dataTo) {
-      toast.error('Name, currency, data from and data to are required.');
+    if (!form.name || !form.dataFrom || !form.dataTo) {
+      toast.error('Name, data from and data to are required.');
+      return;
+    }
+    if (createMode === 'new' && !form.currency) {
+      toast.error('Currency is required.');
+      return;
+    }
+    if (createMode === 'continue' && !form.resumeFromModelId) {
+      toast.error('Select a base model to continue training from.');
       return;
     }
     if (!form.allowedActions.length) {
@@ -323,38 +360,39 @@ export default function ModelsPage() {
       await agentFetch('/training/sessions', {
         method: 'POST',
         body: JSON.stringify({
-          name:             form.name,
-          description:      form.description || undefined,
-          currency:         form.currency,
-          dataFrom:         new Date(form.dataFrom).toISOString(),
-          dataTo:           new Date(form.dataTo + 'T23:59:59').toISOString(),
-          resolution:       form.resolution,
-          algorithm:        form.algorithm,
-          allowedActions:   form.allowedActions,
-          expiryDaysMin:    form.expiryDaysMin,
-          expiryDaysMax:    form.expiryDaysMax,
+          name: form.name,
+          description: form.description || undefined,
+          ...(createMode === 'new' && { currency: form.currency, algorithm: form.algorithm }),
+          ...(createMode === 'continue' && { resumeFromModelId: form.resumeFromModelId }),
+          dataFrom: new Date(form.dataFrom).toISOString(),
+          dataTo: new Date(form.dataTo + 'T23:59:59').toISOString(),
+          resolution: form.resolution,
+          allowedActions: form.allowedActions,
+          expiryDaysMin: form.expiryDaysMin,
+          expiryDaysMax: form.expiryDaysMax,
           rollDteThreshold: form.rollDteThreshold,
-          riskProfile:      form.riskProfile,
+          riskProfile: form.riskProfile,
           hyperparams: {
             training: {
               total_timesteps: form.totalTimesteps,
-              learning_rate:   form.learningRate,
+              learning_rate: form.learningRate,
             },
             env: {
-              position_size_pct:  form.positionSizePct,
-              max_position_btc:   form.maxPositionBtc,
-              min_order_size:     form.minOrderSize,
-              max_margin_ratio:   form.maxMarginRatio,
-              delta_threshold:    form.deltaThreshold,
+              position_size_pct: form.positionSizePct,
+              max_position_btc: form.maxPositionBtc,
+              min_order_size: form.minOrderSize,
+              max_margin_ratio: form.maxMarginRatio,
+              delta_threshold: form.deltaThreshold,
               delta_penalty_coef: form.deltaPenaltyCoef,
-              risk_free_rate:     form.riskFreeRate,
-              fast_margin:        form.fastMargin,
+              risk_free_rate: form.riskFreeRate,
+              fast_margin: form.fastMargin,
             },
           },
         } satisfies CreateSessionBody),
       });
       toast.success('Training session queued.');
       setForm(BLANK_SESSION);
+      setCreateMode('new');
       setShowCreate(false);
       sessions.refetch();
     } catch (e) {
@@ -451,7 +489,11 @@ export default function ModelsPage() {
           actions={
             <button
               type="button"
-              onClick={() => setShowCreate(v => !v)}
+              onClick={() => {
+                setShowCreate(v => !v);
+                setCreateMode('new');
+                setForm(BLANK_SESSION);
+              }}
               className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-opacity-90 transition-colors"
             >
               <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
@@ -463,12 +505,79 @@ export default function ModelsPage() {
         {/* ── Create form ────────────────────────────────────────────────────── */}
         {showCreate && (
           <Card className="mt-4">
-            <p className="text-sm font-semibold text-text-primary mb-4">Create Training Model</p>
+            <p className="text-sm font-semibold text-text-primary mb-4">Create Training Session</p>
+
+            {/* Mode toggle */}
+            <div className="flex gap-1 p-1 bg-surface rounded-lg w-fit mb-5">
+              <button
+                type="button"
+                onClick={() => setCreateMode('new')}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  createMode === 'new'
+                    ? 'bg-card text-text-primary shadow-sm'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                New Model
+              </button>
+              <button
+                type="button"
+                onClick={() => setCreateMode('continue')}
+                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-colors ${
+                  createMode === 'continue'
+                    ? 'bg-card text-text-primary shadow-sm'
+                    : 'text-text-muted hover:text-text-secondary'
+                }`}
+              >
+                Continue Training
+              </button>
+            </div>
+
+            {/* Base model selector (continue mode only) */}
+            {createMode === 'continue' &&
+              (() => {
+                const completedModels = (models.data ?? []).filter(
+                  m => !m.session?.status || m.session.status === 'COMPLETED'
+                );
+                const selectedBase = completedModels.find(m => m.id === form.resumeFromModelId);
+                return (
+                  <>
+                    <SelectInput
+                      label="Base Model"
+                      options={[
+                        { value: '', label: 'Select a model to continue from…' },
+                        ...completedModels.map(m => ({
+                          value: m.id,
+                          label: `${resolveModelName(m)} · ${m.session?.currency ?? '?'} · ${m.session?.algorithm ?? 'PPO'}`,
+                        })),
+                      ]}
+                      value={form.resumeFromModelId}
+                      onChange={v => patchForm('resumeFromModelId', v)}
+                    />
+                    {selectedBase && (
+                      <div className="flex items-center gap-2 mt-2">
+                        <span className="text-xs text-text-muted">Inherits:</span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-surface border border-input-border text-text-secondary">
+                          {selectedBase.session?.currency ?? '?'}
+                        </span>
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-surface border border-input-border text-text-secondary">
+                          {selectedBase.session?.algorithm ?? 'PPO'}
+                        </span>
+                        {selectedBase.metadata?.obs_version && (
+                          <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-mono bg-surface border border-input-border text-text-muted">
+                            obs {selectedBase.metadata.obs_version}
+                          </span>
+                        )}
+                      </div>
+                    )}
+                  </>
+                );
+              })()}
 
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <TextInput
                 label="Name"
-                placeholder="btc-ppo-v1"
+                placeholder="btc-ppo-v2"
                 value={form.name}
                 onChange={v => patchForm('name', v)}
               />
@@ -478,18 +587,22 @@ export default function ModelsPage() {
                 value={form.description ?? ''}
                 onChange={v => patchForm('description', v)}
               />
-              <SelectInput
-                label="Currency"
-                options={CURRENCY_OPTIONS}
-                value={form.currency}
-                onChange={v => patchForm('currency', v)}
-              />
-              <SelectInput
-                label="Algorithm"
-                options={ALGORITHM_OPTIONS}
-                value={form.algorithm ?? 'PPO'}
-                onChange={v => patchForm('algorithm', v)}
-              />
+              {createMode === 'new' && (
+                <>
+                  <SelectInput
+                    label="Currency"
+                    options={CURRENCY_OPTIONS}
+                    value={form.currency}
+                    onChange={v => patchForm('currency', v)}
+                  />
+                  <SelectInput
+                    label="Algorithm"
+                    options={ALGORITHM_OPTIONS}
+                    value={form.algorithm ?? 'PPO'}
+                    onChange={v => patchForm('algorithm', v)}
+                  />
+                </>
+              )}
               <TextInput
                 label="Data From"
                 type="date"
@@ -592,7 +705,9 @@ export default function ModelsPage() {
                 <TextInput
                   label="Max DTE"
                   value={String(form.expiryDaysMax)}
-                  onChange={v => patchForm('expiryDaysMax', Math.max(form.expiryDaysMin, parseInt(v) || 7))}
+                  onChange={v =>
+                    patchForm('expiryDaysMax', Math.max(form.expiryDaysMin, parseInt(v) || 7))
+                  }
                 />
                 <SliderInput
                   label="Roll threshold (DTE)"
@@ -601,7 +716,7 @@ export default function ModelsPage() {
                   min={0}
                   max={7}
                   step={1}
-                  formatValue={v => v === 0 ? 'Hold to expiry' : `Roll at ≤${v}d`}
+                  formatValue={v => (v === 0 ? 'Hold to expiry' : `Roll at ≤${v}d`)}
                   minLabel="Hold"
                   maxLabel="Roll early"
                   hint="Close positions early when DTE reaches this threshold."
@@ -618,19 +733,35 @@ export default function ModelsPage() {
                 <SliderInput
                   label="Max Drawdown"
                   value={form.riskProfile.maxDrawdown * 100}
-                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 } }))}
-                  min={5} max={50} step={5}
+                  onChange={v =>
+                    setForm(f => ({
+                      ...f,
+                      riskProfile: { ...f.riskProfile, maxDrawdown: v / 100 },
+                    }))
+                  }
+                  min={5}
+                  max={50}
+                  step={5}
                   formatValue={v => `${v.toFixed(0)}%`}
-                  minLabel="5% (tight)" maxLabel="50% (loose)"
+                  minLabel="5% (tight)"
+                  maxLabel="50% (loose)"
                   hint="Episode ends early when cumulative loss exceeds this threshold."
                 />
                 <SliderInput
                   label="Aggression Level"
                   value={form.riskProfile.aggressionLevel * 100}
-                  onChange={v => setForm(f => ({ ...f, riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 } }))}
-                  min={0} max={100} step={10}
+                  onChange={v =>
+                    setForm(f => ({
+                      ...f,
+                      riskProfile: { ...f.riskProfile, aggressionLevel: v / 100 },
+                    }))
+                  }
+                  min={0}
+                  max={100}
+                  step={10}
                   formatValue={v => aggressionLabel(v / 100)}
-                  minLabel="Passive" maxLabel="Aggressive"
+                  minLabel="Passive"
+                  maxLabel="Aggressive"
                   hint="Scales position size, exploration rate, and loss penalty."
                 />
               </div>
@@ -643,7 +774,10 @@ export default function ModelsPage() {
                 className="flex items-center gap-2 text-xs font-semibold text-text-muted uppercase tracking-wider hover:text-text-primary transition-colors"
                 onClick={() => patchForm('showExecDefaults', !form.showExecDefaults)}
               >
-                <FontAwesomeIcon icon={form.showExecDefaults ? faChevronUp : faChevronDown} className="w-3 h-3" />
+                <FontAwesomeIcon
+                  icon={form.showExecDefaults ? faChevronUp : faChevronDown}
+                  className="w-3 h-3"
+                />
                 Execution Defaults
               </button>
               {form.showExecDefaults && (
@@ -655,9 +789,12 @@ export default function ModelsPage() {
                         label="Position Size %"
                         value={form.positionSizePct * 100}
                         onChange={v => patchForm('positionSizePct', v / 100)}
-                        min={5} max={100} step={5}
+                        min={5}
+                        max={100}
+                        step={5}
                         formatValue={v => `${v.toFixed(0)}%`}
-                        minLabel="5%" maxLabel="100%"
+                        minLabel="5%"
+                        maxLabel="100%"
                         hint="Fraction of margin allocated per leg."
                       />
                       <TextInput
@@ -677,18 +814,24 @@ export default function ModelsPage() {
                       label="Max Margin Ratio"
                       value={form.maxMarginRatio * 100}
                       onChange={v => patchForm('maxMarginRatio', v / 100)}
-                      min={50} max={95} step={5}
+                      min={50}
+                      max={95}
+                      step={5}
                       formatValue={v => `${v.toFixed(0)}%`}
-                      minLabel="50%" maxLabel="95%"
+                      minLabel="50%"
+                      maxLabel="95%"
                       hint="Max portfolio margin utilization before blocking new trades."
                     />
                     <SliderInput
                       label="Delta Threshold"
                       value={form.deltaThreshold * 100}
                       onChange={v => patchForm('deltaThreshold', v / 100)}
-                      min={10} max={80} step={5}
+                      min={10}
+                      max={80}
+                      step={5}
                       formatValue={v => `${v.toFixed(0)}%`}
-                      minLabel="10% (strict)" maxLabel="80% (loose)"
+                      minLabel="10% (strict)"
+                      maxLabel="80% (loose)"
                       hint="Net delta overshoot allowed before penalty kicks in."
                     />
                   </div>
@@ -710,9 +853,13 @@ export default function ModelsPage() {
                         onClick={() => patchForm('fastMargin', !form.fastMargin)}
                         className={`relative inline-flex h-6 w-11 items-center rounded-full transition-colors ${form.fastMargin ? 'bg-brand' : 'bg-input-border'}`}
                       >
-                        <span className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.fastMargin ? 'translate-x-6' : 'translate-x-1'}`} />
+                        <span
+                          className={`inline-block h-4 w-4 transform rounded-full bg-white transition-transform ${form.fastMargin ? 'translate-x-6' : 'translate-x-1'}`}
+                        />
                       </button>
-                      <p className="text-xs text-text-muted mt-1">Skip IV shocks — faster, less precise.</p>
+                      <p className="text-xs text-text-muted mt-1">
+                        Skip IV shocks — faster, less precise.
+                      </p>
                     </div>
                   </div>
                 </div>
@@ -730,7 +877,11 @@ export default function ModelsPage() {
               </button>
               <button
                 type="button"
-                onClick={() => setShowCreate(false)}
+                onClick={() => {
+                  setShowCreate(false);
+                  setCreateMode('new');
+                  setForm(BLANK_SESSION);
+                }}
                 className="px-4 py-2 rounded-lg text-sm text-text-secondary hover:text-text-primary transition-colors"
               >
                 Cancel
