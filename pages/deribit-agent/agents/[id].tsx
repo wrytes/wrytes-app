@@ -215,7 +215,7 @@ function sortActions(raw: AgentAction[]): AgentAction[] {
   return [...raw].sort((a, b) => new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime());
 }
 
-const COMMON_LINE = { pointRadius: 0, borderWidth: 1.5, tension: 0.3 };
+const COMMON_LINE = { pointRadius: 0, borderWidth: 1.5, tension: 0.3, spanGaps: true };
 
 // ─── Chart canvas wrapper ─────────────────────────────────────────────────────
 
@@ -287,20 +287,23 @@ export default function RunDetailPage() {
   }, [run.data]);
 
   // Debounce-save execForm to DB
+  const flushSettings = useCallback(async (form: ReturnType<typeof mkBlankExec>) => {
+    if (!runId) return;
+    await agentFetch(`/agent/runs/${runId}/settings`, {
+      method: 'PATCH',
+      body: JSON.stringify(form),
+    });
+    setSettingsSaved(true);
+    setTimeout(() => setSettingsSaved(false), 1500);
+  }, [runId]);
+
   const saveSettings = useCallback((form: ReturnType<typeof mkBlankExec>) => {
     if (!runId || !execFormLoaded.current) return;
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(async () => {
-      try {
-        await agentFetch(`/agent/runs/${runId}/settings`, {
-          method: 'PATCH',
-          body: JSON.stringify(form),
-        });
-        setSettingsSaved(true);
-        setTimeout(() => setSettingsSaved(false), 1500);
-      } catch {}
+    debounceRef.current = setTimeout(() => {
+      flushSettings(form).catch(() => {});
     }, 800);
-  }, [runId]);
+  }, [runId, flushSettings]);
 
   useEffect(() => {
     if (!execFormLoaded.current) return;
@@ -323,6 +326,13 @@ export default function RunDetailPage() {
     }
     setExecuting(true);
     try {
+      // Cancel pending debounce and flush settings synchronously before execute
+      // so the server always reads the latest form values from the DB.
+      if (debounceRef.current) {
+        clearTimeout(debounceRef.current);
+        debounceRef.current = null;
+      }
+      await flushSettings(execForm);
       await agentFetch(`/agent/runs/${runId}/execute`, {
         method: 'POST',
         body: JSON.stringify({
@@ -408,18 +418,23 @@ export default function RunDetailPage() {
 
     const callStrike: (number | null)[] = [];
     const putStrike: (number | null)[] = [];
-    let cK: number | null = null,
-      pK: number | null = null;
+    // Track by instrument name so open/close are matched exactly.
+    // Avoids false retentions when a close event has a null/mismatched instrument.
+    const openPos = new Map<string, { strike: number; type: 'call' | 'put' }>();
     actions.forEach(a => {
-      const t = a.actionType;
-      const opt = instrOptType(a.instrument);
-      const k   = instrStrike(a.instrument);
-      if (t === 'open') {
-        if (opt === 'call') cK = k;
-        if (opt === 'put')  pK = k;
+      const t     = a.actionType;
+      const instr = a.instrument ?? '';
+      const opt   = instrOptType(a.instrument);
+      const k     = instrStrike(a.instrument);
+      if (t === 'open' && opt && k !== null) {
+        openPos.set(instr, { strike: k, type: opt });
       } else if (t === 'close' || t === 'settlement_expired') {
-        if (opt === 'call') cK = null;
-        if (opt === 'put')  pK = null;
+        openPos.delete(instr);
+      }
+      let cK: number | null = null, pK: number | null = null;
+      for (const pos of openPos.values()) {
+        if (pos.type === 'call') cK = pos.strike;
+        if (pos.type === 'put')  pK = pos.strike;
       }
       callStrike.push(cK);
       putStrike.push(pK);
@@ -501,6 +516,7 @@ export default function RunDetailPage() {
             data: callStrike,
             borderColor: '#4e8ef7',
             stepped: true,
+            spanGaps: false,
           },
           {
             ...COMMON_LINE,
@@ -508,6 +524,7 @@ export default function RunDetailPage() {
             data: putStrike,
             borderColor: '#ef4444',
             stepped: true,
+            spanGaps: false,
           },
         ],
       },
