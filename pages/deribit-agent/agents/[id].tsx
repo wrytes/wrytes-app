@@ -122,65 +122,62 @@ function fmtShort(ts: string | number) {
   });
 }
 
-function sizedInstrument(
-  instrument: string,
-  qty: number | null | undefined,
-  actionType: string
-): string {
-  if (qty == null) return instrument;
-  const sign = actionType.startsWith('sell_') ? -1 : 1;
-  const sized = (sign * Number(qty)).toFixed(1);
-  return `${sized} ${instrument}`;
+function instrOptType(instrument?: string | null): 'call' | 'put' | null {
+  if (!instrument) return null;
+  const s = instrument.split('-').pop()?.toUpperCase();
+  return s === 'C' ? 'call' : s === 'P' ? 'put' : null;
 }
 
-function parseLegs(instrument?: string | null) {
-  const empty = {
-    call: null as number | null, put: null as number | null,
-    callInstrument: null as string | null, putInstrument: null as string | null,
-    callSize: null as number | null, putSize: null as number | null,
-  };
-  if (!instrument) return empty;
-  let call: number | null = null, put: number | null = null;
-  let callInstrument: string | null = null, putInstrument: string | null = null;
-  let callSize: number | null = null, putSize: number | null = null;
-  instrument.split('|').forEach(leg => {
-    // Support size-prefixed format: "0.4:BTC-07FEB25-105000-C"
-    let name = leg, size: number | null = null;
-    const colon = leg.indexOf(':');
-    if (colon > 0) {
-      const s = parseFloat(leg.slice(0, colon));
-      if (!isNaN(s)) { size = s; name = leg.slice(colon + 1); }
-    }
-    const p = name.split('-');
-    if (p.length < 4) return;
-    const k = Number(p[2]), t = p[3].toUpperCase();
-    if (t === 'C') { call = k; callInstrument = name; callSize = size; }
-    else if (t === 'P') { put = k; putInstrument = name; putSize = size; }
-  });
-  return { call, put, callInstrument, putInstrument, callSize, putSize };
+function instrStrike(instrument?: string | null): number | null {
+  if (!instrument) return null;
+  const parts = instrument.split('-');
+  if (parts.length < 4) return null;
+  const k = Number(parts[parts.length - 2]);
+  return isNaN(k) ? null : k;
 }
 
 const ACTION_COLORS: Record<string, string> = {
-  sell_call: '#e6952c',
-  sell_put: '#0ea5e9',
-  sell_strangle: '#8b5cf6',
-  close: '#ef4444',
-  hold: '#94a3b8',
-  buy_call: '#22c55e',
-  buy_put: '#f43f5e',
-  hedge: '#f59e0b',
+  settlement_init:       '#64748b',
+  settlement_unrealized: '#0ea5e9',
+  settlement_expired:    '#f59e0b',
+  open:                  '#22c55e',
+  close:                 '#ef4444',
 };
 
-const ACTION_BADGE: Record<string, { color: string; bg: string }> = {
-  sell_call: { color: 'text-yellow-600', bg: 'bg-yellow-100/80' },
-  sell_put: { color: 'text-sky-600', bg: 'bg-sky-100/80' },
-  sell_strangle: { color: 'text-purple-600', bg: 'bg-purple-100/80' },
-  close: { color: 'text-error', bg: 'bg-error/10' },
-  hold: { color: 'text-text-muted', bg: 'bg-surface' },
-  buy_call: { color: 'text-success', bg: 'bg-success/10' },
-  buy_put: { color: 'text-rose-500', bg: 'bg-rose-100/80' },
-  hedge: { color: 'text-yellow-500', bg: 'bg-yellow-400/10' },
+const ACTION_BADGE: Record<string, { color: string; bg: string; label: string }> = {
+  settlement_init:       { color: 'text-slate-500',  bg: 'bg-slate-100/60',  label: 'Init'     },
+  settlement_unrealized: { color: 'text-sky-600',    bg: 'bg-sky-100/80',    label: 'Mark'     },
+  settlement_expired:    { color: 'text-amber-600',  bg: 'bg-amber-100/80',  label: 'Expired'  },
+  open:                  { color: 'text-success',    bg: 'bg-success/10',    label: 'Open'     },
+  close:                 { color: 'text-error',      bg: 'bg-error/10',      label: 'Close'    },
 };
+
+function cashflow(a: AgentAction): number | null {
+  const qty = a.quantity != null ? Number(a.quantity) : null;
+  const p   = a.price   != null ? Number(a.price)    : null;
+  if (qty == null || p == null) return null;
+  if (a.actionType === 'open')               return  p * qty;   // premium inflow
+  if (a.actionType === 'close')              return -(p * qty);  // buyback outflow
+  if (a.actionType === 'settlement_expired') return -(p * qty);  // settlement payout (0 if OTM)
+  return null;
+}
+
+// Within-day event order: settlement phase first, then trade actions
+const TYPE_ORDER: Record<string, number> = {
+  settlement_init:       0,
+  settlement_expired:    1,
+  settlement_unrealized: 2,
+  open:                  3,
+  close:                 4,
+};
+
+function sortActions(raw: AgentAction[]): AgentAction[] {
+  return [...raw].sort((a, b) => {
+    const dt = new Date(a.timestamp).getTime() - new Date(b.timestamp).getTime();
+    if (dt !== 0) return dt;
+    return (TYPE_ORDER[a.actionType] ?? 5) - (TYPE_ORDER[b.actionType] ?? 5);
+  });
+}
 
 const COMMON_LINE = { pointRadius: 0, borderWidth: 1.5, tension: 0.3 };
 
@@ -315,7 +312,7 @@ export default function RunDetailPage() {
 
   useEffect(() => {
     if (!run.data || !actionsReq.data) return;
-    const allActions = [...actionsReq.data].reverse();
+    const allActions = sortActions(actionsReq.data);
     const filtered = yearFilter
       ? allActions.filter(a => new Date(a.timestamp).getFullYear().toString() === yearFilter)
       : allActions;
@@ -360,18 +357,15 @@ export default function RunDetailPage() {
     let cK: number | null = null,
       pK: number | null = null;
     actions.forEach(a => {
-      const t = a.actionType,
-        legs = parseLegs(a.instrument);
-      if (t === 'sell_call') {
-        cK = legs.call;
-      } else if (t === 'sell_put') {
-        pK = legs.put;
-      } else if (t === 'sell_strangle') {
-        if (legs.call != null) cK = legs.call;
-        if (legs.put != null) pK = legs.put;
-      } else if (t === 'close') {
-        cK = null;
-        pK = null;
+      const t = a.actionType;
+      const opt = instrOptType(a.instrument);
+      const k   = instrStrike(a.instrument);
+      if (t === 'open') {
+        if (opt === 'call') cK = k;
+        if (opt === 'put')  pK = k;
+      } else if (t === 'close' || t === 'settlement_expired') {
+        if (opt === 'call') cK = null;
+        if (opt === 'put')  pK = null;
       }
       callStrike.push(cK);
       putStrike.push(pK);
@@ -626,7 +620,7 @@ export default function RunDetailPage() {
   }
 
   // ── Derived stats ────────────────────────────────────────────────────────────
-  const actions = actionsReq.data ? [...actionsReq.data].reverse() : [];
+  const actions = actionsReq.data ? sortActions(actionsReq.data) : [];
   const runData = run.data;
   const initCap = runData ? Number(runData.initialCapitalBtc) : 0;
 
@@ -647,7 +641,10 @@ export default function RunDetailPage() {
     ? actions.filter(a => new Date(a.timestamp).getFullYear().toString() === yearFilter)
     : actions;
 
-  const tradeActions = yearActions.filter(a => a.actionType !== 'hold');
+  // Only cash-flow events count as "trades" for stats
+  const tradeActions = yearActions.filter(
+    a => a.actionType === 'open' || a.actionType === 'close' || a.actionType === 'settlement_expired'
+  );
   const tradePnls = tradeActions.map(a => Number(a.pnlBtc) || 0);
   const totalPnl = yearActions.reduce((s, a) => s + (Number(a.pnlBtc) || 0), 0);
   const wins = tradePnls.filter(v => v > 0).length;
@@ -665,47 +662,37 @@ export default function RunDetailPage() {
     typeSummary[a.actionType].total += Number(a.pnlBtc) || 0;
   });
 
-  // cumulative pnl + running open-position state for the log table
+  // cumulative realized pnl + per-row equity
+  // equity = margin − Σ(mktPrem × size) for open positions
+  // mirrors the env: equity_btc = margin_balance + unrealized_btc, where unrealized_btc = −liability
   const actionLog = (() => {
-    let c = 0;
-    let openPut: string | null = null;
-    let openCall: string | null = null;
-    let openPutSize: number | null = null;
-    let openCallSize: number | null = null;
-    let openPutStrike: number | null = null;
-    let openCallStrike: number | null = null;
+    let realizedPnl = 0; // used only as fallback when marginBalanceBtc is missing
+    const openPos = new Map<string, { size: number; mktPrem: number }>();
 
     return yearActions.map(a => {
-      c += Number(a.pnlBtc) || 0;
-      const legs = parseLegs(a.instrument);
-      const qty = a.quantity != null ? Number(a.quantity) : null;
-      const t = a.actionType;
+      realizedPnl += Number(a.pnlBtc) || 0;
 
-      if (t === 'sell_put') {
-        openPut = legs.putInstrument;
-        openPutStrike = legs.put;
-        openPutSize = -(legs.putSize ?? qty ?? 0);
-      } else if (t === 'sell_call') {
-        openCall = legs.callInstrument;
-        openCallStrike = legs.call;
-        openCallSize = -(legs.callSize ?? qty ?? 0);
-      } else if (t === 'sell_strangle') {
-        openPut = legs.putInstrument;
-        openCall = legs.callInstrument;
-        openPutStrike = legs.put;
-        openCallStrike = legs.call;
-        openPutSize = -(legs.putSize ?? qty ?? 0);
-        openCallSize = -(legs.callSize ?? qty ?? 0);
-      } else if (t === 'close' || t.startsWith('close_')) {
-        openPut = null; openCall = null;
-        openPutSize = null; openCallSize = null;
-        openPutStrike = null; openCallStrike = null;
+      const instr = a.instrument ?? '';
+      const qty   = a.quantity != null ? Number(a.quantity) : 0;
+      const price = a.price    != null ? Number(a.price)    : 0;
+
+      if (a.actionType === 'open') {
+        openPos.set(instr, { size: qty, mktPrem: price });
+      } else if (a.actionType === 'settlement_unrealized') {
+        const existing = openPos.get(instr);
+        openPos.set(instr, { size: existing?.size ?? qty, mktPrem: price });
+      } else if (a.actionType === 'close' || a.actionType === 'settlement_expired') {
+        openPos.delete(instr);
       }
 
-      return {
-        ...a, cumPnl: c, equity: openingBalance + c,
-        openPut, openCall, openPutSize, openCallSize, openPutStrike, openCallStrike,
-      };
+      let totalLiability = 0;
+      for (const pos of openPos.values()) totalLiability += pos.mktPrem * pos.size;
+
+      const margin = a.marginBalanceBtc != null ? Number(a.marginBalanceBtc) : openingBalance + realizedPnl;
+      const equity = margin - totalLiability;
+      const cumPnl = equity - openingBalance; // total P&L = equity change from opening balance
+
+      return { ...a, cumPnl, equity };
     });
   })();
 
@@ -1144,15 +1131,12 @@ export default function RunDetailPage() {
                       .sort((a, b) => b[1].count - a[1].count)
                       .map(([type, s]) => {
                         const avg = s.total / s.count;
-                        const style = ACTION_BADGE[type] ?? {
-                          color: 'text-text-secondary',
-                          bg: 'bg-surface',
-                        };
+                        const style = ACTION_BADGE[type] ?? { color: 'text-text-secondary', bg: 'bg-surface', label: type };
                         return (
                           <tr key={type} className="border-b border-surface/50">
                             <td className="py-2">
                               <Badge
-                                text={type}
+                                text={style.label}
                                 variant="custom"
                                 customColor={style.color}
                                 customBgColor={style.bg}
@@ -1210,29 +1194,30 @@ export default function RunDetailPage() {
               </div>
 
               <div className="overflow-x-auto max-h-[520px] overflow-y-auto">
-                <table className="w-full text-xs min-w-[760px]">
+                <table className="w-full text-xs min-w-[900px]">
                   <thead className="sticky top-0 z-10 bg-card">
                     <tr className="border-b-2 border-surface">
                       {(
                         [
-                          ['Date', 'text-left'],
-                          ['Action', 'text-left'],
-                          ['Put', 'text-left'],
-                          ['BTC Price', 'text-right'],
-                          ['Call', 'text-left'],
-                          ['IV Rank', 'text-right'],
-                          ['Delta', 'text-right'],
-                          ['PnL (₿)', 'text-right'],
+                          ['Date',         'text-left'],
+                          ['Type',         'text-left'],
+                          ['Size',         'text-right'],
+                          ['Instrument',   'text-left'],
+                          ['BTC Price',    'text-right'],
+                          ['IV',           'text-right'],
+                          ['Δ',            'text-right'],
+                          ['Θ/day',        'text-right'],
+                          ['Orig Prem',    'text-right'],
+                          ['Mkt Prem',     'text-right'],
+                          ['Cashflow',     'text-right'],
+                          ['Fee (₿)',      'text-right'],
+                          ['PnL (₿)',      'text-right'],
                           ['Cum PnL (₿)', 'text-right'],
-                          ['Margin Bal (₿)', 'text-right'],
-                          ['Equity (₿)', 'text-right'],
-                          ['Equity (USD)', 'text-right'],
+                          ['Margin (₿)',  'text-right'],
+                          ['Equity (₿)',  'text-right'],
                         ] as const
                       ).map(([h, align]) => (
-                        <th
-                          key={h}
-                          className={`px-3 py-2 font-medium text-text-muted whitespace-nowrap ${align}`}
-                        >
+                        <th key={h} className={`px-3 py-2 font-medium text-text-muted whitespace-nowrap ${align}`}>
                           {h}
                         </th>
                       ))}
@@ -1240,65 +1225,103 @@ export default function RunDetailPage() {
                   </thead>
                   <tbody>
                     {filteredLog.map((a, i) => {
-                      const btcP = a.btcPrice != null ? Number(a.btcPrice) : null;
-                      const style = ACTION_BADGE[a.actionType] ?? {
-                        color: 'text-text-secondary',
-                        bg: 'bg-surface',
-                      };
+                      const btcP  = a.btcPrice != null ? Number(a.btcPrice) : null;
+                      const style = ACTION_BADGE[a.actionType] ?? { color: 'text-text-secondary', bg: 'bg-surface', label: a.actionType };
+                      const opt   = instrOptType(a.instrument);
+                      const k     = instrStrike(a.instrument);
+                      const itm   = opt === 'call'
+                        ? (btcP != null && k != null && k < btcP)
+                        : opt === 'put'
+                          ? (btcP != null && k != null && k > btcP)
+                          : false;
+
+                      // For open: price = original premium (executedPrice not set yet).
+                      // For mark/expired/close: executedPrice = original premium, price = current mark/intrinsic/buyback.
+                      // At open, mktPrem = origPrem (just sold at market → size×(orig−mkt) = 0).
+                      const isOpen   = a.actionType === 'open';
+                      const origPrem = isOpen ? a.price : a.executedPrice;
+                      const mktPrem  = isOpen ? a.price : a.price;   // open: same as orig; others: current mark
+
+                      // PnL: for unrealized marks, derive from size × (orig − mkt) since pnlBtc is null.
+                      // For open: size×(orig−mkt) = 0, which is intentional.
+                      const unrealPnl =
+                        a.pnlBtc == null && origPrem != null && mktPrem != null && a.quantity != null
+                          ? Number(a.quantity) * (Number(origPrem) - Number(mktPrem))
+                          : null;
+                      const displayPnl = a.pnlBtc ?? unrealPnl;
+
                       return (
                         <tr key={a.id ?? i} className={i % 2 === 0 ? '' : 'bg-surface/20'}>
+                          {/* Date */}
                           <td className="px-3 py-1.5 text-text-muted whitespace-nowrap">
                             {fmtShort(a.timestamp)}
                           </td>
+                          {/* Type */}
                           <td className="px-3 py-1.5">
-                            <Badge
-                              text={a.actionType}
-                              variant="custom"
-                              customColor={style.color}
-                              customBgColor={style.bg}
-                            />
+                            <Badge text={style.label} variant="custom" customColor={style.color} customBgColor={style.bg} />
                           </td>
-                          <td className={`px-3 py-1.5 text-left font-mono ${
-                            a.openPut && btcP && a.openPutStrike != null && a.openPutStrike > btcP
-                              ? 'text-error' : 'text-text-primary'
-                          }`}>
-                            {a.openPut && a.openPutSize != null
-                              ? `${a.openPutSize.toFixed(1)} ${a.openPut}`
-                              : '—'}
+                          {/* Size */}
+                          <td className="px-3 py-1.5 text-right font-mono text-text-primary">
+                            {a.quantity != null ? Number(a.quantity).toFixed(2) : '—'}
                           </td>
+                          {/* Instrument */}
+                          <td className={`px-3 py-1.5 font-mono whitespace-nowrap ${itm ? 'text-error font-semibold' : 'text-text-primary'}`}>
+                            {a.instrument ?? '—'}
+                          </td>
+                          {/* BTC Price */}
                           <td className="px-3 py-1.5 text-right text-text-primary font-mono">
-                            {btcP
-                              ? '$' + btcP.toLocaleString('en-US', { maximumFractionDigits: 0 })
-                              : '—'}
+                            {btcP ? '$' + btcP.toLocaleString('en-US', { maximumFractionDigits: 0 }) : '—'}
                           </td>
-                          <td className={`px-3 py-1.5 text-left font-mono ${
-                            a.openCall && btcP && a.openCallStrike != null && a.openCallStrike < btcP
-                              ? 'text-error' : 'text-text-primary'
-                          }`}>
-                            {a.openCall && a.openCallSize != null
-                              ? `${a.openCallSize.toFixed(1)} ${a.openCall}`
-                              : '—'}
-                          </td>
+                          {/* IV */}
                           <td className="px-3 py-1.5 text-right">
                             {a.ivRank != null ? Number(a.ivRank).toFixed(1) : '—'}
                           </td>
+                          {/* Delta */}
                           <td className="px-3 py-1.5 text-right">
                             {a.delta != null ? Number(a.delta).toFixed(3) : '—'}
                           </td>
-                          <td
-                            className={`px-3 py-1.5 text-right font-mono ${clsColor(Number(a.pnlBtc) || 0)}`}
-                          >
-                            {n(a.pnlBtc)}
+                          {/* Theta/day (negative = option decays; shown as-is) */}
+                          <td className="px-3 py-1.5 text-right font-mono text-text-muted">
+                            {a.thetaBtc != null ? n(a.thetaBtc, 6) : '—'}
                           </td>
+                          {/* Orig Prem */}
+                          <td className="px-3 py-1.5 text-right font-mono text-text-secondary">
+                            {origPrem != null ? n(origPrem, 6) : '—'}
+                          </td>
+                          {/* Mkt Prem */}
+                          <td className="px-3 py-1.5 text-right font-mono text-text-muted">
+                            {mktPrem != null ? n(mktPrem, 6) : '—'}
+                          </td>
+                          {/* Cashflow: actual BTC in (+) or out (−) */}
+                          {(() => {
+                            const cf = cashflow(a);
+                            return (
+                              <td className={`px-3 py-1.5 text-right font-mono ${cf != null ? clsColor(cf) : 'text-text-muted'}`}>
+                                {cf != null ? n(cf) : '—'}
+                              </td>
+                            );
+                          })()}
+                          {/* Fee — shown as negative (it's a cost) */}
+                          <td className="px-3 py-1.5 text-right font-mono text-error">
+                            {a.feeBtc != null && Number(a.feeBtc) !== 0
+                              ? '-' + n(Math.abs(Number(a.feeBtc)), 6)
+                              : '—'}
+                          </td>
+                          {/* PnL */}
+                          <td className={`px-3 py-1.5 text-right font-mono ${displayPnl != null ? clsColor(Number(displayPnl)) : 'text-text-muted'}`}>
+                            {displayPnl != null ? n(displayPnl) : '—'}
+                          </td>
+                          {/* Cum PnL */}
                           <td className={`px-3 py-1.5 text-right font-mono ${clsColor(a.cumPnl)}`}>
                             {n(a.cumPnl)}
                           </td>
+                          {/* Margin */}
                           <td className="px-3 py-1.5 text-right font-mono">
                             {a.marginBalanceBtc != null ? n(a.marginBalanceBtc, 4) : '—'}
                           </td>
-                          <td className="px-3 py-1.5 text-right font-mono">{n(a.equity, 4)}</td>
-                          <td className="px-3 py-1.5 text-right">
-                            {btcP ? usd(a.equity * btcP) : '—'}
+                          {/* Equity */}
+                          <td className="px-3 py-1.5 text-right font-mono">
+                            {n(a.equity, 4)}
                           </td>
                         </tr>
                       );

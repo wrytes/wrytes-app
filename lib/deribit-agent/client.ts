@@ -118,11 +118,22 @@ export interface AgentAction {
   timestamp: string;
   instrument?: string;
   quantity?: number;
+  /** Semantic varies by actionType: premium BTC/unit (open), current mark (settlement_unrealized), intrinsic (settlement_expired), buyback cost (close) */
   price?: number;
+  /** Original premium BTC/unit received when opening — present on settlement_unrealized, settlement_expired, close */
+  executedPrice?: number;
   btcPrice?: number;
   delta?: number;
   ivRank?: number;
-  pnlBtc?: number;
+  /**
+   * Lifetime realized P&L in BTC for settlement_expired and close events.
+   * Null for open (premium offsets obligation; no P&L yet) and settlement_unrealized.
+   */
+  pnlBtc?: number | null;
+  /** Fee paid in BTC. Present on open and close events; 0 on settlement_expired; null on marks. */
+  feeBtc?: number | null;
+  /** Daily time decay in BTC per unit (negative value — option loses this much per day). Present on open and settlement_unrealized. */
+  thetaBtc?: number | null;
   marginBalanceBtc?: number;
   reason?: string;
 }
