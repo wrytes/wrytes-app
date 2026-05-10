@@ -600,7 +600,7 @@ export default function RunDetailPage() {
       const cat = optionCategory(a);
       if (cat) optCnt[cat] = (optCnt[cat] || 0) + 1;
     });
-    const pieL = OPTION_CATEGORIES.filter(k => (optCnt[k] ?? 0) > 0);
+    const pieL = OPTION_CATEGORIES.filter(k => (optCnt[k] ?? 0) > 0).sort((a, b) => optCnt[b] - optCnt[a]);
     const el7 = document.getElementById('c-pie') as HTMLCanvasElement | null;
     if (el7) {
       chartsRef.current['c-pie'] = new ChartJS<'doughnut'>(el7, {
@@ -665,14 +665,14 @@ export default function RunDetailPage() {
   const lastBtc = yearActions.length ? Number(yearActions[yearActions.length - 1].btcPrice) || 0 : 0;
   const finalEq = openingBalance + totalPnl;
 
-  // option-type breakdown
+  // option-type breakdown — net cash flow (cashflowBtc − feeBtc) per category
   const optionSummary: Record<string, { count: number; total: number }> = {};
   yearActions.forEach(a => {
     const cat = optionCategory(a);
     if (!cat) return;
     if (!optionSummary[cat]) optionSummary[cat] = { count: 0, total: 0 };
     optionSummary[cat].count++;
-    optionSummary[cat].total += Number(a.pnlBtc) || 0;
+    optionSummary[cat].total += (Number(a.cashflowBtc) || 0) - (Number(a.feeBtc) || 0);
   });
 
   // equity and cashflowBtc are computed by run_session.py and stored in the DB.
@@ -1111,12 +1111,12 @@ export default function RunDetailPage() {
                     <tr className="border-b border-surface">
                       <th className="text-left text-text-muted font-medium py-2">Category</th>
                       <th className="text-right text-text-muted font-medium py-2">Count</th>
-                      <th className="text-right text-text-muted font-medium py-2">Total (₿)</th>
+                      <th className="text-right text-text-muted font-medium py-2">Net CF (₿)</th>
                       <th className="text-right text-text-muted font-medium py-2">Avg (₿)</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {OPTION_CATEGORIES.map(cat => {
+                    {[...OPTION_CATEGORIES].sort((a, b) => (optionSummary[b]?.count ?? 0) - (optionSummary[a]?.count ?? 0)).map(cat => {
                       const s = optionSummary[cat] ?? { count: 0, total: 0 };
                       const avg = s.count ? s.total / s.count : 0;
                       const style = OPTION_BADGE[cat];
