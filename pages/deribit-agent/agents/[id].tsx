@@ -310,12 +310,6 @@ export default function RunDetailPage() {
     saveSettings(execForm);
   }, [execForm, saveSettings]);
 
-  // Polling — refetch every 5s while ACTIVE
-  useEffect(() => {
-    if (run.data?.status !== 'ACTIVE') return;
-    const interval = setInterval(() => { run.refetch(); }, 5_000);
-    return () => clearInterval(interval);
-  }, [run.data?.status, run.refetch]);
 
   const executeRun = async () => {
     if (!runId) return;
@@ -733,12 +727,13 @@ export default function RunDetailPage() {
     { label: 'Close',   value: 'close'                },
     { label: 'Mark',    value: 'settlement_unrealized' },
     { label: 'Expired', value: 'settlement_expired'   },
+    { label: 'Hold',    value: 'hold'                 },
   ];
 
   // filtered log (newest first) — year already scoped via yearActions
   // settlement_init is always represented by the pinned opening-balance row, so exclude it here
   const filteredLog = [...actionLog].filter(a => {
-    if (a.actionType === 'settlement_init' || a.actionType === 'hold') return false;
+    if (a.actionType === 'settlement_init') return false;
     if (logTypeFilter && a.actionType !== logTypeFilter) return false;
     if (logSearch) {
       const q = logSearch.toLowerCase();
