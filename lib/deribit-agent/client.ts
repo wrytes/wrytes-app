@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { AuthStorage } from '../auth/storage';
 
 // Strip any accidental path/key from the base URL — only the origin is used.
 function parseOrigin(raw: string): string {
@@ -11,17 +12,18 @@ function parseOrigin(raw: string): string {
 }
 
 const BASE = parseOrigin(process.env.NEXT_PUBLIC_DERIBIT_AGENT_URL ?? '');
-const KEY = process.env.NEXT_PUBLIC_DERIBIT_AGENT_API_KEY ?? '';
 
 export async function agentFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BASE) throw new Error('NEXT_PUBLIC_DERIBIT_AGENT_URL is not configured.');
-  if (!KEY) throw new Error('NEXT_PUBLIC_DERIBIT_AGENT_API_KEY is not configured.');
+
+  const token = AuthStorage.getToken();
+  if (!token) throw new Error('Not authenticated — please sign in.');
 
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': KEY,          // ← header auth, as required by api-key.guard.ts
+      'Authorization': `Bearer ${token}`,
       ...(init?.headers ?? {}),
     },
   });
