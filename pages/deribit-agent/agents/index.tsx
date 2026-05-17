@@ -153,8 +153,9 @@ export default function DeribitRunsPage() {
   const patchForm = (k: keyof CreateRunBody, v: unknown) => setForm(f => ({ ...f, [k]: v }));
 
   const createRun = async () => {
-    if (!form.name || !form.initialCapitalBtc) {
-      toast.error('Name and initial capital are required.');
+    const needsCapital = form.runType !== 'LIVE';
+    if (!form.name || (needsCapital && !form.initialCapitalBtc)) {
+      toast.error(needsCapital ? 'Name and initial capital are required.' : 'Name is required.');
       return;
     }
     if (form.runType === 'LIVE' && !form.deribitAccountId) {
@@ -268,12 +269,20 @@ export default function DeribitRunsPage() {
                 value={form.name}
                 onChange={v => patchForm('name', v)}
               />
-              <TextInput
-                label="Initial Capital (BTC)"
-                placeholder="1.0"
-                value={String(form.initialCapitalBtc)}
-                onChange={v => patchForm('initialCapitalBtc', parseFloat(v) || 0)}
-              />
+              {form.runType !== 'LIVE' && (
+                <TextInput
+                  label="Initial Capital (BTC)"
+                  placeholder="1.0"
+                  value={String(form.initialCapitalBtc)}
+                  onChange={v => patchForm('initialCapitalBtc', parseFloat(v) || 0)}
+                />
+              )}
+              {form.runType === 'LIVE' && (
+                <div className="flex flex-col justify-center px-3 py-2 rounded-lg border border-input-border bg-surface/50">
+                  <span className="text-xs text-input-label mb-0.5">Initial Capital</span>
+                  <span className="text-sm text-text-secondary">Fetched from Deribit account at start</span>
+                </div>
+              )}
               <SelectInput
                 label="Currency"
                 options={CURRENCY_OPTIONS}
