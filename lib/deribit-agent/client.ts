@@ -1,4 +1,5 @@
 import { useState, useEffect, useCallback } from 'react';
+import { AuthStorage } from '../auth/storage';
 
 // Strip any accidental path/key from the base URL — only the origin is used.
 function parseOrigin(raw: string): string {
@@ -11,17 +12,18 @@ function parseOrigin(raw: string): string {
 }
 
 const BASE = parseOrigin(process.env.NEXT_PUBLIC_DERIBIT_AGENT_URL ?? '');
-const KEY = process.env.NEXT_PUBLIC_DERIBIT_AGENT_API_KEY ?? '';
 
 export async function agentFetch<T>(path: string, init?: RequestInit): Promise<T> {
   if (!BASE) throw new Error('NEXT_PUBLIC_DERIBIT_AGENT_URL is not configured.');
-  if (!KEY) throw new Error('NEXT_PUBLIC_DERIBIT_AGENT_API_KEY is not configured.');
+
+  const token = AuthStorage.getToken();
+  if (!token) throw new Error('Not authenticated — please sign in.');
 
   const res = await fetch(`${BASE}${path}`, {
     ...init,
     headers: {
       'Content-Type': 'application/json',
-      'X-API-Key': KEY,          // ← header auth, as required by api-key.guard.ts
+      'Authorization': `Bearer ${token}`,
       ...(init?.headers ?? {}),
     },
   });
@@ -96,6 +98,25 @@ export type RunStatus = 'ACTIVE' | 'PAUSED' | 'STOPPED' | 'COMPLETED' | 'ERROR';
 export type RunType = 'BACKTEST' | 'PAPER' | 'LIVE';
 export type SessionStatus = 'QUEUED' | 'RUNNING' | 'COMPLETED' | 'FAILED' | 'CANCELLED';
 
+export interface ExecutionSettings {
+  dataFrom?: string;
+  dataTo?: string;
+  allowed_actions?: number[];
+  max_drawdown_limit?: number;
+  aggression_level?: number;
+  position_size_pct?: number;
+  max_position_btc?: number;
+  min_order_size?: number;
+  expiry_days_min?: number;
+  expiry_days_max?: number;
+  roll_dte_threshold?: number;
+  max_margin_ratio?: number;
+  delta_threshold?: number;
+  delta_penalty_coef?: number;
+  risk_free_rate?: number;
+  fast_margin?: boolean;
+}
+
 export interface AgentRun {
   id: string;
   name: string;
@@ -104,8 +125,11 @@ export interface AgentRun {
   runType: RunType;
   deribitAccountId?: string;
   initialCapitalBtc: number;
+  currentCapitalBtc?: number;
+  realizedPnlBtc?: number;
   notes?: string;
   sessionId?: string;
+  executionSettings?: ExecutionSettings;
   createdAt: string;
   updatedAt: string;
 }
@@ -116,11 +140,27 @@ export interface AgentAction {
   timestamp: string;
   instrument?: string;
   quantity?: number;
+  /** Semantic varies by actionType: premium BTC/unit (open), current mark (settlement_unrealized), intrinsic (settlement_expired), buyback cost (close) */
   price?: number;
+  /** Original premium BTC/unit received when opening — present on settlement_unrealized, settlement_expired, close */
+  executedPrice?: number;
   btcPrice?: number;
   delta?: number;
   ivRank?: number;
-  pnlBtc?: number;
+  /**
+   * Lifetime realized P&L in BTC for settlement_expired and close events.
+   * Null for open (premium offsets obligation; no P&L yet) and settlement_unrealized.
+   */
+  pnlBtc?: number | null;
+  /** Fee paid in BTC. Present on open and close events; 0 on settlement_expired; null on marks. */
+  feeBtc?: number | null;
+  /** Daily time decay in BTC per unit (negative). Present on open and settlement_unrealized. */
+  thetaBtc?: number | null;
+  /** Gross BTC in (open) or out (close/expired) before fees. Null on marks and init. */
+  cashflowBtc?: number | null;
+  /** margin − Σ(mktPrem × size for open positions) at event time. The true economic value. */
+  equityBtc?: number | null;
+  marginBalanceBtc?: number;
   reason?: string;
 }
 
@@ -136,6 +176,21 @@ export interface TrainingSession {
   resolution: string;
   createdAt: string;
   updatedAt: string;
+  model?: { id: string; name: string } | null;
+  hyperparams?: {
+    env?: ExecutionSettings & Record<string, unknown>;
+    training?: Record<string, unknown>;
+  };
+}
+
+export interface ModelManifest {
+  obs_version:  string;
+  obs_dims:     number;
+  obs_features: string[];
+  action_dims:  number;
+  data_columns: string[];
+  env_version:  string;
+  policy:       string;
 }
 
 export interface TrainedModel {
@@ -150,8 +205,9 @@ export interface TrainedModel {
   sharpeRatio?: number;
   maxDrawdown?: number;
   winRate?: number;
+  metadata?: Partial<ModelManifest>;
   createdAt: string;
-  session?: { name: string; algorithm: string; currency: string };
+  session?: { name: string; algorithm: string; currency: string; totalTimesteps?: number | null };
 }
 
 export interface DeribitAccount {
@@ -190,18 +246,6 @@ export interface CreateRunBody {
 export interface ExecuteRunBody {
   dataFrom?: string;
   dataTo?: string;
-  envOverrides?: {
-    expiry_days?: number;
-    position_size_pct?: number;
-    max_position_btc?: number;
-    delta_threshold?: number;
-    delta_penalty_coef?: number;
-    max_margin_ratio?: number;
-    risk_free_rate?: number;
-    loss_multiplier?: number;
-    loss_threshold?: number;
-    capital_eff_bonus?: number;
-  };
 }
 
 export interface RiskProfile {
@@ -212,13 +256,19 @@ export interface RiskProfile {
 export interface CreateSessionBody {
   name: string;
   description?: string;
-  currency: string;
+  currency?: string;             // optional when resumeFromModelId is set
   dataFrom: string;
   dataTo: string;
   resolution?: string;
   algorithm?: string;
-  allowedStrategies?: string[];
+  allowedStrategies?: string[];  // legacy
+  allowedActions?: number[];
+  expiryDaysMin?: number;
+  expiryDaysMax?: number;
+  rollDteThreshold?: number;
   riskProfile?: RiskProfile;
+  hyperparams?: Record<string, any>;
+  resumeFromModelId?: string;
 }
 
 export interface CreateAccountBody {

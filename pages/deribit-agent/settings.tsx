@@ -430,12 +430,6 @@ export default function DeribitSettingsPage() {
                 example: 'http://localhost:3030',
                 note: 'Origin only — no path, no API key',
               },
-              {
-                key: 'NEXT_PUBLIC_DERIBIT_AGENT_API_KEY',
-                val: process.env.NEXT_PUBLIC_DERIBIT_AGENT_API_KEY,
-                example: 'rw_prod_<keyId>.<secret>',
-                note: 'Sent as X-API-Key header on every request',
-              },
             ] as const).map(({ key, val, example, note }) => (
               <div key={key}>
                 <div className="flex items-center gap-3">
@@ -452,9 +446,11 @@ export default function DeribitSettingsPage() {
           </div>
           <div className="mt-4 bg-surface rounded-lg p-3 font-mono text-xs text-text-secondary space-y-1">
             <p className="text-text-muted mb-1"># .env.local</p>
-            <p>NEXT_PUBLIC_DERIBIT_AGENT_URL=http://localhost:3030</p>
-            <p>NEXT_PUBLIC_DERIBIT_AGENT_API_KEY=rw_prod_{'<keyId>.<secret>'}</p>
+            <p>NEXT_PUBLIC_DERIBIT_AGENT_URL=http://localhost:3031</p>
           </div>
+          <p className="text-text-muted text-xs mt-3">
+            Requests are authenticated with your wrytes-api JWT (<span className="font-mono">Authorization: Bearer</span>). No API key needed.
+          </p>
         </Card>
       </Section>
     </>
