@@ -1,5 +1,5 @@
 services:
-  wrytes-app:
+  app:
     image: node:22
     command: bash -c "git clone --depth=1 https://github.com/wrytes/wrytes-app /app
       && cd /app && yarn install --frozen-lockfile && yarn run build && yarn run start"
@@ -14,4 +14,9 @@ services:
       - NEXT_PUBLIC_DERIBIT_AGENT_URL=${NEXT_PUBLIC_DERIBIT_AGENT_URL}
       - NEXT_PUBLIC_REOWN_PROJECT_ID=${NEXT_PUBLIC_REOWN_PROJECT_ID}
       - NEXT_PUBLIC_RPC_URL=${NEXT_PUBLIC_RPC_URL}
+    volumes:
+      - app:/app
     restart: unless-stopped
+
+volumes:
+  app:
