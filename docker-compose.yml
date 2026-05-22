@@ -1,15 +1,18 @@
 services:
     wrytes-app:
-        build:
-            context: .
-            dockerfile: Dockerfile
-            args:
-                NEXT_PUBLIC_APP_URL: ${NEXT_PUBLIC_APP_URL}
-                NEXT_PUBLIC_API_URL: ${NEXT_PUBLIC_API_URL}
-                NEXT_PUBLIC_INDEXER_URL: ${NEXT_PUBLIC_INDEXER_URL}
-                NEXT_PUBLIC_DERIBIT_AGENT_URL: ${NEXT_PUBLIC_DERIBIT_AGENT_URL}
-                NEXT_PUBLIC_REOWN_PROJECT_ID: ${NEXT_PUBLIC_REOWN_PROJECT_ID}
-                NEXT_PUBLIC_RPC_URL: ${NEXT_PUBLIC_RPC_URL}
+        image: node:22
+        volumes:
+            - .:/data
+        command: bash -c "cd /data && yarn install --frozen-lockfile && yarn run build
+            && yarn run start"
         ports:
             - '3000:3000'
+        environment:
+            - NODE_ENV=production
+            - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+            - NEXT_PUBLIC_INDEXER_URL=${NEXT_PUBLIC_INDEXER_URL}
+            - NEXT_PUBLIC_DERIBIT_AGENT_URL=${NEXT_PUBLIC_DERIBIT_AGENT_URL}
+            - NEXT_PUBLIC_REOWN_PROJECT_ID=${NEXT_PUBLIC_REOWN_PROJECT_ID}
+            - NEXT_PUBLIC_RPC_URL=${NEXT_PUBLIC_RPC_URL}
         restart: unless-stopped
