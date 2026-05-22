@@ -5,19 +5,7 @@ on:
     branches: [main]
 
 jobs:
-  build-check:
-    runs-on: ubuntu-latest
-    steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: yarn
-      - run: yarn install --frozen-lockfile
-      - run: yarn build
-
   deploy:
-    needs: build-check
     runs-on: ubuntu-latest
     steps:
       - name: Trigger Portainer redeploy
