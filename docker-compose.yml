@@ -1,13 +1,10 @@
 services:
   wrytes-app:
     image: node:22
-    command: bash -c "git clone --depth=1 https://${GITHUB_TOKEN}@github.com/wrytes/wrytes-app /app
+    command: bash -c "git clone --depth=1 https://github.com/wrytes/wrytes-app /app
       && cd /app && yarn install --frozen-lockfile && yarn run build && yarn run start"
-    ports:
-      - '3000:3000'
     environment:
       - NODE_ENV=production
-      - GITHUB_TOKEN=${GITHUB_TOKEN}
       - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
       - VIRTUAL_HOST=${VIRTUAL_HOST}
       - VIRTUAL_PORT=${VIRTUAL_PORT}
