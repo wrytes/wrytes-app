@@ -1,18 +1,20 @@
 services:
-    wrytes-app:
-        image: node:22
-        volumes:
-            - .:/data
-        command: bash -c "cd /data && yarn install --frozen-lockfile && yarn run build
-            && yarn run start"
-        ports:
-            - '3000:3000'
-        environment:
-            - NODE_ENV=production
-            - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
-            - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
-            - NEXT_PUBLIC_INDEXER_URL=${NEXT_PUBLIC_INDEXER_URL}
-            - NEXT_PUBLIC_DERIBIT_AGENT_URL=${NEXT_PUBLIC_DERIBIT_AGENT_URL}
-            - NEXT_PUBLIC_REOWN_PROJECT_ID=${NEXT_PUBLIC_REOWN_PROJECT_ID}
-            - NEXT_PUBLIC_RPC_URL=${NEXT_PUBLIC_RPC_URL}
-        restart: unless-stopped
+  wrytes-app:
+    image: node:22
+    command: bash -c "git clone --depth=1 https://${GITHUB_TOKEN}@github.com/wrytes/wrytes-app /app
+      && cd /app && yarn install --frozen-lockfile && yarn run build && yarn run start"
+    ports:
+      - '3000:3000'
+    environment:
+      - NODE_ENV=production
+      - GITHUB_TOKEN=${GITHUB_TOKEN}
+      - LETSENCRYPT_HOST=${LETSENCRYPT_HOST}
+      - VIRTUAL_HOST=${VIRTUAL_HOST}
+      - VIRTUAL_PORT=${VIRTUAL_PORT}
+      - NEXT_PUBLIC_APP_URL=${NEXT_PUBLIC_APP_URL}
+      - NEXT_PUBLIC_API_URL=${NEXT_PUBLIC_API_URL}
+      - NEXT_PUBLIC_INDEXER_URL=${NEXT_PUBLIC_INDEXER_URL}
+      - NEXT_PUBLIC_DERIBIT_AGENT_URL=${NEXT_PUBLIC_DERIBIT_AGENT_URL}
+      - NEXT_PUBLIC_REOWN_PROJECT_ID=${NEXT_PUBLIC_REOWN_PROJECT_ID}
+      - NEXT_PUBLIC_RPC_URL=${NEXT_PUBLIC_RPC_URL}
+    restart: unless-stopped
