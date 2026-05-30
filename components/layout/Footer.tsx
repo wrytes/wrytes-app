@@ -4,7 +4,6 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faGithub, faTelegram, faXTwitter } from '@fortawesome/free-brands-svg-icons';
 import { faExternalLinkAlt, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
-import Image from 'next/image';
 import { SOCIAL, COMPANY } from '@/lib/constants';
 import packageInfo from '../../package.json';
 
