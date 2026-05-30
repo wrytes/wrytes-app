@@ -1,37 +1,21 @@
 import {
-  faCode,
   faLightbulb,
   faRoute,
   faShield,
   faUser,
-  faWallet,
   faScaleBalanced,
-  IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
+import type { NavItem } from './types';
 
-export interface NavigationItem {
-  label: string;
-  path: string;
-  icon: IconDefinition;
-  description?: string;
-  badge?: string;
-  disabled?: boolean;
-  adminOnly?: boolean;
-}
+export type { NavItem };
 
-export const DASHBOARD_NAVIGATION: NavigationItem[] = [
+export const DASHBOARD_NAVIGATION: NavItem[] = [
   {
     label: 'Overview',
     path: '/dashboard',
     icon: faLightbulb,
     description: 'Dashboard overview and stats',
   },
-  // {
-  //   label: 'Accounts',
-  //   path: '/dashboard/accounts',
-  //   icon: faWallet,
-  //   description: 'Bank accounts for off-ramp',
-  // },
   {
     label: 'Routes',
     path: '/dashboard/routes',
@@ -50,12 +34,6 @@ export const DASHBOARD_NAVIGATION: NavigationItem[] = [
     icon: faUser,
     description: 'Manage your profile',
   },
-  // {
-  //   label: 'Components',
-  //   path: '/dashboard/components/display',
-  //   icon: faCode,
-  //   description: 'UI component showcase',
-  // },
   {
     label: 'Admin',
     path: '/dashboard/admin',
