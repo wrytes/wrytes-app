@@ -57,18 +57,41 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │   └── TransactionQueue/ # Generic transaction management
 │   ├── features/           # 🚀 Feature-specific components
 │   │   ├── Dashboard/      # Dashboard feature module
-│   │   ├── Vaults/         # Vault management (FIRST FEATURE)
+│   │   ├── Routes/         # On/off-ramp routes feature
+│   │   ├── Vaults/         # Vault management
 │   │   └── [Future]/       # Future feature modules
 │   ├── layout/             # 📐 Layout components
+│   │   ├── AppLayout.tsx   # ⭐ Generic layout shell — use for ALL new sections
+│   │   ├── WalletButton.tsx # Shared wallet connect/display (no visibility classes)
+│   │   ├── NavbarWallet.tsx # hidden md:flex wrapper around WalletButton
+│   │   ├── Layout.tsx      # Route → layout dispatcher
+│   │   ├── DashboardLayout.tsx
+│   │   ├── DeribitAgentLayout.tsx
+│   │   ├── DocsLayout.tsx
+│   │   ├── RoutesLayout.tsx
+│   │   ├── HomeLayout.tsx
+│   │   ├── SimpleLayout.tsx
+│   │   ├── CenterLayout.tsx
+│   │   ├── FooterSimple.tsx
+│   │   └── Footer.tsx
 │   └── sections/           # 🏠 Landing page sections
 ├── hooks/                  # 🔗 Custom React hooks
 │   ├── adapter/            # Protocol adapter hooks (Falcon, Morpho)
 │   ├── redux/              # Redux state hooks
+│   │   ├── useTransactionQueue.ts
+│   │   └── useKrakenCredentials.ts
 │   ├── ui/                 # Generic UI hooks
 │   ├── vaults/             # Vault-specific hooks
 │   ├── web3/               # Web3 interaction hooks
 │   └── [feature]/          # Feature-specific hooks
 ├── lib/                    # 🛠️ Business logic & integrations
+│   ├── navigation/         # ⭐ Nav configs — one file per section
+│   │   ├── types.ts        # Shared NavItem interface (single source of truth)
+│   │   ├── dashboard.ts    # DASHBOARD_NAVIGATION
+│   │   ├── deribit.ts      # DERIBIT_NAVIGATION
+│   │   ├── docs.ts         # DOCS_NAVIGATION
+│   │   ├── home.ts         # HOME_NAVIGATION
+│   │   └── routes.ts       # ROUTES_NAVIGATION
 │   ├── vaults/             # Vault configurations (extensible)
 │   ├── web3/               # Web3 configuration
 │   ├── graphql/            # GraphQL client & queries
@@ -77,7 +100,17 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   └── CHANGELOG-YYYY.MM.DD.md # Dated changelog files for version tracking
 ├── redux/                  # 📊 Global state management
 │   └── slices/             # Feature-specific slices
+│       ├── transactionQueue.slice.ts
+│       └── krakenCredentials.slice.ts  # Kraken API key + secret (persisted)
 └── pages/                  # 🚀 Next.js pages
+    ├── dashboard/
+    ├── deribit-agent/
+    ├── routes/             # On/off-ramp section
+    │   ├── index.tsx       # Overview (setup shortcuts if no Kraken credentials)
+    │   ├── onramp.tsx
+    │   ├── offramp.tsx
+    │   └── settings.tsx    # Kraken API credentials form
+    └── ...
 ```
 
 ## 🧩 **Component Reusability Strategy**
@@ -95,8 +128,10 @@ The platform combines **independent asset management funding** with **cutting-ed
    - `TransactionQueue/` - Generic transaction management
 
 2. **`components/layout/`** - Shared layout pieces
-   - `NavbarWallet.tsx` - Reusable wallet connect/display for navbars (used in all layouts except HomeLayout)
-   - `FooterSimple.tsx` - Minimal footer strip (copyright + version), used across all layouts
+   - `AppLayout.tsx` - **Generic layout shell** — inject `logo`, `navItems`, `isActive`, `headerRight`, `mobileExtra`. Use this for every new section layout.
+   - `WalletButton.tsx` - Self-contained wallet connect/display with no visibility classes. Pass to `headerRight` and `mobileExtra` for consistent wallet UX across all sections.
+   - `NavbarWallet.tsx` - Thin `hidden md:flex` wrapper around `WalletButton`. Used where only desktop wallet display is needed.
+   - `FooterSimple.tsx` - Minimal footer strip (copyright + version), rendered by `AppLayout` automatically.
 
 2. **`components/features/[existing-feature]/`** - Feature-specific patterns
    - Reuse patterns from `Vaults/` for similar data management
@@ -111,6 +146,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 
 5. **`hooks/redux/`** - Redux state management hooks
    - `useTransactionQueue.ts` - Transaction queue management
+   - `useKrakenCredentials.ts` - Kraken API key/secret (read, save, clear)
 
 ### **Component Composition Patterns:**
 ```typescript
@@ -161,7 +197,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 
 3. **Add to Navigation:**
    ```
-   lib/navigation/dashboard.ts
+   lib/navigation/[section].ts   # NavItem[] using the shared NavItem type from types.ts
    ```
 
 4. **Follow Existing Patterns:**
@@ -310,7 +346,7 @@ interface FeatureModule {
   route: string;
   component: React.ComponentType;
   permissions: string[];
-  navigation: NavigationItem;
+  navigation: NavItem; // from lib/navigation/types.ts
 }
 ```
 
@@ -400,6 +436,71 @@ logs/
 - Architecture overhauls or technology stack updates
 - Legal document updates or compliance changes
 - Large-scale UI/UX modifications
+
+## 🗺️ **Adding a New Section Layout**
+
+Every section (Dashboard, Deribit, Routes, Docs…) follows the same three-step pattern:
+
+### 1. Nav config — `lib/navigation/[section].ts`
+```typescript
+import { faIcon } from '@fortawesome/free-solid-svg-icons';
+import type { NavItem } from './types';
+
+export const MY_NAVIGATION: NavItem[] = [
+  { label: 'Overview', path: '/my-section', icon: faIcon, description: '...' },
+  { label: 'Settings', path: '/my-section/settings', icon: faSliders, description: '...' },
+];
+```
+
+### 2. Layout — `components/layout/MySectionLayout.tsx`
+```typescript
+import { faIcon } from '@fortawesome/free-solid-svg-icons';
+import { MY_NAVIGATION } from '@/lib/navigation/my-section';
+import { useActiveNavigation } from '@/hooks/useActiveNavigation';
+import WalletButton from '@/components/layout/WalletButton';
+import AppLayout from '@/components/layout/AppLayout';
+
+export default function MySectionLayout({ children }) {
+  const { isActive } = useActiveNavigation();
+  return (
+    <AppLayout
+      logo={{ icon: faIcon, subtitle: 'My Section' }}
+      navItems={MY_NAVIGATION}
+      isActive={isActive}
+      headerRight={<WalletButton />}
+      mobileExtra={<div className="flex justify-end"><WalletButton /></div>}
+    >
+      {children}
+    </AppLayout>
+  );
+}
+```
+
+### 3. Wire into Layout.tsx dispatcher
+```typescript
+// components/layout/Layout.tsx
+if (pathname.startsWith('/my-section')) {
+  return <MySectionLayout>{children}</MySectionLayout>;
+}
+```
+
+### 4. Register index path for exact active-link matching
+```typescript
+// hooks/useActiveNavigation.ts
+if (path === '/dashboard' || path === '/deribit-agent' || path === '/routes' || path === '/my-section') {
+  return router.pathname === path;
+}
+```
+
+### AppLayout props reference
+| Prop | Type | Purpose |
+|---|---|---|
+| `logo` | `{ icon, brand?, subtitle, href? }` | Header branding. `href` defaults to `'/'` |
+| `navItems` | `NavItem[]` | Nav links. Supports `badge`, `disabled`, `adminOnly` |
+| `isActive` | `(path) => boolean` | Active link detection. Inject from `useActiveNavigation()` or custom |
+| `headerRight` | `ReactNode` | Desktop-only slot (hidden on mobile). Pass `<WalletButton />` |
+| `mobileExtra` | `ReactNode` | Shown below nav in mobile panel; any click auto-closes it |
+| `centerContent` | `boolean` | Centers main content vertically (SimpleLayout style) |
 
 ## 🔍 **Troubleshooting Guide**
 
