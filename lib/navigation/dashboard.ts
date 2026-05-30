@@ -1,6 +1,5 @@
 import {
   faLightbulb,
-  faRoute,
   faShield,
   faUser,
   faScaleBalanced,
@@ -17,16 +16,10 @@ export const DASHBOARD_NAVIGATION: NavItem[] = [
     description: 'Dashboard overview and stats',
   },
   {
-    label: 'Routes',
-    path: '/dashboard/routes',
-    icon: faRoute,
-    description: 'On-ramp and off-ramp conversion routes',
-  },
-  {
     label: 'Accounting',
     path: '/dashboard/accounting',
     icon: faScaleBalanced,
-    description: 'Token transfers, invoices and accounting overview',
+    description: 'Token transfers and accounting overview',
   },
   {
     label: 'Profile',
