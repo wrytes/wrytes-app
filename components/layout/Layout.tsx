@@ -6,6 +6,8 @@ import DocsLayout from './DocsLayout';
 import SimpleLayout from './SimpleLayout';
 import CenterLayout from './CenterLayout';
 import DeribitAgentLayout from './DeribitAgentLayout';
+import RoutesLayout from './RoutesLayout';
+import InvoicesLayout from './InvoicesLayout';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -17,6 +19,14 @@ const SIMPLE_LAYOUT_PATHS = ['/legal'];
 export default function Layout({ children }: LayoutProps) {
   const router = useRouter();
   const pathname = router.pathname;
+
+  if (pathname.startsWith('/routes')) {
+    return <RoutesLayout>{children}</RoutesLayout>;
+  }
+
+  if (pathname.startsWith('/invoices')) {
+    return <InvoicesLayout>{children}</InvoicesLayout>;
+  }
 
   if (pathname.startsWith('/deribit-agent')) {
     return <DeribitAgentLayout>{children}</DeribitAgentLayout>;

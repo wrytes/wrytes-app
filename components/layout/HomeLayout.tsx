@@ -9,19 +9,7 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { COMPANY } from '@/lib/constants';
 import Footer from './Footer';
-import { IconProp } from '@fortawesome/fontawesome-svg-core';
-
-interface NavigationItem {
-  name: string;
-  href: string;
-  icon?: IconProp;
-}
-
-const navigation: NavigationItem[] = [
-  { name: 'About', href: '/#about' },
-  { name: 'Revenue', href: '/#revenue' },
-  { name: 'Contact', href: '/#contact' },
-];
+import { HOME_NAVIGATION } from '@/lib/navigation/home';
 
 interface HomeLayoutProps {
   children: React.ReactNode;
@@ -57,14 +45,13 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
 
             {/* Desktop Navigation */}
             <nav className="hidden md:flex items-center space-x-8">
-              {navigation.map(item => (
+              {HOME_NAVIGATION.map(item => (
                 <Link
-                  key={item.name}
-                  href={item.href}
-                  className="flex items-center gap-2 text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
+                  key={item.path}
+                  href={item.path}
+                  className="text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
                 >
-                  {item.icon && <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />}
-                  {item.name}
+                  {item.label}
                 </Link>
               ))}
             </nav>
@@ -94,15 +81,14 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
           {isMobileMenuOpen && (
             <div className="md:hidden mt-4 pb-4 border-t border-surface pt-4">
               <nav className="space-y-4">
-                {navigation.map(item => (
+                {HOME_NAVIGATION.map(item => (
                   <Link
-                    key={item.name}
-                    href={item.href}
-                    className="flex items-center gap-3 text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
+                    key={item.path}
+                    href={item.path}
+                    className="text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
                     onClick={closeMobileMenu}
                   >
-                    {item.icon && <FontAwesomeIcon icon={item.icon} className="w-4 h-4" />}
-                    {item.name}
+                    {item.label}
                   </Link>
                 ))}
 

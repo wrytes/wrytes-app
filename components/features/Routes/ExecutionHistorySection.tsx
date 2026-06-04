@@ -337,7 +337,7 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                 )}
                 {detailTarget.error && (
                   <DetailRow label="Error">
-                    <span className="text-error break-all">{detailTarget.error}</span>
+                    <pre className="text-error text-xs overflow-x-auto whitespace-pre font-mono">{detailTarget.error}</pre>
                   </DetailRow>
                 )}
               </div>

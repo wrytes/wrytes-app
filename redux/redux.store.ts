@@ -6,12 +6,14 @@ import { FLUSH, REHYDRATE, PAUSE, PERSIST, PURGE, REGISTER } from 'redux-persist
 
 // splices
 import { transactionQueueReducer } from './slices/transactionQueue.slice';
+import { krakenCredentialsReducer } from './slices/krakenCredentials.slice';
 // transforms
 import { bigIntTransform } from './transforms/bigint.transform';
 
 // Combine reducers
 const rootReducer = combineReducers({
 	transactionQueue: transactionQueueReducer,
+	krakenCredentials: krakenCredentialsReducer,
 });
 
 // Redux Persist configuration
@@ -19,8 +21,7 @@ const persistConfig = {
 	key: 'wrytes_redux_store',
 	version: 1,
 	storage,
-	// Only persist the transaction queue
-	whitelist: ['transactionQueue'],
+	whitelist: ['transactionQueue', 'krakenCredentials'],
 	// Add BigInt transform
 	transforms: [bigIntTransform],
 };

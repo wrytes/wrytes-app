@@ -4,17 +4,10 @@ import {
   faRobot,
   faSliders,
   faBrain,
-  IconDefinition,
 } from '@fortawesome/free-solid-svg-icons';
+import type { NavItem } from './types';
 
-export interface DeribitNavItem {
-  label: string;
-  path: string;
-  icon: IconDefinition;
-  description?: string;
-}
-
-export const DERIBIT_NAVIGATION: DeribitNavItem[] = [
+export const DERIBIT_NAVIGATION: NavItem[] = [
   {
     label: 'Overview',
     path: '/deribit-agent',

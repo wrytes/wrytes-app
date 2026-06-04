@@ -1,21 +1,21 @@
 import React from 'react';
-import { faRobot } from '@fortawesome/free-solid-svg-icons';
-import { DERIBIT_NAVIGATION } from '@/lib/navigation/deribit';
+import { faRoute } from '@fortawesome/free-solid-svg-icons';
+import { ROUTES_NAVIGATION } from '@/lib/navigation/routes';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
 import WalletButton from '@/components/layout/WalletButton';
 import AppLayout from '@/components/layout/AppLayout';
 
-interface DeribitAgentLayoutProps {
+interface RoutesLayoutProps {
   children: React.ReactNode;
 }
 
-export default function DeribitAgentLayout({ children }: DeribitAgentLayoutProps) {
+export default function RoutesLayout({ children }: RoutesLayoutProps) {
   const { isActive } = useActiveNavigation();
 
   return (
     <AppLayout
-      logo={{ icon: faRobot, brand: 'Deribit', subtitle: 'Agent' }}
-      navItems={DERIBIT_NAVIGATION}
+      logo={{ icon: faRoute, subtitle: 'Routes' }}
+      navItems={ROUTES_NAVIGATION}
       isActive={isActive}
       headerRight={<WalletButton />}
       mobileExtra={
