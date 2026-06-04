@@ -9,7 +9,42 @@ export enum AuthStep {
   SIGN_MESSAGE        = 'sign_message',
   WALLET_NOT_LINKED   = 'wallet_not_linked',  // challenge 404 → show link flow
   PENDING_TG_APPROVAL = 'pending_tg_approval',
+  SELECT_NAMESPACE    = 'select_namespace',   // pick active workspace after TG approval
   AUTHENTICATED       = 'authenticated',
+}
+
+// ---------------------------------------------------------------------------
+// Namespace
+// ---------------------------------------------------------------------------
+
+export interface NamespaceSafeWallet {
+  id: string
+  address: string
+  chainId: number
+  label: string
+  deployed: boolean
+}
+
+export interface NamespaceMemberUser {
+  id: string
+  telegramHandle: string | null
+}
+
+export interface NamespaceMember {
+  userId: string
+  role: 'OWNER' | 'MEMBER'
+  user: NamespaceMemberUser
+}
+
+export interface Namespace {
+  id: string
+  name: string
+  telegramGroupId: string | null
+  role: 'OWNER' | 'MEMBER'
+  safeWallets: NamespaceSafeWallet[]
+  members: NamespaceMember[]
+  createdAt: string
+  updatedAt: string
 }
 
 export interface AuthFlowState {
@@ -96,12 +131,16 @@ export interface AuthState {
   isLoading: boolean
   error: string | null
   token: string | null
+  namespaces: Namespace[]
+  activeNamespace: Namespace | null
 }
 
 export interface AuthContextType extends AuthState {
   signIn: (address: Address) => Promise<void>
   signOut: () => void
   clearError: () => void
+  setActiveNamespace: (namespace: Namespace) => void
+  switchNamespace: () => void
   authFlow: AuthFlowState
 }
 

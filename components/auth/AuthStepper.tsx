@@ -24,6 +24,7 @@ const STEP_INDEX: Record<AuthStep, number> = {
   [AuthStep.SIGN_MESSAGE]:        1,
   [AuthStep.WALLET_NOT_LINKED]:   1,
   [AuthStep.PENDING_TG_APPROVAL]: 2,
+  [AuthStep.SELECT_NAMESPACE]:    3, // lives inside the "Done" step
   [AuthStep.AUTHENTICATED]:       3,
 }
 
@@ -42,9 +43,10 @@ export function AuthStepper({ onComplete }: AuthStepperProps) {
     }
   }, [isAuthenticated, onComplete])
 
-  const currentStep = isAuthenticated
-    ? AuthStep.AUTHENTICATED
-    : authFlow?.currentStep ?? (isConnected ? AuthStep.SIGN_MESSAGE : AuthStep.CONNECT_WALLET)
+  const currentStep =
+    (isAuthenticated && authFlow?.currentStep !== AuthStep.SELECT_NAMESPACE)
+      ? AuthStep.AUTHENTICATED
+      : authFlow?.currentStep ?? (isConnected ? AuthStep.SIGN_MESSAGE : AuthStep.CONNECT_WALLET)
 
   const currentIndex = STEP_INDEX[currentStep] ?? 0
 

@@ -3,11 +3,13 @@ import { type Address } from 'viem'
 import { useAppKitAccount, useDisconnect } from '@reown/appkit-controllers/react'
 import { useSignMessage } from 'wagmi'
 import { AuthService } from '@/lib/auth/AuthService'
+import { AuthStorage } from '@/lib/auth/storage'
 import {
   AuthStep,
   type AuthContextType,
   type AuthFlowState,
   type AuthState,
+  type Namespace,
   type User,
 } from '@/lib/auth/types'
 
@@ -20,6 +22,8 @@ type AuthAction =
   | { type: 'SET_USER'; payload: User | null }
   | { type: 'SET_ERROR'; payload: string | null }
   | { type: 'SET_TOKEN'; payload: string | null }
+  | { type: 'SET_NAMESPACES'; payload: Namespace[] }
+  | { type: 'SET_ACTIVE_NAMESPACE'; payload: Namespace | null }
   | { type: 'CLEAR_AUTH' }
   | { type: 'SET_AUTH_FLOW'; payload: Partial<AuthFlowState> }
 
@@ -35,6 +39,8 @@ const initialState: AuthState & { authFlow: AuthFlowState } = {
   isLoading: false,
   error: null,
   token: null,
+  namespaces: [],
+  activeNamespace: null,
   authFlow: initialAuthFlow,
 }
 
@@ -51,6 +57,10 @@ function authReducer(
       return { ...state, error: action.payload, isLoading: false }
     case 'SET_TOKEN':
       return { ...state, token: action.payload }
+    case 'SET_NAMESPACES':
+      return { ...state, namespaces: action.payload }
+    case 'SET_ACTIVE_NAMESPACE':
+      return { ...state, activeNamespace: action.payload }
     case 'CLEAR_AUTH':
       return { ...initialState, authFlow: { ...initialAuthFlow } }
     case 'SET_AUTH_FLOW':
@@ -75,9 +85,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const { disconnect } = useDisconnect()
   const { signMessageAsync } = useSignMessage()
 
-  // Keep a ref to the current sessionId so the polling effect can access it
   const sessionIdRef = useRef<string | null>(null)
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
+  // Hold the user profile while we wait for namespace selection
+  const pendingUserRef = useRef<(User & { walletAddress: Address }) | null>(null)
+
+  // ---------------------------------------------------------------------------
+  // After JWT: fetch namespaces + user, decide next step
+  // ---------------------------------------------------------------------------
+
+  const afterJwt = useCallback(async (walletAddress: Address) => {
+    const [nsResult, meResult] = await Promise.allSettled([
+      authService.getNamespaces(),
+      authService.getMe(),
+    ])
+
+    if (nsResult.status === 'rejected') {
+      console.error('[afterJwt] getNamespaces failed:', nsResult.reason)
+    }
+
+    const resolvedNamespaces: Namespace[] = nsResult.status === 'fulfilled' ? nsResult.value : []
+    const resolvedUser: (User & { walletAddress: Address }) | null =
+      meResult.status === 'fulfilled' ? { ...meResult.value, walletAddress } : null
+
+    dispatch({ type: 'SET_NAMESPACES', payload: resolvedNamespaces })
+    pendingUserRef.current = resolvedUser
+
+    // Restore previously stored namespace selection
+    const storedId = AuthStorage.getNamespaceId()
+    const restoredNs = storedId ? resolvedNamespaces.find((n) => n.id === storedId) ?? null : null
+
+    if (restoredNs) {
+      dispatch({ type: 'SET_ACTIVE_NAMESPACE', payload: restoredNs })
+      commitUser(resolvedUser, walletAddress)
+      return
+    }
+
+    if (resolvedNamespaces.length === 1) {
+      AuthStorage.setNamespaceId(resolvedNamespaces[0].id)
+      dispatch({ type: 'SET_ACTIVE_NAMESPACE', payload: resolvedNamespaces[0] })
+      commitUser(resolvedUser, walletAddress)
+      return
+    }
+
+    if (resolvedNamespaces.length === 0) {
+      // No namespaces yet (API error or new user) — proceed without selection
+      commitUser(resolvedUser, walletAddress)
+      return
+    }
+
+    // Multiple namespaces with no stored selection → show the picker
+    dispatch({
+      type: 'SET_AUTH_FLOW',
+      payload: { currentStep: AuthStep.SELECT_NAMESPACE, isLoading: false, error: null },
+    })
+  }, [authService]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  function commitUser(user: (User & { walletAddress: Address }) | null, walletAddress: Address) {
+    dispatch({
+      type: 'SET_USER',
+      payload: user ?? {
+        id: '',
+        walletAddress,
+        telegramHandle: null,
+        notificationsEnabled: true,
+        scopes: [],
+        wallets: [],
+        profile: null,
+      },
+    })
+    dispatch({ type: 'SET_AUTH_FLOW', payload: { currentStep: AuthStep.AUTHENTICATED, isLoading: false, error: null } })
+  }
 
   // ---------------------------------------------------------------------------
   // Init from storage
@@ -89,30 +167,23 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const payload = authService.decodeToken(token)
       if (payload) {
         dispatch({ type: 'SET_TOKEN', payload: token })
+        // Show AUTHENTICATED optimistically while we load namespaces in the background
         dispatch({ type: 'SET_AUTH_FLOW', payload: { currentStep: AuthStep.AUTHENTICATED } })
-        // Fetch full profile in the background
-        authService.getMe()
-          .then((me) => {
-            dispatch({
-              type: 'SET_USER',
-              payload: { ...me, walletAddress: payload.wallet as Address },
-            })
+        afterJwt(payload.wallet as Address).catch(() => {
+          // Fallback: minimal user from JWT
+          dispatch({
+            type: 'SET_USER',
+            payload: {
+              id: payload.sub,
+              walletAddress: payload.wallet as Address,
+              telegramHandle: null,
+              notificationsEnabled: true,
+              scopes: [],
+              wallets: [],
+              profile: null,
+            },
           })
-          .catch(() => {
-            // Fallback to minimal user from JWT if /auth/me fails
-            dispatch({
-              type: 'SET_USER',
-              payload: {
-                id: payload.sub,
-                walletAddress: payload.wallet as Address,
-                telegramHandle: null,
-                notificationsEnabled: true,
-                scopes: [],
-                wallets: [],
-                profile: null,
-              },
-            })
-          })
+        })
       } else {
         authService.clearSession()
       }
@@ -120,14 +191,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, []) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------------------
-  // Sync wallet connection state → step
+  // Sync wallet connection → step
   // ---------------------------------------------------------------------------
 
   useEffect(() => {
     if (!isConnected) {
       stopPolling()
       if (state.isAuthenticated) {
-        // Wallet disconnected while logged in — clear session
         authService.clearSession()
         dispatch({ type: 'CLEAR_AUTH' })
       } else {
@@ -145,7 +215,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   }, [isConnected, address]) // eslint-disable-line react-hooks/exhaustive-deps
 
   // ---------------------------------------------------------------------------
-  // Session polling (runs while PENDING_TG_APPROVAL)
+  // Session polling (PENDING_TG_APPROVAL)
   // ---------------------------------------------------------------------------
 
   const stopPolling = useCallback(() => {
@@ -169,32 +239,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const payload = authService.decodeToken(result.jwt)
           if (payload) {
             dispatch({ type: 'SET_TOKEN', payload: result.jwt })
-            dispatch({
-              type: 'SET_AUTH_FLOW',
-              payload: { currentStep: AuthStep.AUTHENTICATED, isLoading: false, error: null },
-            })
-            // Fetch full profile
-            authService.getMe()
-              .then((me) => {
-                dispatch({
-                  type: 'SET_USER',
-                  payload: { ...me, walletAddress: payload.wallet as Address },
-                })
-              })
-              .catch(() => {
-                dispatch({
-                  type: 'SET_USER',
-                  payload: {
-                    id: payload.sub,
-                    walletAddress: payload.wallet as Address,
-                    telegramHandle: null,
-                    notificationsEnabled: true,
-                    scopes: [],
-                    wallets: [],
-                    profile: null,
-                  },
-                })
-              })
+            // Show the "Done" step as loading while we fetch namespaces
+            dispatch({ type: 'SET_AUTH_FLOW', payload: { isLoading: true } })
+            await afterJwt(payload.wallet as Address)
           }
         } else if (result.status === 'denied') {
           stopPolling()
@@ -219,14 +266,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
             },
           })
         }
-        // 'pending' → keep polling
       } catch {
         // Network glitch — keep polling silently
       }
     }, 2000)
-  }, [authService, stopPolling])
+  }, [afterJwt, authService, stopPolling])
 
-  // Cleanup on unmount
   useEffect(() => () => stopPolling(), [stopPolling])
 
   // ---------------------------------------------------------------------------
@@ -244,14 +289,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       })
 
       try {
-        // Step 1 — get challenge (404 means wallet not linked yet)
         let challengeResult: Awaited<ReturnType<typeof authService.getChallenge>>
         try {
           challengeResult = await authService.getChallenge(walletAddress)
         } catch (err: unknown) {
           const status = (err as { statusCode?: number }).statusCode
           if (status === 404) {
-            // Wallet not registered — show link flow instead of generic error
             dispatch({
               type: 'SET_AUTH_FLOW',
               payload: { currentStep: AuthStep.WALLET_NOT_LINKED, isLoading: false, error: null },
@@ -263,11 +306,9 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         const { message } = challengeResult
         dispatch({ type: 'SET_AUTH_FLOW', payload: { message, isLoading: false } })
 
-        // Step 2 — sign with wallet
         dispatch({ type: 'SET_AUTH_FLOW', payload: { isLoading: true } })
         const signature = await signMessageAsync({ message }) as `0x${string}`
 
-        // Step 3 — submit, trigger TG 2FA
         const { sessionId, expiresAt } = await authService.submitSignin(
           walletAddress,
           message,
@@ -289,7 +330,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       } catch (err: unknown) {
         stopPolling()
         let message = 'Authentication failed'
-
         if (err instanceof Error) {
           if (err.name === 'UserRejectedRequestError' || err.message.includes('User rejected')) {
             message = 'Signature cancelled. Please try again.'
@@ -299,7 +339,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         } else if (typeof err === 'object' && err !== null && 'message' in err) {
           message = (err as { message: string }).message
         }
-
         dispatch({ type: 'SET_ERROR', payload: message })
         dispatch({
           type: 'SET_AUTH_FLOW',
@@ -311,12 +350,32 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   )
 
   // ---------------------------------------------------------------------------
+  // setActiveNamespace — called when user picks a namespace from the selector
+  // ---------------------------------------------------------------------------
+
+  const setActiveNamespace = useCallback((namespace: Namespace) => {
+    AuthStorage.setNamespaceId(namespace.id)
+    dispatch({ type: 'SET_ACTIVE_NAMESPACE', payload: namespace })
+    const wallet = pendingUserRef.current?.walletAddress
+    commitUser(pendingUserRef.current, wallet ?? (address as Address))
+  }, [address]) // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ---------------------------------------------------------------------------
+  // switchNamespace — re-open the namespace picker without signing out
+  // ---------------------------------------------------------------------------
+
+  const switchNamespace = useCallback(() => {
+    dispatch({ type: 'SET_AUTH_FLOW', payload: { currentStep: AuthStep.SELECT_NAMESPACE } })
+  }, [])
+
+  // ---------------------------------------------------------------------------
   // signOut
   // ---------------------------------------------------------------------------
 
   const signOut = useCallback(async () => {
     stopPolling()
     authService.clearSession()
+    pendingUserRef.current = null
     await disconnect().catch(() => null)
     dispatch({ type: 'CLEAR_AUTH' })
   }, [authService, disconnect, stopPolling])
@@ -330,10 +389,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     dispatch({ type: 'SET_AUTH_FLOW', payload: { error: null } })
   }, [])
 
-  // ---------------------------------------------------------------------------
-  // Context value
-  // ---------------------------------------------------------------------------
-
   return (
     <AuthContext.Provider
       value={{
@@ -341,6 +396,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         signIn,
         signOut,
         clearError,
+        setActiveNamespace,
+        switchNamespace,
         authFlow: state.authFlow,
       }}
     >

@@ -15,6 +15,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useWalletLink } from '@/hooks/useWalletLink';
 import { AuthStep } from '@/lib/auth/types';
 import ButtonInput from '@/components/ui/Input/ButtonInput';
+import { NamespaceSelector } from './NamespaceSelector';
 import { useAppKit } from '@reown/appkit/react';
 
 interface WalletConnectorProps {
@@ -33,6 +34,9 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
     clearError,
     isAuthenticated,
     authFlow,
+    namespaces,
+    activeNamespace,
+    switchNamespace,
   } = useAuth();
   const link = useWalletLink(address ?? null);
   const { open } = useAppKit();
@@ -99,7 +103,8 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
   const showSign = isConnected && !isAuthenticated && step === AuthStep.SIGN_MESSAGE && !isLoading;
   const showNotLinked = isConnected && step === AuthStep.WALLET_NOT_LINKED;
   const showTgWait = step === AuthStep.PENDING_TG_APPROVAL;
-  const showDone = isAuthenticated;
+  const showNamespacePicker = step === AuthStep.SELECT_NAMESPACE;
+  const showDone = isAuthenticated && step === AuthStep.AUTHENTICATED;
 
   return (
     <div className={`text-center max-w-md mx-auto ${className}`}>
@@ -107,16 +112,20 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
       <div className="mb-4">
         <p className="text-text-muted text-sm">
           {showDone
-            ? 'You are successfully authenticated'
-            : showTgWait
-              ? 'Check Telegram and tap Allow'
-              : showNotLinked
-                ? 'Link your wallet to continue'
-                : isConnected
-                  ? authFlow?.error
-                    ? 'Please try again'
-                    : 'Sign a message to continue'
-                  : 'Connect your Web3 wallet to continue'}
+            ? activeNamespace
+              ? `Signed in to ${activeNamespace.name}`
+              : 'You are successfully authenticated'
+            : showNamespacePicker
+              ? 'Choose a workspace to continue'
+              : showTgWait
+                ? 'Check Telegram and tap Allow'
+                : showNotLinked
+                  ? 'Link your wallet to continue'
+                  : isConnected
+                    ? authFlow?.error
+                      ? 'Please try again'
+                      : 'Sign a message to continue'
+                    : 'Connect your Web3 wallet to continue'}
         </p>
       </div>
 
@@ -260,14 +269,34 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
           </motion.div>
         )}
 
+        {/* Namespace picker — shown in place of the Done panel */}
+        {showNamespacePicker && (
+          <motion.div key="namespace-picker" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
+            <NamespaceSelector namespaces={namespaces} />
+          </motion.div>
+        )}
+
         {/* Authenticated */}
         {showDone && (
           <motion.div key="done" initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}>
-            <div className="mb-4 p-3 bg-success-bg border border-success-border rounded-lg">
+            <div className="mb-4 p-3 bg-success-bg border border-success-border rounded-lg text-center">
               <FontAwesomeIcon icon={faCheck} className="text-success text-lg mb-2" />
               <p className="text-xs text-text-muted mb-1">Authenticated</p>
               <p className="text-sm text-text-primary font-mono truncate">{address}</p>
+              {activeNamespace && (
+                <p className="text-xs text-brand font-medium mt-1.5 truncate">
+                  📦 {activeNamespace.name}
+                </p>
+              )}
             </div>
+            {namespaces.length > 1 && (
+              <button
+                onClick={switchNamespace}
+                className="w-full text-xs text-text-muted hover:text-brand transition-colors mb-3 py-1"
+              >
+                Switch workspace
+              </button>
+            )}
             <ButtonInput label="Disconnect" onClick={signOut} className="w-full" variant="secondary" />
           </motion.div>
         )}

@@ -6,6 +6,7 @@ import {
   type SessionPollResponse,
   type LinkTokenResponse,
   type LinkTokenStatusResponse,
+  type Namespace,
   type User,
   type ApiError,
 } from './types'
@@ -85,6 +86,10 @@ export class AuthService {
   // ---------------------------------------------------------------------------
   // User profile
   // ---------------------------------------------------------------------------
+
+  async getNamespaces(): Promise<Namespace[]> {
+    return this.request<Namespace[]>('/namespaces')
+  }
 
   async getMe(): Promise<User & { walletAddress: Address }> {
     const data = await this.request<Omit<User, 'walletAddress'> & { wallets: { address: string; label: string | null }[] }>('/auth/me')

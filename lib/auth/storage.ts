@@ -2,6 +2,7 @@ import { type User as UserProfile } from './types'
 
 const AUTH_TOKEN_KEY = 'wrytes_auth_token'
 const AUTH_USER_KEY = 'wrytes_auth_user'
+const AUTH_NAMESPACE_KEY = 'wrytes_active_namespace_id'
 
 export class AuthStorage {
   // Token management
@@ -71,10 +72,44 @@ export class AuthStorage {
     }
   }
 
+  // Namespace management
+  static setNamespaceId(id: string): void {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.setItem(AUTH_NAMESPACE_KEY, id)
+      } catch (error) {
+        console.error('Failed to store namespace ID:', error)
+      }
+    }
+  }
+
+  static getNamespaceId(): string | null {
+    if (typeof window !== 'undefined') {
+      try {
+        return localStorage.getItem(AUTH_NAMESPACE_KEY)
+      } catch (error) {
+        console.error('Failed to retrieve namespace ID:', error)
+        return null
+      }
+    }
+    return null
+  }
+
+  static clearNamespaceId(): void {
+    if (typeof window !== 'undefined') {
+      try {
+        localStorage.removeItem(AUTH_NAMESPACE_KEY)
+      } catch (error) {
+        console.error('Failed to clear namespace ID:', error)
+      }
+    }
+  }
+
   // Clear all authentication data
   static clearAll(): void {
     this.clearToken()
     this.clearUser()
+    this.clearNamespaceId()
   }
 
   // Check if token exists and is not expired

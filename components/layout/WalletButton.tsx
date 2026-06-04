@@ -7,7 +7,7 @@ import { AuthModal } from '@/components/auth/AuthModal';
 
 export default function WalletButton() {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user } = useAuth();
+  const { user, activeNamespace } = useAuth();
   const { address: walletAddress, isConnected } = useWallet();
 
   const displayName = user?.telegramHandle
@@ -35,6 +35,11 @@ export default function WalletButton() {
           title="Click to manage wallet"
         >
           <div className="text-right">
+            {activeNamespace && (
+              <p className="text-brand text-xs font-medium leading-tight truncate max-w-[140px]">
+                📦 {activeNamespace.name}
+              </p>
+            )}
             {displayName ? (
               <>
                 <p className="text-text-secondary font-medium text-sm leading-tight">

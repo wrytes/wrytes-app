@@ -9,11 +9,13 @@ export interface ApiError {
 
 export async function apiRequest<T>(endpoint: string, init: RequestInit = {}): Promise<T> {
   const token = AuthStorage.getToken()
+  const namespaceId = AuthStorage.getNamespaceId()
   // Skip Content-Type for FormData — browser sets it with the correct multipart boundary.
   const headers: HeadersInit = init.body instanceof FormData
     ? {}
     : { 'Content-Type': 'application/json' }
   if (token) headers['Authorization'] = `Bearer ${token}`
+  if (namespaceId) headers['X-Namespace-Id'] = namespaceId
 
   const res = await fetch(`${CONFIG.api}${endpoint}`, {
     ...init,
