@@ -283,11 +283,6 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
               <FontAwesomeIcon icon={faCheck} className="text-success text-lg mb-2" />
               <p className="text-xs text-text-muted mb-1">Authenticated</p>
               <p className="text-sm text-text-primary font-mono truncate">{address}</p>
-              {activeNamespace && (
-                <p className="text-xs text-brand font-medium mt-1.5 truncate">
-                  📦 {activeNamespace.name}
-                </p>
-              )}
             </div>
             {namespaces.length > 1 && (
               <button

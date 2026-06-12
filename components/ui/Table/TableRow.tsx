@@ -41,7 +41,7 @@ export default function TableRow({
       <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
         <div
-          className="max-md:hidden text-right grid flex-grow items-center"
+          className="max-md:hidden text-right grid flex-grow items-center py-2"
           style={{ gridTemplateColumns: `repeat(${colSpan || childArray.length}, minmax(0, 1fr))` }}
         >
           {childArray.map((child, idx) => (
@@ -69,7 +69,7 @@ export default function TableRow({
 
         {/* Action column */}
         {actionCol && (
-          <div className="flex-shrink-0 md:w-[8rem] md:ml-[2rem] max-md:w-full my-2">
+          <div className="flex-shrink-0 md:w-[8rem] md:ml-[2rem] max-md:w-full mb-2">
             {actionCol}
           </div>
         )}
@@ -106,9 +106,9 @@ function TableRowMobile({
   }
 
   return (
-    <div className={`${className} md:hidden gap-6 grid-cols-1 flex-1`}>
+    <div className={`${className} md:hidden grid-cols-1 flex-1 py-2`}>
       {children.map((c, idx) => (
-        <div className="py-0.5 flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
+        <div className="flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
           <div className="flex-1 text-left">
             {idx === 0 && !rawHeader ? (
               <div

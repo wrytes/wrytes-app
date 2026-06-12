@@ -7,14 +7,8 @@ import { AuthModal } from '@/components/auth/AuthModal';
 
 export default function WalletButton() {
   const [showAuthModal, setShowAuthModal] = useState(false);
-  const { user, activeNamespace } = useAuth();
+  const { activeNamespace } = useAuth();
   const { address: walletAddress, isConnected } = useWallet();
-
-  const displayName = user?.telegramHandle
-    ? `@${user.telegramHandle}`
-    : user?.profile
-      ? `${user.profile.firstName} ${user.profile.lastName}`.trim()
-      : null;
 
   return (
     <>
@@ -40,20 +34,9 @@ export default function WalletButton() {
                 📦 {activeNamespace.name}
               </p>
             )}
-            {displayName ? (
-              <>
-                <p className="text-text-secondary font-medium text-sm leading-tight">
-                  {displayName}
-                </p>
-                <p className="text-text-muted font-mono text-xs hover:text-brand transition-colors">
-                  {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
-                </p>
-              </>
-            ) : (
-              <p className="text-text-secondary font-mono text-sm hover:text-brand transition-colors">
-                {walletAddress?.slice(0, 8)}...{walletAddress?.slice(-6)}
-              </p>
-            )}
+            <p className="text-text-muted font-mono text-xs hover:text-brand transition-colors">
+              {walletAddress?.slice(0, 6)}...{walletAddress?.slice(-4)}
+            </p>
           </div>
         </button>
       )}
