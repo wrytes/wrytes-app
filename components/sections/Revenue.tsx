@@ -4,7 +4,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faCode, faLightbulb, faHandshake } from '@fortawesome/free-solid-svg-icons';
 import { faBitcoin } from '@fortawesome/free-brands-svg-icons';
 import Card from '@/components/ui/Card';
-import { SERVICES } from '@/lib/constants';
+import { SERVICES } from '@/lib/services';
 
 const iconMap = {
   'crypto-asset-management': faBitcoin,

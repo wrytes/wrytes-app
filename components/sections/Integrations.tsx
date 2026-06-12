@@ -3,7 +3,7 @@ import { motion } from 'framer-motion';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faExternalLinkAlt } from '@fortawesome/free-solid-svg-icons';
 import Card from '@/components/ui/Card';
-import { INTEGRATIONS } from '@/lib/constants';
+import { INTEGRATIONS } from '@/lib/integrations';
 
 export default function Integrations() {
   return (
