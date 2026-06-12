@@ -22,7 +22,8 @@ export const MINI_APPS: MiniApp[] = [
   {
     id: 'docs',
     name: 'Documentation',
-    description: 'Technical references, API guides, and integration documentation for the Wrytes platform.',
+    description:
+      'Technical references, API guides, and integration documentation for the Wrytes platform.',
     href: '/docs',
     icon: faBook,
     color: 'bg-blue-50 text-blue-600',
@@ -30,15 +31,19 @@ export const MINI_APPS: MiniApp[] = [
   {
     id: 'dashboard',
     name: 'Dashboard',
-    description: 'Live portfolio overview with vault positions, yields, and cross-protocol performance metrics.',
+    description:
+      'Live portfolio overview with vault positions, yields, and cross-protocol performance metrics.',
     href: '/dashboard',
     icon: faChartLine,
     color: 'bg-brand/10 text-brand',
+    development: true,
+    disabled: true,
   },
   {
     id: 'routes',
     name: 'Routes',
-    description: 'Cross-protocol routing engine for optimal multi-step transaction execution paths.',
+    description:
+      'Cross-protocol routing engine for optimal multi-step transaction execution paths.',
     href: '/routes',
     icon: faRoute,
     color: 'bg-purple-50 text-purple-600',

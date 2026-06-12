@@ -20,9 +20,8 @@ export default function Integrations() {
             Technology Integrations & Protocol Adapters
           </h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
-            Our software development expertise spans multiple Distributed Ledger ecosystems,
-            creating robust adapters and integrations that bridge traditional business needs with
-            cutting-edge technology.
+            Our software development expertise spans multiple platforms and protocols, building
+            robust adapters and integrations that bridge real-world operations with cutting-edge technology.
           </p>
         </motion.div>
 
