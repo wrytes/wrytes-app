@@ -15,12 +15,10 @@ export default function MiniApps() {
           viewport={{ once: true }}
           className="text-center mb-12"
         >
-          <h2 className="text-3xl font-bold text-text-primary mb-4">
-            Built-in Mini Applications
-          </h2>
+          <h2 className="text-3xl font-bold text-text-primary mb-4">Built-in Mini Applications</h2>
           <p className="text-xl text-text-secondary max-w-3xl mx-auto leading-relaxed">
-            Standalone tools and interfaces built directly into the platform — each one purpose-built
-            for a specific workflow within our DLT and trading operations.
+            Standalone tools and interfaces built directly into the platform — each one
+            purpose-built for a specific workflow within our DLT and trading operations.
           </p>
         </motion.div>
 
@@ -29,15 +27,22 @@ export default function MiniApps() {
             const cardContent = (
               <Card
                 hover={!app.disabled}
-                className={`h-full group hover:shadow-lg transition-all duration-300 relative overflow-hidden ${app.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
+                className={`h-full min-h-56 group hover:shadow-lg transition-all duration-300 relative overflow-hidden ${app.disabled ? 'cursor-not-allowed opacity-60' : 'cursor-pointer'}`}
               >
                 {app.development && (
-                  <div className="absolute top-[22px] right-[-22px] rotate-45 w-[120px] text-center text-[10px] font-bold py-1.5 bg-warning text-white pointer-events-none z-10 tracking-wide uppercase">
-                    developing
+                  <div
+                    className="absolute inset-0 pointer-events-none z-10"
+                    style={{ clipPath: 'inset(0 round 0.5rem)' }}
+                  >
+                    <div className="absolute top-[22px] right-[-56px] rotate-45 w-[180px] text-center text-[10px] font-bold py-1.5 bg-warning text-white tracking-wide uppercase">
+                      developing
+                    </div>
                   </div>
                 )}
                 <div className="mb-4">
-                  <div className={`w-12 h-12 flex items-center justify-center mb-3 rounded-lg transition-colors ${app.color}`}>
+                  <div
+                    className={`w-12 h-12 flex items-center justify-center mb-3 rounded-lg transition-colors ${app.color}`}
+                  >
                     <FontAwesomeIcon icon={app.icon} className="w-5 h-5" />
                   </div>
                   <div className="flex items-center gap-2 text-text-primary font-semibold group-hover:text-brand transition-colors">
@@ -62,11 +67,7 @@ export default function MiniApps() {
                 transition={{ duration: 0.8, delay: index * 0.1 }}
                 viewport={{ once: true }}
               >
-                {app.disabled ? (
-                  <div>{cardContent}</div>
-                ) : (
-                  <a href={app.href}>{cardContent}</a>
-                )}
+                {app.disabled ? <div>{cardContent}</div> : <a href={app.href}>{cardContent}</a>}
               </motion.div>
             );
           })}
