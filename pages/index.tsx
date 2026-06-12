@@ -1,6 +1,8 @@
 import Head from 'next/head';
 import Hero from '@/components/sections/Hero';
 import About from '@/components/sections/About';
+import Integrations from '@/components/sections/Integrations';
+import MiniApps from '@/components/sections/MiniApps';
 import Revenue from '@/components/sections/Revenue';
 import Contact from '@/components/sections/Contact';
 import { COMPANY } from '@/lib/constants';
@@ -38,6 +40,8 @@ export default function Home() {
 
       <Hero />
       <About />
+      <Integrations />
+      <MiniApps />
       <Revenue />
       <Contact />
     </>
