@@ -1,8 +1,3 @@
-networks:
-  frontend:
-    driver: overlay
-    attachable: true
-
 services:
   app:
     image: node:22
@@ -42,3 +37,8 @@ services:
       - NEXT_PUBLIC_RPC_URL=${NEXT_PUBLIC_RPC_URL}
     networks:
       - frontend
+
+networks:
+  frontend:
+    driver: overlay
+    attachable: true
