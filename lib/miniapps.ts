@@ -4,6 +4,8 @@ import {
   faRoute,
   faFileInvoice,
   faRobot,
+  faCoins,
+  faBolt,
 } from '@fortawesome/free-solid-svg-icons';
 import { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 
@@ -23,7 +25,7 @@ export const MINI_APPS: MiniApp[] = [
     id: 'docs',
     name: 'Documentation',
     description:
-      'Technical references, API guides, and integration documentation for the Wrytes platform.',
+      'Integration documentation, Technical references and API guides for the Wrytes platform.',
     href: '/docs',
     icon: faBook,
     color: 'bg-blue-50 text-blue-600',
@@ -32,10 +34,42 @@ export const MINI_APPS: MiniApp[] = [
     id: 'dashboard',
     name: 'Dashboard',
     description:
-      'Live portfolio overview with vault positions, yields, and cross-protocol performance metrics.',
+      'Account insights, namespace management, and settings for linking integrations and API keys.',
     href: '/dashboard',
     icon: faChartLine,
     color: 'bg-brand/10 text-brand',
+    development: true,
+    disabled: true,
+  },
+  {
+    id: 'invoices',
+    name: 'Invoices',
+    description:
+      'AI-powered extraction from uploaded invoice documents. On-chain invoice management and payment tracking. ',
+    href: '/invoices',
+    icon: faFileInvoice,
+    color: 'bg-green-50 text-green-600',
+    development: true,
+    disabled: true,
+  },
+  {
+    id: 'coin-tracking',
+    name: 'Coin Tracking',
+    description: 'Cryptocurrency accounting and coin tracking for transparent financial reporting.',
+    href: '/coin-tracking',
+    icon: faCoins,
+    color: 'bg-teal-50 text-teal-600',
+    development: true,
+    disabled: true,
+  },
+  {
+    id: 'execution-engine',
+    name: 'Execution Engine',
+    description:
+      'Optimized transaction submission via private block builders for better inclusion and front-running avoidance.',
+    href: '/execution-engine',
+    icon: faBolt,
+    color: 'bg-indigo-50 text-indigo-600',
     development: true,
     disabled: true,
   },
@@ -47,16 +81,6 @@ export const MINI_APPS: MiniApp[] = [
     href: '/routes',
     icon: faRoute,
     color: 'bg-purple-50 text-purple-600',
-    development: true,
-    disabled: true,
-  },
-  {
-    id: 'invoices',
-    name: 'Invoices',
-    description: 'On-chain invoice management and payment tracking powered by Frankencoin.',
-    href: '/invoices',
-    icon: faFileInvoice,
-    color: 'bg-green-50 text-green-600',
     development: true,
     disabled: true,
   },
