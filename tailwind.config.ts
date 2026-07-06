@@ -52,6 +52,16 @@ module.exports = {
         // Misc
         gold:     '#ffd700',
         disabled: '#e5e7eb',
+
+        // Tag palette — user-assignable colors (e.g. tracked-address badges)
+        'tag-blue':   '#3b82f6',
+        'tag-purple': '#a855f7',
+        'tag-pink':   '#ec4899',
+        'tag-teal':   '#14b8a6',
+        'tag-amber':  '#d97706',
+        'tag-green':  '#22c55e',
+        'tag-red':    '#f43f5e',
+        'tag-indigo': '#6366f1',
       },
       backgroundImage: {
         'gradient-dark': 'linear-gradient(135deg, #f2f0ec 0%, #fde8dc 100%)',
