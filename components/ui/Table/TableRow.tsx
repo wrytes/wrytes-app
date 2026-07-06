@@ -1,7 +1,7 @@
 import React from 'react';
 
 interface Props {
-  children: React.ReactElement | React.ReactElement[];
+  children: React.ReactNode | React.ReactNode[];
   actionCol?: React.ReactElement;
   colSpan?: number;
   className?: string;

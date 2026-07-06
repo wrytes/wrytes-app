@@ -11,6 +11,7 @@ import {
   faExclamationTriangle,
   faBan,
   faPrint,
+  faCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { EditableCell } from '@/components/ui/Table/EditableCell';
@@ -22,9 +23,12 @@ import { TokenLogo } from './TokenLogo';
 import type {
   WalletAddress,
   Transfer,
+  TransferWithAddress,
   BlacklistEntry,
   TransferClassification,
   TokenOverviewResponse,
+  TokenOverviewClassification,
+  MergedTokenOverview,
   TokenPriceMap,
 } from './types';
 
@@ -146,27 +150,70 @@ function quarterLabel(year: number, quarter: number) {
   return `${QUARTERS[quarter - 1].label} ${year} (${QUARTERS[quarter - 1].months})`;
 }
 
+// Aggregate per-address TokenOverviewResponses (one per selected address) into a single
+// combined overview — summed per token symbol and per classification.
+function mergeOverviews(overviews: TokenOverviewResponse[]): MergedTokenOverview {
+  const tokenMap = new Map<string, MergedTokenOverview['tokens'][number]>();
+  for (const ov of overviews) {
+    for (const t of ov.tokens) {
+      const key = t.tokenSymbol ?? t.tokenAddress ?? 'UNKNOWN';
+      const existing = tokenMap.get(key);
+      if (existing) {
+        existing.asset += t.asset;
+        existing.liability += t.liability;
+        existing.net += t.net;
+        existing.chfAsset += t.chfAsset;
+        existing.chfLiability += t.chfLiability;
+        existing.chfNet += t.chfNet;
+      } else {
+        tokenMap.set(key, { ...t, chainId: ov.address.chainId });
+      }
+    }
+  }
+
+  const classMap = new Map<TransferClassification, TokenOverviewClassification>();
+  for (const ov of overviews) {
+    for (const c of ov.byClassification) {
+      const existing = classMap.get(c.classification);
+      if (existing) {
+        existing.count += c.count;
+        existing.total += c.total;
+        existing.chfTotal += c.chfTotal;
+      } else {
+        classMap.set(c.classification, { ...c });
+      }
+    }
+  }
+
+  return {
+    tokens: [...tokenMap.values()],
+    byClassification: [...classMap.values()],
+    unclassifiedCount: overviews.reduce((sum, ov) => sum + ov.unclassifiedCount, 0),
+    years: [...new Set(overviews.flatMap(ov => ov.years))].sort((a, b) => b - a),
+  };
+}
+
 // ---------------------------------------------------------------------------
 // AddressBar
 // ---------------------------------------------------------------------------
 
 function AddressBar({
   addresses,
-  selectedId,
+  selectedIds,
   syncing,
   onAdd,
   onSync,
   onRemove,
-  onSelect,
+  onToggle,
   onUpdateLabel,
 }: {
   addresses: WalletAddress[];
-  selectedId: string | null;
+  selectedIds: string[];
   syncing: string | null;
   onAdd: (address: string, chain: string, label: string) => Promise<void>;
   onSync: (id: string) => Promise<void>;
   onRemove: (id: string) => Promise<void>;
-  onSelect: (id: string) => void;
+  onToggle: (id: string) => void;
   onUpdateLabel: (id: string, label: string | null) => Promise<void>;
 }) {
   const [open, setOpen] = useState(true);
@@ -230,7 +277,7 @@ function AddressBar({
             <p className="text-center text-text-muted text-sm py-4">No addresses tracked yet.</p>
           ) : (
             addresses.map(a => {
-              const isSelected = selectedId === a.id;
+              const isSelected = selectedIds.includes(a.id);
               const isEditingLabel = labelEditing?.id === a.id;
               return (
                 <div
@@ -238,9 +285,11 @@ function AddressBar({
                   className={`flex items-center gap-3 px-4 py-2.5 border-b border-table-alt/50 last:border-0 cursor-pointer transition-colors ${
                     isSelected ? 'bg-brand/5' : 'hover:bg-surface/50'
                   }`}
-                  onClick={() => onSelect(a.id)}
+                  onClick={() => onToggle(a.id)}
                 >
-                  <div className={`w-1.5 h-1.5 rounded-full flex-shrink-0 ${isSelected ? 'bg-brand' : 'bg-table-alt'}`} />
+                  <div className={`w-3 h-3 rounded border flex-shrink-0 flex items-center justify-center ${isSelected ? 'bg-brand border-brand' : 'border-table-alt'}`}>
+                    {isSelected && <FontAwesomeIcon icon={faCheck} className="w-2 h-2 text-white" />}
+                  </div>
                   <div className="flex-1 min-w-0" onClick={e => e.stopPropagation()}>
                     <EditableCell
                       value={a.label}
@@ -416,7 +465,7 @@ function TokenOverviewSection({
   onAddCorrection,
   onSaveTokenPrice,
 }: {
-  overview: TokenOverviewResponse | null;
+  overview: MergedTokenOverview | null;
   prices: PriceMap;
   tokenPrices: TokenPriceMap;
   year: number | null;
@@ -593,7 +642,7 @@ function TokenOverviewSection({
                             <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
                           </button>
                           {t.tokenAddress && (
-                            <button onClick={() => onBlacklist(t.tokenAddress!, overview.address.chainId, t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5" title="Blacklist token">
+                            <button onClick={() => onBlacklist(t.tokenAddress!, t.chainId, t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5" title="Blacklist token">
                               <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
                             </button>
                           )}
@@ -677,10 +726,10 @@ const TRANSFER_HEADERS = ['Date', 'Token', 'Amount', 'CHF', 'Classification'];
 
 export function TokenTransfersSection() {
   const [addresses, setAddresses] = useState<WalletAddress[]>([]);
-  const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [transfers, setTransfers] = useState<Transfer[]>([]);
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
+  const [transfers, setTransfers] = useState<TransferWithAddress[]>([]);
   const [total, setTotal] = useState(0);
-  const [overview, setOverview] = useState<TokenOverviewResponse | null>(null);
+  const [overview, setOverview] = useState<MergedTokenOverview | null>(null);
   const [loadingTransfers, setLoadingTransfers] = useState(false);
   const [syncing, setSyncing] = useState<string | null>(null);
   const [prices, setPrices] = useState<PriceMap>({});
@@ -710,39 +759,65 @@ export function TokenTransfersSection() {
     setAddresses(data);
     if (data.length > 0) {
       const first = data[0].id;
-      setSelectedId(prev => {
-        const id = prev ?? first;
-        void loadTransfers(id);
-        void loadOverview(id, selectedYear, selectedQuarter);
-        return id;
+      setSelectedIds(prev => {
+        const ids = prev.length > 0 ? prev : [first];
+        void loadTransfers(ids, data);
+        void loadOverview(ids, selectedYear, selectedQuarter);
+        return ids;
       });
     }
   }, []);
 
-  const loadTransfers = useCallback(async (id: string) => {
+  const loadTransfers = useCallback(async (ids: string[], addressList?: WalletAddress[]) => {
+    if (ids.length === 0) {
+      setTransfers([]);
+      setTotal(0);
+      return;
+    }
     setLoadingTransfers(true);
     try {
-      const data = await apiRequest<{ total: number; transfers: Transfer[] }>(
-        `/accounting/addresses/${id}/transfers?take=500`
+      const results = await Promise.all(
+        ids.map(id =>
+          apiRequest<{ total: number; transfers: Transfer[] }>(
+            `/accounting/addresses/${id}/transfers?take=500`
+          )
+        )
       );
-      setTransfers(data.transfers);
-      setTotal(data.total);
+      const list = addressList ?? addresses;
+      const merged: TransferWithAddress[] = [];
+      let totalCount = 0;
+      results.forEach((data, i) => {
+        const id = ids[i];
+        const chainId = list.find(a => a.id === id)?.chainId ?? 1;
+        totalCount += data.total;
+        data.transfers.forEach(t => merged.push({ ...t, addressId: id, chainId }));
+      });
+      setTransfers(merged);
+      setTotal(totalCount);
     } finally {
       setLoadingTransfers(false);
     }
-  }, []);
+  }, [addresses]);
 
-  const loadTokenPrices = useCallback(async (id: string, year: number) => {
-    const data = await apiRequest<TokenPriceMap>(
-      `/accounting/addresses/${id}/token-prices?year=${year}`
+  const loadTokenPrices = useCallback(async (ids: string[], year: number) => {
+    if (ids.length === 0) {
+      setTokenPrices({});
+      return;
+    }
+    const maps = await Promise.all(
+      ids.map(id => apiRequest<TokenPriceMap>(`/accounting/addresses/${id}/token-prices?year=${year}`))
     );
-    setTokenPrices(data);
+    // Primary (first-selected) address wins on conflicts.
+    const merged: TokenPriceMap = {};
+    for (let i = maps.length - 1; i >= 0; i--) Object.assign(merged, maps[i]);
+    setTokenPrices(merged);
   }, []);
 
   const handleSaveTokenPrice = useCallback(
     async (tokenSymbol: string, priceChf: string | null) => {
-      if (!selectedId || !selectedYear) return;
-      await apiRequest(`/accounting/addresses/${selectedId}/token-prices`, {
+      const primaryId = selectedIds[0];
+      if (!primaryId || !selectedYear) return;
+      await apiRequest(`/accounting/addresses/${primaryId}/token-prices`, {
         method: 'POST',
         body: JSON.stringify({ year: selectedYear, tokenSymbol, priceChf }),
       });
@@ -755,18 +830,23 @@ export function TokenTransfersSection() {
         return { ...prev, [tokenSymbol]: priceChf };
       });
     },
-    [selectedId, selectedYear]
+    [selectedIds, selectedYear]
   );
 
   const loadOverview = useCallback(
-    async (id: string, year?: number | null, quarter?: number | null) => {
+    async (ids: string[], year?: number | null, quarter?: number | null) => {
+      if (ids.length === 0) {
+        setOverview(null);
+        return;
+      }
       const qs = new URLSearchParams();
       if (year) qs.set('year', String(year));
       if (quarter) qs.set('quarter', String(quarter));
-      const data = await apiRequest<TokenOverviewResponse>(
-        `/accounting/addresses/${id}/token-overview${qs.toString() ? '?' + qs : ''}`
+      const suffix = qs.toString() ? '?' + qs : '';
+      const results = await Promise.all(
+        ids.map(id => apiRequest<TokenOverviewResponse>(`/accounting/addresses/${id}/token-overview${suffix}`))
       );
-      setOverview(data);
+      setOverview(mergeOverviews(results));
     },
     []
   );
@@ -783,7 +863,7 @@ export function TokenTransfersSection() {
     setSyncing(id);
     try {
       await apiRequest(`/accounting/addresses/${id}/sync`, { method: 'POST' });
-      await Promise.all([loadTransfers(id), loadOverview(id, selectedYear, selectedQuarter)]);
+      await Promise.all([loadTransfers(selectedIds), loadOverview(selectedIds, selectedYear, selectedQuarter)]);
       setAddresses(prev =>
         prev.map(a => (a.id === id ? { ...a, lastSyncedAt: new Date().toISOString() } : a))
       );
@@ -795,10 +875,11 @@ export function TokenTransfersSection() {
   const handleRemoveAddress = async (id: string) => {
     await apiRequest(`/accounting/addresses/${id}`, { method: 'DELETE' });
     setAddresses(prev => prev.filter(a => a.id !== id));
-    if (selectedId === id) {
-      setSelectedId(null);
-      setTransfers([]);
-      setOverview(null);
+    if (selectedIds.includes(id)) {
+      const next = selectedIds.filter(x => x !== id);
+      setSelectedIds(next);
+      void loadTransfers(next);
+      void loadOverview(next, selectedYear, selectedQuarter);
     }
   };
 
@@ -810,26 +891,29 @@ export function TokenTransfersSection() {
     setAddresses(prev => prev.map(a => (a.id === id ? updated : a)));
   };
 
-  const handleSelectAddress = (id: string) => {
-    setSelectedId(id);
-    void loadTransfers(id);
-    void loadOverview(id, selectedYear, selectedQuarter);
-    if (selectedYear) void loadTokenPrices(id, selectedYear);
+  const handleToggleAddress = (id: string) => {
+    setSelectedIds(prev => {
+      const next = prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id];
+      void loadTransfers(next);
+      void loadOverview(next, selectedYear, selectedQuarter);
+      if (selectedYear) void loadTokenPrices(next, selectedYear);
+      return next;
+    });
   };
 
   const handleYearChange = (year: number | null) => {
     setSelectedYear(year);
     setSelectedQuarter(null);
-    if (selectedId) {
-      void loadOverview(selectedId, year, null);
-      if (year) void loadTokenPrices(selectedId, year);
+    if (selectedIds.length > 0) {
+      void loadOverview(selectedIds, year, null);
+      if (year) void loadTokenPrices(selectedIds, year);
       else setTokenPrices({});
     }
   };
 
   const handleQuarterChange = (quarter: number | null) => {
     setSelectedQuarter(quarter);
-    if (selectedId) void loadOverview(selectedId, selectedYear, quarter);
+    if (selectedIds.length > 0) void loadOverview(selectedIds, selectedYear, quarter);
   };
 
   const handleUpdateTransfer = useCallback(
@@ -838,10 +922,10 @@ export function TokenTransfersSection() {
         method: 'PATCH',
         body: JSON.stringify(patch),
       });
-      setTransfers(prev => prev.map(t => (t.id === id ? updated : t)));
-      if (selectedId) void loadOverview(selectedId, selectedYear, selectedQuarter);
+      setTransfers(prev => prev.map(t => (t.id === id ? { ...t, ...updated } : t)));
+      if (selectedIds.length > 0) void loadOverview(selectedIds, selectedYear, selectedQuarter);
     },
-    [selectedId, selectedYear, selectedQuarter, loadOverview]
+    [selectedIds, selectedYear, selectedQuarter, loadOverview]
   );
 
   const handleBlacklist = useCallback(
@@ -850,42 +934,39 @@ export function TokenTransfersSection() {
         method: 'POST',
         body: JSON.stringify({ tokenAddress, chainId, tokenSymbol }),
       });
-      const [bl, data] = await Promise.all([
+      const [bl] = await Promise.all([
         apiRequest<BlacklistEntry[]>('/accounting/blacklist'),
-        selectedId
-          ? apiRequest<{ total: number; transfers: Transfer[] }>(
-              `/accounting/addresses/${selectedId}/transfers?take=500`
-            )
-          : null,
-        selectedId ? loadOverview(selectedId, selectedYear, selectedQuarter) : null,
-      ] as const);
+        loadTransfers(selectedIds),
+        loadOverview(selectedIds, selectedYear, selectedQuarter),
+      ]);
       setBlacklist(bl);
-      if (data) {
-        setTransfers(data.transfers);
-        setTotal(data.total);
-      }
     },
-    [selectedId, selectedYear, selectedQuarter, loadOverview]
+    [selectedIds, selectedYear, selectedQuarter, loadTransfers, loadOverview]
   );
 
   const handleUnblacklist = useCallback(
     async (id: string) => {
       await apiRequest(`/accounting/blacklist/${id}`, { method: 'DELETE' });
       setBlacklist(prev => prev.filter(e => e.id !== id));
-      if (selectedId) {
+      if (selectedIds.length > 0) {
         await Promise.all([
-          loadTransfers(selectedId),
-          loadOverview(selectedId, selectedYear, selectedQuarter),
+          loadTransfers(selectedIds),
+          loadOverview(selectedIds, selectedYear, selectedQuarter),
         ]);
       }
     },
-    [selectedId, selectedYear, selectedQuarter, loadTransfers, loadOverview]
+    [selectedIds, selectedYear, selectedQuarter, loadTransfers, loadOverview]
+  );
+
+  const selectedAddresses = useMemo(
+    () => addresses.filter(a => selectedIds.includes(a.id)),
+    [addresses, selectedIds]
   );
 
   useEffect(() => {
     if (!isExporting) return;
-    const addr = selectedAddress;
-    const label = addr?.label ?? addr?.address?.slice(0, 10) ?? 'report';
+    const label =
+      selectedAddresses.map(a => a.label ?? a.address.slice(0, 10)).join('_') || 'report';
     const period = selectedYear
       ? selectedQuarter
         ? `${QUARTERS[selectedQuarter - 1].label}${selectedYear}`
@@ -923,9 +1004,6 @@ export function TokenTransfersSection() {
     };
     void run();
   }, [isExporting]);
-
-  const selectedAddress = addresses.find(a => a.id === selectedId);
-  const chainId = selectedAddress?.chainId ?? 1;
 
   const blacklistedAddresses = useMemo(
     () => new Set(blacklist.map(e => e.tokenAddress.toLowerCase())),
@@ -965,12 +1043,12 @@ export function TokenTransfersSection() {
     <div>
       <AddressBar
         addresses={addresses}
-        selectedId={selectedId}
+        selectedIds={selectedIds}
         syncing={syncing}
         onAdd={handleAddAddress}
         onSync={handleSync}
         onRemove={handleRemoveAddress}
-        onSelect={handleSelectAddress}
+        onToggle={handleToggleAddress}
         onUpdateLabel={handleUpdateAddressLabel}
       />
       <BlacklistPanel blacklist={blacklist} onRemove={handleUnblacklist} />
@@ -1058,13 +1136,15 @@ export function TokenTransfersSection() {
         {/* Print header — only visible when exporting */}
         <div className={`mb-6 ${isExporting ? 'block' : 'hidden'}`}>
           <h1 className="text-xl font-bold text-text-primary">Token Transfer Report</h1>
-          {selectedAddress && (
-            <div className="mt-1 space-y-0.5">
-              {selectedAddress.label && (
-                <p className="text-sm font-medium text-text-secondary">{selectedAddress.label}</p>
-              )}
-              <p className="text-xs text-text-muted font-mono">{selectedAddress.address}</p>
-              <p className="text-xs text-text-muted">{selectedAddress.chain}</p>
+          {selectedAddresses.length > 0 && (
+            <div className="mt-1 space-y-1.5">
+              {selectedAddresses.map(a => (
+                <div key={a.id} className="space-y-0.5">
+                  {a.label && <p className="text-sm font-medium text-text-secondary">{a.label}</p>}
+                  <p className="text-xs text-text-muted font-mono">{a.address}</p>
+                  <p className="text-xs text-text-muted">{a.chain}</p>
+                </div>
+              ))}
             </div>
           )}
           {selectedYear && (
@@ -1090,18 +1170,17 @@ export function TokenTransfersSection() {
         />
 
         {/* Transfer list */}
-        {selectedId && (
+        {selectedIds.length > 0 && (
           <>
             {/* Corrections / manual entries */}
             <CorrectionsTable
-              addressId={selectedId}
+              addressIds={selectedIds}
+              addresses={selectedAddresses}
               year={selectedYear}
               quarter={selectedQuarter}
               prefillToken={prefillToken}
               onPrefillConsumed={() => setPrefillToken(null)}
-              onMutate={() =>
-                selectedId && void loadOverview(selectedId, selectedYear, selectedQuarter)
-              }
+              onMutate={() => void loadOverview(selectedIds, selectedYear, selectedQuarter)}
               isExporting={isExporting}
             />
 
@@ -1111,8 +1190,8 @@ export function TokenTransfersSection() {
 
             <TransfersTable
               transfers={visible}
+              addresses={selectedAddresses}
               loading={loadingTransfers}
-              chainId={chainId}
               isExporting={isExporting}
               onUpdate={handleUpdateTransfer}
             />

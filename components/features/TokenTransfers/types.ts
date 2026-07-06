@@ -43,6 +43,12 @@ export interface Transfer {
   notes: string | null
 }
 
+// Client-side tag applied when merging transfers fetched from multiple tracked addresses
+export interface TransferWithAddress extends Transfer {
+  addressId: string
+  chainId: number
+}
+
 export interface BlacklistEntry {
   id: string
   tokenAddress: string
@@ -72,6 +78,14 @@ export interface TokenOverviewClassification {
 export interface TokenOverviewResponse {
   address: WalletAddress
   tokens: TokenOverviewToken[]
+  byClassification: TokenOverviewClassification[]
+  unclassifiedCount: number
+  years: number[]
+}
+
+// Client-side aggregation of TokenOverviewResponse across multiple selected addresses
+export interface MergedTokenOverview {
+  tokens: (TokenOverviewToken & { chainId: number })[]
   byClassification: TokenOverviewClassification[]
   unclassifiedCount: number
   years: number[]

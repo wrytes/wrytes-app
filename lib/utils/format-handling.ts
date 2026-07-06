@@ -26,7 +26,7 @@ export const formatCurrency = (
 
   // exceptions
   if (amount === null || !!isNaN(amount)) return null;
-  if (amount < 1 / 10 ** minimumFractionDigits && amount > 0 && maximumFractionDigits) {
+  if (amount < 1 / 10 ** maximumFractionDigits && amount > 0 && maximumFractionDigits) {
     return '< 0.01';
   }
 

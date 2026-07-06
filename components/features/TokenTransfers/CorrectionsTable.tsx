@@ -5,7 +5,7 @@ import { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmp
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
-import type { Adjustment, AdjustmentType } from './types';
+import type { Adjustment, AdjustmentType, WalletAddress } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -19,6 +19,7 @@ const TYPE_OPTIONS: { label: string; value: AdjustmentType; hint: string; color:
 ];
 
 const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
+const HEADERS_WITH_ADDRESS = ['Date', 'Address', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
 
 function typeStyle(type: AdjustmentType) {
   return TYPE_OPTIONS.find(o => o.value === type) ?? TYPE_OPTIONS[2];
@@ -31,7 +32,12 @@ function fmtDate(iso: string) {
 function fmtNum(n: string | null) {
   if (!n) return '—';
   const v = parseFloat(n);
-  return isNaN(v) ? '—' : (formatCurrency(v, 0, 2) ?? '—');
+  return isNaN(v) ? '—' : (formatCurrency(v, 6, 6) ?? '—');
+}
+
+function addressLabel(a: WalletAddress | undefined) {
+  if (!a) return '—';
+  return a.label ?? `${a.address.slice(0, 6)}…${a.address.slice(-4)}`;
 }
 
 // ---------------------------------------------------------------------------
@@ -43,9 +49,11 @@ interface RowProps {
   onSave: (id: string, patch: Partial<Omit<Adjustment, 'id' | 'accountingAddressId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   isExporting?: boolean;
+  showAddress?: boolean;
+  address?: WalletAddress;
 }
 
-function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps) {
+function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress = false, address }: RowProps) {
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
     date: adj.date.slice(0, 10),
@@ -87,10 +95,11 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps)
   };
 
   const style = typeStyle(adj.type);
+  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
 
   if (editing) {
     return (
-      <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+      <TableRow headers={headers} colSpan={headers.length} rawHeader>
         {/* Date */}
         <input
           type="date"
@@ -98,6 +107,12 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps)
           onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
           className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
         />
+        {/* Address (fixed — not editable) */}
+        {showAddress && (
+          <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate">
+            {addressLabel(address)}
+          </span>
+        )}
         {/* Type */}
         <select
           value={draft.type}
@@ -163,9 +178,16 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps)
   }
 
   return (
-    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+    <TableRow headers={headers} colSpan={headers.length} rawHeader>
       {/* Date */}
       <span className="text-sm text-text-secondary text-left block">{fmtDate(adj.date)}</span>
+
+      {/* Address */}
+      {showAddress && (
+        <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate inline-block">
+          {addressLabel(address)}
+        </span>
+      )}
 
       {/* Type */}
       {isExporting ? (
@@ -216,12 +238,13 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false }: RowProps)
 // ---------------------------------------------------------------------------
 
 interface AddRowProps {
-  onAdd: (entry: { date: string; type: AdjustmentType; tokenSymbol: string | null; amount: string | null; chfValue: string | null; note: string | null }) => Promise<void>;
+  onAdd: (entry: { date: string; type: AdjustmentType; tokenSymbol: string | null; amount: string | null; chfValue: string | null; note: string | null; addressId: string }) => Promise<void>;
   onCancel: () => void;
   initialToken?: string;
+  addresses: WalletAddress[];
 }
 
-function AddRow({ onAdd, onCancel, initialToken = '' }: AddRowProps) {
+function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) {
   const [draft, setDraft] = useState({
     date: new Date().toISOString().slice(0, 10),
     type: 'PROFIT' as AdjustmentType,
@@ -229,10 +252,14 @@ function AddRow({ onAdd, onCancel, initialToken = '' }: AddRowProps) {
     amount: '',
     chfValue: '',
     note: '',
+    addressId: addresses[0]?.id ?? '',
   });
   const [saving, setSaving] = useState(false);
+  const showAddress = addresses.length > 1;
+  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
 
   const handleAdd = async () => {
+    if (!draft.addressId) return;
     setSaving(true);
     try {
       await onAdd({
@@ -242,6 +269,7 @@ function AddRow({ onAdd, onCancel, initialToken = '' }: AddRowProps) {
         amount: draft.amount || null,
         chfValue: draft.chfValue || null,
         note: draft.note || null,
+        addressId: draft.addressId,
       });
     } finally {
       setSaving(false);
@@ -249,13 +277,24 @@ function AddRow({ onAdd, onCancel, initialToken = '' }: AddRowProps) {
   };
 
   return (
-    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+    <TableRow headers={headers} colSpan={headers.length} rawHeader>
       <input
         type="date"
         value={draft.date}
         onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
         className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
       />
+      {showAddress && (
+        <select
+          value={draft.addressId}
+          onChange={e => setDraft(d => ({ ...d, addressId: e.target.value }))}
+          className="text-xs rounded-lg px-2 py-1 border border-brand outline-none bg-card text-text-primary"
+        >
+          {addresses.map(a => (
+            <option key={a.id} value={a.id}>{addressLabel(a)}</option>
+          ))}
+        </select>
+      )}
       <select
         value={draft.type}
         onChange={e => setDraft(d => ({ ...d, type: e.target.value as AdjustmentType }))}
@@ -319,7 +358,8 @@ function AddRow({ onAdd, onCancel, initialToken = '' }: AddRowProps) {
 // ---------------------------------------------------------------------------
 
 interface Props {
-  addressId: string;
+  addressIds: string[];
+  addresses: WalletAddress[];
   year: number | null;
   quarter: number | null;
   prefillToken?: string | null;
@@ -328,11 +368,17 @@ interface Props {
   isExporting?: boolean;
 }
 
-export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPrefillConsumed, onMutate, isExporting = false }: Props) {
+export function CorrectionsTable({ addressIds, addresses, year, quarter, prefillToken, onPrefillConsumed, onMutate, isExporting = false }: Props) {
   const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addInitialToken, setAddInitialToken] = useState<string>('');
+  const showAddress = addressIds.length > 1;
+  // Ordered by selection order so the first-selected address is the default for new entries
+  const orderedAddresses = useMemo(
+    () => addressIds.map(id => addresses.find(a => a.id === id)).filter((a): a is WalletAddress => !!a),
+    [addressIds, addresses]
+  );
 
   // Search / filter / sort
   const { sortTab, sortReverse, handleSort } = useSort('Date');
@@ -348,15 +394,21 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
   }, [prefillToken]);
 
   const load = useCallback(async () => {
+    if (addressIds.length === 0) {
+      setAdjustments([]);
+      setLoaded(true);
+      return;
+    }
     const qs = new URLSearchParams();
     if (year) qs.set('year', String(year));
     if (quarter) qs.set('quarter', String(quarter));
-    const data = await apiRequest<Adjustment[]>(
-      `/accounting/addresses/${addressId}/adjustments${qs.toString() ? '?' + qs : ''}`
+    const suffix = qs.toString() ? '?' + qs : '';
+    const results = await Promise.all(
+      addressIds.map(id => apiRequest<Adjustment[]>(`/accounting/addresses/${id}/adjustments${suffix}`))
     );
-    setAdjustments(data);
+    setAdjustments(results.flat());
     setLoaded(true);
-  }, [addressId, year, quarter]);
+  }, [addressIds, year, quarter]);
 
   useEffect(() => { void load(); }, [load]);
 
@@ -384,9 +436,10 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
   }, [adjustments, search, typeFilters, sortTab, sortReverse]);
 
   const handleAdd = async (entry: Parameters<AddRowProps['onAdd']>[0]) => {
+    const { addressId, ...body } = entry;
     const created = await apiRequest<Adjustment>(`/accounting/addresses/${addressId}/adjustments`, {
       method: 'POST',
-      body: JSON.stringify(entry),
+      body: JSON.stringify(body),
     });
     setAdjustments(prev => [created, ...prev]);
     setAdding(false);
@@ -410,7 +463,8 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
   };
 
   // Sortable headers — exclude the empty actions column
-  const SORTABLE_HEADERS = HEADERS.slice(0, -1);
+  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
+  const SORTABLE_HEADERS = headers.slice(0, -1);
 
   return (
     <div className="mb-8">
@@ -431,11 +485,11 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
 
       <Table>
         {isExporting ? (
-          <TableHead headers={SORTABLE_HEADERS} colSpan={HEADERS.length} />
+          <TableHead headers={SORTABLE_HEADERS} colSpan={headers.length} />
         ) : (
           <TableHeadSearchable
             headers={SORTABLE_HEADERS}
-            colSpan={HEADERS.length}
+            colSpan={headers.length}
             tab={sortTab}
             reverse={sortReverse}
             tabOnChange={handleSort}
@@ -460,6 +514,7 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
                 onAdd={handleAdd}
                 onCancel={() => { setAdding(false); setAddInitialToken(''); }}
                 initialToken={addInitialToken}
+                addresses={orderedAddresses}
               />
             );
             if (!loaded) {
@@ -470,7 +525,17 @@ export function CorrectionsTable({ addressId, year, quarter, prefillToken, onPre
               </TableRowEmpty>);
             } else {
               visible.forEach(adj =>
-                rows.push(<AdjustmentRow key={adj.id} adj={adj} onSave={handleSave} onDelete={handleDelete} isExporting={isExporting} />)
+                rows.push(
+                  <AdjustmentRow
+                    key={adj.id}
+                    adj={adj}
+                    onSave={handleSave}
+                    onDelete={handleDelete}
+                    isExporting={isExporting}
+                    showAddress={showAddress}
+                    address={addresses.find(a => a.id === adj.accountingAddressId)}
+                  />
+                )
               );
             }
             return rows;

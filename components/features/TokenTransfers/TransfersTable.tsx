@@ -13,13 +13,14 @@ import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
-import type { Transfer, TransferClassification, CounterpartyLabelMap } from './types';
+import type { TransferWithAddress, TransferClassification, CounterpartyLabelMap, WalletAddress } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
 const HEADERS = ['Date', 'Counterparty', 'Amount', 'Value', 'Note', 'Classification'];
+const HEADERS_WITH_ADDRESS = ['Date', 'Address', 'Counterparty', 'Amount', 'Value', 'Note', 'Classification'];
 
 const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification }[] = [
   { label: 'Unclassified', value: 'UNCLASSIFIED' },
@@ -91,7 +92,7 @@ function shortenAddr(addr: string) {
   return `${addr.slice(0, 6)}…${addr.slice(-4)}`;
 }
 
-function counterpartyAddress(t: Transfer): string {
+function counterpartyAddress(t: TransferWithAddress): string {
   return (t.direction === 'IN' ? t.fromAddress : (t.toAddress ?? t.fromAddress)).toLowerCase();
 }
 
@@ -100,19 +101,34 @@ function counterpartyAddress(t: Transfer): string {
 // ---------------------------------------------------------------------------
 
 interface Props {
-  transfers: Transfer[];
+  transfers: TransferWithAddress[];
+  addresses: WalletAddress[];
   loading: boolean;
-  chainId: number;
   isExporting: boolean;
   onUpdate: (id: string, patch: { classification?: string; chfValue?: string | null; notes?: string | null }) => Promise<void>;
 }
 
-export function TransfersTable({ transfers, loading, chainId, isExporting, onUpdate }: Props) {
+export function TransfersTable({ transfers, addresses, loading, isExporting, onUpdate }: Props) {
   const { sortTab, sortReverse, handleSort } = useSort('Date');
   const [search, setSearch] = useState('');
   const [classFilters, setClassFilters] = useState<string[]>([]);
   const [chfEditing, setChfEditing] = useState<{ id: string; value: string } | null>(null);
   const [noteEditing, setNoteEditing] = useState<{ id: string; value: string } | null>(null);
+
+  // Show an address badge column only when transfers span more than one tracked address
+  const showAddressColumn = useMemo(
+    () => new Set(transfers.map(t => t.addressId)).size > 1,
+    [transfers]
+  );
+  const headers = showAddressColumn ? HEADERS_WITH_ADDRESS : HEADERS;
+  const addressLabel = useCallback(
+    (id: string) => {
+      const a = addresses.find(a => a.id === id);
+      if (!a) return '—';
+      return a.label ?? shortenAddr(a.address);
+    },
+    [addresses]
+  );
 
   // Counterparty labels
   const [labels, setLabels] = useState<CounterpartyLabelMap>({});
@@ -149,7 +165,8 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
           lbl.toLowerCase().includes(q) ||
           addr.includes(q) ||
           (t.tokenSymbol ?? '').toLowerCase().includes(q) ||
-          t.txHash.toLowerCase().includes(q)
+          t.txHash.toLowerCase().includes(q) ||
+          (t.notes ?? '').toLowerCase().includes(q)
         );
       })
       .sort((a, b) => {
@@ -192,17 +209,17 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
   return (
     <Table>
       {isExporting ? (
-        <TableHead headers={HEADERS} colSpan={HEADERS.length} />
+        <TableHead headers={headers} colSpan={headers.length} />
       ) : (
         <TableHeadSearchable
-          headers={HEADERS}
-          colSpan={HEADERS.length}
+          headers={headers}
+          colSpan={headers.length}
           tab={sortTab}
           reverse={sortReverse}
           tabOnChange={handleSort}
           searchValue={search}
           onSearchChange={setSearch}
-          searchPlaceholder="Search by counterparty, token or tx hash…"
+          searchPlaceholder="Search by counterparty, token, note or tx hash…"
           hideMyWallet
           inMyWallet={false}
           onInMyWalletChange={() => {}}
@@ -225,13 +242,13 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
           visible.map(t => {
             const cls = getStyle(t.classification);
             const isIn = t.direction === 'IN';
-            const txUrl = EXPLORER_BASE[chainId] ? `${EXPLORER_BASE[chainId]}/tx/${t.txHash}` : null;
+            const txUrl = EXPLORER_BASE[t.chainId] ? `${EXPLORER_BASE[t.chainId]}/tx/${t.txHash}` : null;
             const addr = counterpartyAddress(t);
             const existingLabel = labels[addr] ?? null;
             const isEditingLabel = labelEditing?.addr === addr;
 
             return (
-              <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+              <TableRow key={t.id} headers={headers} colSpan={headers.length} rawHeader>
                 {/* Date */}
                 <div className="text-left">
                   {txUrl && !isExporting ? (
@@ -249,6 +266,15 @@ export function TransfersTable({ transfers, loading, chainId, isExporting, onUpd
                     <span className="text-sm text-text-secondary">{formatDate(t.timestamp)}</span>
                   )}
                 </div>
+
+                {/* Address badge — only rendered when merging multiple tracked addresses */}
+                {showAddressColumn && (
+                  <div className="flex justify-start md:justify-end">
+                    <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate max-w-full">
+                      {addressLabel(t.addressId)}
+                    </span>
+                  </div>
+                )}
 
                 {/* Counterparty */}
                 <div onClick={e => e.stopPropagation()}>
