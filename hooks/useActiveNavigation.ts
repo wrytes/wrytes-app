@@ -8,7 +8,8 @@ export function useActiveNavigation() {
       path === '/dashboard' ||
       path === '/deribit-agent' ||
       path === '/routes' ||
-      path === '/invoices'
+      path === '/invoices' ||
+      path === '/coin-tracking'
     ) {
       return router.pathname === path;
     }

@@ -8,6 +8,7 @@ import CenterLayout from './CenterLayout';
 import DeribitAgentLayout from './DeribitAgentLayout';
 import RoutesLayout from './RoutesLayout';
 import InvoicesLayout from './InvoicesLayout';
+import CoinTrackingLayout from './CoinTrackingLayout';
 
 interface LayoutProps {
   children: React.ReactNode;
@@ -26,6 +27,10 @@ export default function Layout({ children }: LayoutProps) {
 
   if (pathname.startsWith('/invoices')) {
     return <InvoicesLayout>{children}</InvoicesLayout>;
+  }
+
+  if (pathname.startsWith('/coin-tracking')) {
+    return <CoinTrackingLayout>{children}</CoinTrackingLayout>;
   }
 
   if (pathname.startsWith('/deribit-agent')) {
