@@ -13,14 +13,15 @@ import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
+import { useAddressColors } from '@/hooks/redux/useAddressColors';
+import { ADDRESS_COLOR_CLASSES } from './addressColors';
 import type { TransferWithAddress, TransferClassification, CounterpartyLabelMap, WalletAddress } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants
 // ---------------------------------------------------------------------------
 
-const HEADERS = ['Date', 'Counterparty', 'Amount', 'Value', 'Note', 'Classification'];
-const HEADERS_WITH_ADDRESS = ['Date', 'Address', 'Counterparty', 'Amount', 'Value', 'Note', 'Classification'];
+const HEADERS = ['Date', 'Counterparty', 'Amount', 'Value', 'Note', 'Address', 'Classification'];
 
 const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification }[] = [
   { label: 'Unclassified', value: 'UNCLASSIFIED' },
@@ -79,6 +80,10 @@ function fmtNum(n: number, decimals = 2) {
   return formatCurrency(n, decimals, decimals) ?? '0';
 }
 
+function fmtAmount(n: number) {
+  return formatCurrency(n, 2, 6) ?? '0';
+}
+
 function formatDate(iso: string | null) {
   if (!iso) return '—';
   return new Date(iso).toLocaleDateString('en-CH', {
@@ -115,12 +120,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
   const [chfEditing, setChfEditing] = useState<{ id: string; value: string } | null>(null);
   const [noteEditing, setNoteEditing] = useState<{ id: string; value: string } | null>(null);
 
-  // Show an address badge column only when transfers span more than one tracked address
-  const showAddressColumn = useMemo(
-    () => new Set(transfers.map(t => t.addressId)).size > 1,
-    [transfers]
-  );
-  const headers = showAddressColumn ? HEADERS_WITH_ADDRESS : HEADERS;
+  const { colorFor } = useAddressColors();
   const addressLabel = useCallback(
     (id: string) => {
       const a = addresses.find(a => a.id === id);
@@ -209,11 +209,11 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
   return (
     <Table>
       {isExporting ? (
-        <TableHead headers={headers} colSpan={headers.length} />
+        <TableHead headers={HEADERS} colSpan={HEADERS.length} />
       ) : (
         <TableHeadSearchable
-          headers={headers}
-          colSpan={headers.length}
+          headers={HEADERS}
+          colSpan={HEADERS.length}
           tab={sortTab}
           reverse={sortReverse}
           tabOnChange={handleSort}
@@ -248,7 +248,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
             const isEditingLabel = labelEditing?.addr === addr;
 
             return (
-              <TableRow key={t.id} headers={headers} colSpan={headers.length} rawHeader>
+              <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
                 {/* Date */}
                 <div className="text-left">
                   {txUrl && !isExporting ? (
@@ -266,15 +266,6 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                     <span className="text-sm text-text-secondary">{formatDate(t.timestamp)}</span>
                   )}
                 </div>
-
-                {/* Address badge — only rendered when merging multiple tracked addresses */}
-                {showAddressColumn && (
-                  <div className="flex justify-start md:justify-end">
-                    <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate max-w-full">
-                      {addressLabel(t.addressId)}
-                    </span>
-                  </div>
-                )}
 
                 {/* Counterparty */}
                 <div onClick={e => e.stopPropagation()}>
@@ -305,7 +296,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                 <div className="text-right">
                   <span className={`text-sm font-semibold tabular-nums ${isIn ? 'text-success' : 'text-error'}`}>
                     {isIn ? '+' : '−'}
-                    {fmtNum(parseFloat(t.amountFormatted ?? '0'), 6)}
+                    {fmtAmount(parseFloat(t.amountFormatted ?? '0'))}
                     <span className="font-normal text-text-muted ml-1 text-xs">{t.tokenSymbol}</span>
                   </span>
                 </div>
@@ -357,6 +348,15 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                     />
                   </div>
                 )}
+
+                {/* Address */}
+                <div className="flex justify-start md:justify-end">
+                  <span
+                    className={`text-xs border rounded-lg px-1.5 py-0.5 truncate max-w-full ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].bg} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].text} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].border}`}
+                  >
+                    {addressLabel(t.addressId)}
+                  </span>
+                </div>
 
                 {/* Classification */}
                 {isExporting ? (

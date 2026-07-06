@@ -20,6 +20,8 @@ import { formatCurrency } from '@/lib/utils/format-handling';
 import { CorrectionsTable } from './CorrectionsTable';
 import { TransfersTable } from './TransfersTable';
 import { TokenLogo } from './TokenLogo';
+import { useAddressColors } from '@/hooks/redux/useAddressColors';
+import { ADDRESS_COLOR_KEYS, ADDRESS_COLOR_CLASSES } from './addressColors';
 import type {
   WalletAddress,
   Transfer,
@@ -224,6 +226,8 @@ function AddressBar({
   const [adding, setAdding] = useState(false);
   const [error, setError] = useState('');
   const [labelEditing, setLabelEditing] = useState<{ id: string; value: string } | null>(null);
+  const [colorPickerId, setColorPickerId] = useState<string | null>(null);
+  const { colorFor, setColor } = useAddressColors();
 
   const handleAdd = async () => {
     if (!address.trim()) return;
@@ -289,6 +293,25 @@ function AddressBar({
                 >
                   <div className={`w-3 h-3 rounded border flex-shrink-0 flex items-center justify-center ${isSelected ? 'bg-brand border-brand' : 'border-table-alt'}`}>
                     {isSelected && <FontAwesomeIcon icon={faCheck} className="w-2 h-2 text-white" />}
+                  </div>
+                  <div className="relative flex-shrink-0" onClick={e => e.stopPropagation()}>
+                    <button
+                      onClick={() => setColorPickerId(id => (id === a.id ? null : a.id))}
+                      className={`w-3.5 h-3.5 rounded-full ${ADDRESS_COLOR_CLASSES[colorFor(a.id)].dot}`}
+                      title="Badge color"
+                    />
+                    {colorPickerId === a.id && (
+                      <div className="absolute z-10 top-full left-0 mt-1 flex items-center gap-1.5 bg-card border border-table-alt rounded-lg p-2 shadow-lg">
+                        {ADDRESS_COLOR_KEYS.map(key => (
+                          <button
+                            key={key}
+                            onClick={() => { setColor(a.id, key); setColorPickerId(null); }}
+                            className={`w-4 h-4 rounded-full ${ADDRESS_COLOR_CLASSES[key].dot} ${colorFor(a.id) === key ? 'ring-2 ring-offset-1 ring-text-secondary' : ''}`}
+                            title={key}
+                          />
+                        ))}
+                      </div>
+                    )}
                   </div>
                   <div className="flex-1 min-w-0" onClick={e => e.stopPropagation()}>
                     <EditableCell
@@ -448,8 +471,8 @@ const TOKEN_OVERVIEW_HEADERS = [
   'Asset',
   'Liability',
   'Net',
-  'Accounted',
   'Year End Price',
+  'Accounted',
   'Unrealized P/L',
 ];
 
@@ -486,7 +509,7 @@ function TokenOverviewSection({
 
   const { tokens, byClassification } = overview;
 
-  const visibleTokens = tokens.filter(t => dust(t.net) !== 0 || t.chfNet !== 0);
+  const visibleTokens = tokens.filter(t => dust(t.net) !== 0 || dust(t.chfNet) !== 0);
 
   const totals = visibleTokens.reduce(
     (acc, t) => {
@@ -582,10 +605,10 @@ function TokenOverviewSection({
                         <td className={`px-4 py-3 tabular-nums text-right font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
                           {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
                         </td>
-                        <td className="px-4 py-3 text-right">{chfCell(t.chfNet)}</td>
                         <td className="px-4 py-3 tabular-nums text-right text-text-secondary">
                           {tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : '—'}
                         </td>
+                        <td className="px-4 py-3 text-right">{chfCell(t.chfNet)}</td>
                         <td className="px-4 py-3 text-right">
                           {unrealized === null || Math.abs(unrealized) < 0.01 ? (
                             <span className="text-text-muted">—</span>
@@ -602,10 +625,10 @@ function TokenOverviewSection({
                 <tr className="border-t-2 border-table-alt">
                   <td className="px-4 py-3 font-bold text-text-primary text-left">Total</td>
                   <td /><td /><td />
+                  <td />
                   <td className={`px-4 py-3 tabular-nums text-right font-bold ${Math.abs(totals.accounted) < 0.01 ? 'text-text-muted' : totals.accounted >= 0 ? 'text-success' : 'text-error'}`}>
                     {Math.abs(totals.accounted) < 0.01 ? '—' : `${totals.accounted >= 0 ? '+' : ''}CHF ${fmtNum(totals.accounted)}`}
                   </td>
-                  <td />
                   <td className="px-4 py-3 text-right">
                     {totals.unrealized === null || Math.abs(totals.unrealized) < 0.01 ? (
                       <span className="text-text-muted">—</span>
@@ -656,7 +679,6 @@ function TokenOverviewSection({
                         <div className={`text-sm tabular-nums font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
                           {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
                         </div>
-                        <div className="text-right">{chfCell(t.chfNet)}</div>
                         <div onClick={e => e.stopPropagation()}>
                           {year ? (
                             <EditableCell
@@ -674,6 +696,7 @@ function TokenOverviewSection({
                             <span className="text-text-muted text-xs">select year</span>
                           )}
                         </div>
+                        <div className="text-right">{chfCell(t.chfNet)}</div>
                         <div className="text-right">
                           {unrealized === null || Math.abs(unrealized) < 0.01 ? (
                             <span className="text-text-muted text-xs">—</span>
@@ -692,10 +715,10 @@ function TokenOverviewSection({
                       <div />
                       <div />
                       <div />
+                      <div />
                       <div className={`text-right font-bold text-sm tabular-nums ${Math.abs(totals.accounted) < 0.01 ? 'text-text-muted' : totals.accounted >= 0 ? 'text-success' : 'text-error'}`}>
                         {Math.abs(totals.accounted) < 0.01 ? '—' : `${totals.accounted >= 0 ? '+' : ''}CHF ${fmtNum(totals.accounted)}`}
                       </div>
-                      <div />
                       <div className="text-right">
                         {totals.unrealized === null || Math.abs(totals.unrealized) < 0.01 ? (
                           <span className="text-text-muted text-xs">—</span>
@@ -1115,16 +1138,6 @@ export function TokenTransfersSection() {
                 {isExporting ? 'Generating…' : 'Export PDF'}
               </button>
             </div>
-          )}
-        </div>
-      )}
-      {/* Active filter pill */}
-      {(selectedYear || selectedQuarter) && (
-        <div className="flex items-center gap-2 mb-4 print:hidden">
-          {selectedYear && (
-            <span className="text-xs bg-brand/10 text-brand border border-brand/20 px-2 py-1 rounded-lg">
-              {selectedQuarter ? quarterLabel(selectedYear, selectedQuarter) : selectedYear}
-            </span>
           )}
         </div>
       )}

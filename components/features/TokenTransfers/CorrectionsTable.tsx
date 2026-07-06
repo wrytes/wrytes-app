@@ -5,6 +5,8 @@ import { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmp
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
+import { useAddressColors } from '@/hooks/redux/useAddressColors';
+import { ADDRESS_COLOR_CLASSES } from './addressColors';
 import type { Adjustment, AdjustmentType, WalletAddress } from './types';
 
 // ---------------------------------------------------------------------------
@@ -18,8 +20,7 @@ const TYPE_OPTIONS: { label: string; value: AdjustmentType; hint: string; color:
   { label: 'Liability Expense',value: 'REPAYMENT', hint: 'liability −', color: 'text-brand',   bg: 'bg-brand/10'   },
 ];
 
-const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
-const HEADERS_WITH_ADDRESS = ['Date', 'Address', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
+const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', 'Address', ''];
 
 function typeStyle(type: AdjustmentType) {
   return TYPE_OPTIONS.find(o => o.value === type) ?? TYPE_OPTIONS[2];
@@ -33,6 +34,12 @@ function fmtNum(n: string | null) {
   if (!n) return '—';
   const v = parseFloat(n);
   return isNaN(v) ? '—' : (formatCurrency(v, 6, 6) ?? '—');
+}
+
+function fmtChf(n: string | null) {
+  if (!n) return '—';
+  const v = parseFloat(n);
+  return isNaN(v) ? '—' : (formatCurrency(v, 0, 2) ?? '—');
 }
 
 function addressLabel(a: WalletAddress | undefined) {
@@ -49,11 +56,14 @@ interface RowProps {
   onSave: (id: string, patch: Partial<Omit<Adjustment, 'id' | 'accountingAddressId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
   isExporting?: boolean;
-  showAddress?: boolean;
   address?: WalletAddress;
 }
 
-function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress = false, address }: RowProps) {
+function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: RowProps) {
+  const { colorFor } = useAddressColors();
+  const addressBadgeClasses = address
+    ? `${ADDRESS_COLOR_CLASSES[colorFor(address.id)].bg} ${ADDRESS_COLOR_CLASSES[colorFor(address.id)].text} ${ADDRESS_COLOR_CLASSES[colorFor(address.id)].border}`
+    : 'bg-surface border-table-alt text-text-secondary';
   const [editing, setEditing] = useState(false);
   const [draft, setDraft] = useState({
     date: adj.date.slice(0, 10),
@@ -95,11 +105,10 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress
   };
 
   const style = typeStyle(adj.type);
-  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
 
   if (editing) {
     return (
-      <TableRow headers={headers} colSpan={headers.length} rawHeader>
+      <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
         {/* Date */}
         <input
           type="date"
@@ -107,12 +116,6 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress
           onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
           className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
         />
-        {/* Address (fixed — not editable) */}
-        {showAddress && (
-          <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate">
-            {addressLabel(address)}
-          </span>
-        )}
         {/* Type */}
         <select
           value={draft.type}
@@ -155,6 +158,10 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress
           placeholder="Note…"
           className="w-full bg-transparent border border-table-alt rounded px-2 py-1 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
         />
+        {/* Address (fixed — not editable) */}
+        <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate inline-block ${addressBadgeClasses}`}>
+          {addressLabel(address)}
+        </span>
         {/* Actions */}
         <div className="flex items-center justify-end gap-1.5">
           <button
@@ -178,16 +185,9 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress
   }
 
   return (
-    <TableRow headers={headers} colSpan={headers.length} rawHeader>
+    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
       {/* Date */}
       <span className="text-sm text-text-secondary text-left block">{fmtDate(adj.date)}</span>
-
-      {/* Address */}
-      {showAddress && (
-        <span className="text-xs bg-surface border border-table-alt rounded-lg px-1.5 py-0.5 text-text-secondary truncate inline-block">
-          {addressLabel(address)}
-        </span>
-      )}
 
       {/* Type */}
       {isExporting ? (
@@ -206,11 +206,16 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, showAddress
 
       {/* CHF */}
       <span className="text-sm tabular-nums text-text-secondary">
-        {adj.chfValue ? `CHF ${fmtNum(adj.chfValue)}` : '—'}
+        {adj.chfValue ? `CHF ${fmtChf(adj.chfValue)}` : '—'}
       </span>
 
       {/* Note */}
       <span className="text-sm text-text-secondary">{adj.note ?? '—'}</span>
+
+      {/* Address */}
+      <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate inline-block ${addressBadgeClasses}`}>
+        {addressLabel(address)}
+      </span>
 
       {/* Actions */}
       <div className={`flex items-center justify-end gap-1.5 ${isExporting ? 'invisible' : ''}`}>
@@ -255,8 +260,6 @@ function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) 
     addressId: addresses[0]?.id ?? '',
   });
   const [saving, setSaving] = useState(false);
-  const showAddress = addresses.length > 1;
-  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
 
   const handleAdd = async () => {
     if (!draft.addressId) return;
@@ -277,24 +280,13 @@ function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) 
   };
 
   return (
-    <TableRow headers={headers} colSpan={headers.length} rawHeader>
+    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
       <input
         type="date"
         value={draft.date}
         onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
         className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
       />
-      {showAddress && (
-        <select
-          value={draft.addressId}
-          onChange={e => setDraft(d => ({ ...d, addressId: e.target.value }))}
-          className="text-xs rounded-lg px-2 py-1 border border-brand outline-none bg-card text-text-primary"
-        >
-          {addresses.map(a => (
-            <option key={a.id} value={a.id}>{addressLabel(a)}</option>
-          ))}
-        </select>
-      )}
       <select
         value={draft.type}
         onChange={e => setDraft(d => ({ ...d, type: e.target.value as AdjustmentType }))}
@@ -332,6 +324,15 @@ function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) 
         placeholder="Note…"
         className="w-full bg-transparent border border-table-alt rounded px-2 py-1 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
       />
+      <select
+        value={draft.addressId}
+        onChange={e => setDraft(d => ({ ...d, addressId: e.target.value }))}
+        className="text-xs rounded-lg px-2 py-1 border border-brand outline-none bg-card text-text-primary"
+      >
+        {addresses.map(a => (
+          <option key={a.id} value={a.id}>{addressLabel(a)}</option>
+        ))}
+      </select>
       <div className="flex items-center justify-end gap-1.5">
         <button
           onClick={handleAdd}
@@ -373,7 +374,6 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
   const [addInitialToken, setAddInitialToken] = useState<string>('');
-  const showAddress = addressIds.length > 1;
   // Ordered by selection order so the first-selected address is the default for new entries
   const orderedAddresses = useMemo(
     () => addressIds.map(id => addresses.find(a => a.id === id)).filter((a): a is WalletAddress => !!a),
@@ -463,8 +463,7 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
   };
 
   // Sortable headers — exclude the empty actions column
-  const headers = showAddress ? HEADERS_WITH_ADDRESS : HEADERS;
-  const SORTABLE_HEADERS = headers.slice(0, -1);
+  const SORTABLE_HEADERS = HEADERS.slice(0, -1);
 
   return (
     <div className="mb-8">
@@ -485,11 +484,11 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
 
       <Table>
         {isExporting ? (
-          <TableHead headers={SORTABLE_HEADERS} colSpan={headers.length} />
+          <TableHead headers={SORTABLE_HEADERS} colSpan={HEADERS.length} />
         ) : (
           <TableHeadSearchable
             headers={SORTABLE_HEADERS}
-            colSpan={headers.length}
+            colSpan={HEADERS.length}
             tab={sortTab}
             reverse={sortReverse}
             tabOnChange={handleSort}
@@ -532,7 +531,6 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
                     onSave={handleSave}
                     onDelete={handleDelete}
                     isExporting={isExporting}
-                    showAddress={showAddress}
                     address={addresses.find(a => a.id === adj.accountingAddressId)}
                   />
                 )
