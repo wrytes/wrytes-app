@@ -39,7 +39,7 @@ export const MINI_APPS: MiniApp[] = [
     icon: faChartLine,
     color: 'bg-brand/10 text-brand',
     development: true,
-    disabled: true,
+    disabled: false,
   },
   {
     id: 'invoices',
@@ -60,13 +60,13 @@ export const MINI_APPS: MiniApp[] = [
     icon: faCoins,
     color: 'bg-teal-50 text-teal-600',
     development: true,
-    disabled: true,
+    disabled: false,
   },
   {
     id: 'execution-engine',
     name: 'Execution Engine',
     description:
-      'Optimized transaction submission via private block builders for better inclusion and front-running avoidance.',
+      'Optimized submission via private block builders for better inclusion and front-running avoidance.',
     href: '/execution-engine',
     icon: faBolt,
     color: 'bg-indigo-50 text-indigo-600',

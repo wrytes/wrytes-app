@@ -27,11 +27,13 @@ export default function App({ Component, pageProps }: AppProps) {
 
   return (
     <>
-      <Script
-        src={`${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
-        data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
-        strategy="afterInteractive"
-      />
+      {process.env.NEXT_PUBLIC_UMAMI_URL && (
+        <Script
+          src={`${process.env.NEXT_PUBLIC_UMAMI_URL}/script.js`}
+          data-website-id={process.env.NEXT_PUBLIC_UMAMI_WEBSITE_ID}
+          strategy="afterInteractive"
+        />
+      )}
     <div className={`${inter.variable} font-sans`}>
       <ReduxProvider store={store}>
         <PersistGate loading={null} persistor={persistor}>

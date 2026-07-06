@@ -3,8 +3,8 @@ services:
     image: node:22
     command: bash -c "
       git clone --depth=1 ${GIT_URL} /app &&
-      git checkout ${GIT_BRANCH:-main} &&
       cd /app &&
+      git checkout ${GIT_BRANCH:-main} &&
       yarn install --frozen-lockfile &&
       yarn run build &&
       yarn run start"
