@@ -285,14 +285,14 @@ export function WalletConnector({ onSuccess, onError, className = '' }: WalletCo
               <p className="text-sm text-text-primary font-mono truncate">{address}</p>
             </div>
             {namespaces.length > 1 && (
-              <button
-                onClick={switchNamespace}
-                className="w-full text-xs text-text-muted hover:text-brand transition-colors mb-3 py-1"
-              >
-                Switch workspace
-              </button>
+              <ButtonInput label="Switch workspace" onClick={switchNamespace} className="w-full mb-3" variant="secondary" />
             )}
-            <ButtonInput label="Disconnect" onClick={signOut} className="w-full" variant="secondary" />
+            <button
+              onClick={signOut}
+              className="w-full text-xs text-text-muted hover:text-brand transition-colors py-1"
+            >
+              Disconnect
+            </button>
           </motion.div>
         )}
       </AnimatePresence>

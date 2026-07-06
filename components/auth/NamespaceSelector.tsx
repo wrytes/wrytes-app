@@ -1,29 +1,25 @@
-import React from 'react'
-import { motion } from 'framer-motion'
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
+import React from 'react';
+import { motion } from 'framer-motion';
+import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faBuilding,
   faShieldHalved,
   faUsers,
   faChevronRight,
   faStar,
-} from '@fortawesome/free-solid-svg-icons'
-import { useAuth } from '@/hooks/useAuth'
-import type { Namespace } from '@/lib/auth/types'
+} from '@fortawesome/free-solid-svg-icons';
+import { useAuth } from '@/hooks/useAuth';
+import type { Namespace } from '@/lib/auth/types';
 
 interface NamespaceSelectorProps {
-  namespaces: Namespace[]
+  namespaces: Namespace[];
 }
 
 export function NamespaceSelector({ namespaces }: NamespaceSelectorProps) {
-  const { setActiveNamespace } = useAuth()
+  const { setActiveNamespace } = useAuth();
 
   return (
     <div className="w-full">
-      <p className="text-text-muted text-sm mb-4 text-center">
-        Select a workspace to continue
-      </p>
-
       <div className="space-y-2">
         {namespaces.map((ns, i) => (
           <motion.button
@@ -78,5 +74,5 @@ export function NamespaceSelector({ namespaces }: NamespaceSelectorProps) {
         ))}
       </div>
     </div>
-  )
+  );
 }

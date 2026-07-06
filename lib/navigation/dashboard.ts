@@ -1,9 +1,4 @@
-import {
-  faLightbulb,
-  faShield,
-  faUser,
-  faScaleBalanced,
-} from '@fortawesome/free-solid-svg-icons';
+import { faLightbulb, faShield, faUser, faLayerGroup } from '@fortawesome/free-solid-svg-icons';
 import type { NavItem } from './types';
 
 export type { NavItem };
@@ -16,10 +11,10 @@ export const DASHBOARD_NAVIGATION: NavItem[] = [
     description: 'Dashboard overview and stats',
   },
   {
-    label: 'Accounting',
-    path: '/dashboard/accounting',
-    icon: faScaleBalanced,
-    description: 'Token transfers and accounting overview',
+    label: 'Namespace',
+    path: '/dashboard/namespace',
+    icon: faLayerGroup,
+    description: 'Namespace overview',
   },
   {
     label: 'Profile',
