@@ -27,13 +27,13 @@ const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification }[]
   { label: 'Unclassified', value: 'UNCLASSIFIED' },
   { label: 'Neutral',      value: 'NEUTRAL'      },
   { label: 'Capital',      value: 'CAPITAL'      },
-  { label: 'Income',       value: 'INCOME'       },
-  { label: 'Swap In',      value: 'SWAP_IN'      },
   { label: 'Loan',         value: 'LOAN'         },
-  { label: 'Repayment',    value: 'REPAYMENT'    },
-  { label: 'Swap Out',     value: 'SWAP_OUT'     },
+  { label: 'Income',       value: 'INCOME'       },
   { label: 'Expense',      value: 'EXPENSE'      },
+  { label: 'Swap Out',     value: 'SWAP_OUT'     },
+  { label: 'Swap In',      value: 'SWAP_IN'      },
   { label: 'Payment',      value: 'PAYMENT'      },
+  { label: 'Received',     value: 'RECEIVED'     },
 ];
 
 const CLASSIFICATION_LABEL: Partial<Record<TransferClassification, string>> = Object.fromEntries(
@@ -44,19 +44,19 @@ type ClassStyle = { color: string; bg: string };
 
 const CLASSIFICATION_STYLE: Partial<Record<TransferClassification, ClassStyle>> = {
   CAPITAL:      { color: 'text-success',    bg: 'bg-success-bg' },
-  INCOME:       { color: 'text-success',    bg: 'bg-success-bg' },
-  SWAP_IN:      { color: 'text-success',    bg: 'bg-success-bg' },
   LOAN:         { color: 'text-info',       bg: 'bg-info/10'    },
-  REPAYMENT:    { color: 'text-brand',      bg: 'bg-brand/10'   },
-  SWAP_OUT:     { color: 'text-warning',    bg: 'bg-warning/10' },
+  INCOME:       { color: 'text-success',    bg: 'bg-success-bg' },
   EXPENSE:      { color: 'text-error',      bg: 'bg-error-bg'   },
+  SWAP_OUT:     { color: 'text-warning',    bg: 'bg-warning/10' },
+  SWAP_IN:      { color: 'text-success',    bg: 'bg-success-bg' },
   PAYMENT:      { color: 'text-error',      bg: 'bg-error-bg'   },
+  RECEIVED:     { color: 'text-success',    bg: 'bg-success-bg' },
   NEUTRAL:      { color: 'text-text-muted', bg: 'bg-surface'    },
   UNCLASSIFIED: { color: 'text-warning',    bg: 'bg-warning/10' },
+  // legacy
   ASSET:        { color: 'text-success',    bg: 'bg-success-bg' },
-  RECEIVED:     { color: 'text-success',    bg: 'bg-success-bg' },
+  REPAYMENT:    { color: 'text-brand',      bg: 'bg-brand/10'   },
   LIABILITY:    { color: 'text-info',       bg: 'bg-info/10'    },
-  TRANSFER:     { color: 'text-text-muted', bg: 'bg-surface'    },
   SKIPPED:      { color: 'text-text-muted', bg: 'bg-surface'    },
 };
 

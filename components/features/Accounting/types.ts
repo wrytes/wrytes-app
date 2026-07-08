@@ -11,23 +11,21 @@ export interface AccountingAddress {
 }
 
 export type TransferClassification =
-  // New
   | 'CAPITAL'
-  | 'INCOME'
   | 'LOAN'
-  | 'REPAYMENT'
+  | 'INCOME'
   | 'EXPENSE'
-  | 'NEUTRAL'
-  // Legacy (accounting module)
-  | 'ASSET'
-  | 'LIABILITY'
-  | 'SWAP_IN'
   | 'SWAP_OUT'
+  | 'SWAP_IN'
   | 'PAYMENT'
   | 'RECEIVED'
-  | 'TRANSFER'
-  | 'SKIPPED'
+  | 'NEUTRAL'
   | 'UNCLASSIFIED'
+  // legacy
+  | 'ASSET'
+  | 'LIABILITY'
+  | 'REPAYMENT'
+  | 'SKIPPED'
 
 export interface AccountingTransfer {
   id: string

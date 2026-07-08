@@ -9,20 +9,19 @@ export interface WalletAddress {
 
 export type TransferClassification =
   | 'CAPITAL'
-  | 'INCOME'
   | 'LOAN'
-  | 'REPAYMENT'
+  | 'INCOME'
   | 'EXPENSE'
-  | 'NEUTRAL'
-  | 'SWAP_IN'
   | 'SWAP_OUT'
+  | 'SWAP_IN'
   | 'PAYMENT'
+  | 'RECEIVED'
+  | 'NEUTRAL'
   | 'UNCLASSIFIED'
   // legacy
   | 'ASSET'
   | 'LIABILITY'
-  | 'RECEIVED'
-  | 'TRANSFER'
+  | 'REPAYMENT'
   | 'SKIPPED'
 
 export interface Transfer {

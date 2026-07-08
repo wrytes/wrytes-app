@@ -56,50 +56,38 @@ const EXPLORER_BASE: Record<number, string> = {
   137: 'https://polygonscan.com',
 };
 
-const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification; hint: string }[] = [
-  { label: 'Unclassified', value: 'UNCLASSIFIED', hint: '' },
-  { label: 'Neutral', value: 'NEUTRAL', hint: 'no effect — still owned' },
-  { label: 'Capital', value: 'CAPITAL', hint: 'asset +' },
-  { label: 'Income', value: 'INCOME', hint: 'asset +' },
-  { label: 'Swap In', value: 'SWAP_IN', hint: 'asset +' },
-  { label: 'Loan', value: 'LOAN', hint: 'asset + / liab +' },
-  { label: 'Repayment', value: 'REPAYMENT', hint: 'asset − / liab −' },
-  { label: 'Swap Out', value: 'SWAP_OUT', hint: 'asset −' },
-  { label: 'Expense', value: 'EXPENSE', hint: 'asset −' },
-  { label: 'Payment', value: 'PAYMENT', hint: 'asset −' },
-];
-
 const CLASSIFICATION_LABEL: Partial<Record<TransferClassification, string>> = {
   UNCLASSIFIED: 'Unclassified',
   NEUTRAL: 'Neutral',
   CAPITAL: 'Capital',
-  INCOME: 'Income',
   LOAN: 'Loan',
-  REPAYMENT: 'Repayment',
-  SWAP_IN: 'Swap In',
-  SWAP_OUT: 'Swap Out',
+  INCOME: 'Income',
   EXPENSE: 'Expense',
+  SWAP_OUT: 'Swap Out',
+  SWAP_IN: 'Swap In',
   PAYMENT: 'Payment',
+  RECEIVED: 'Received',
+  // legacy
+  REPAYMENT: 'Repayment',
 };
 
 type ClassStyle = { color: string; bg: string };
 
 const CLASSIFICATION_STYLE: Partial<Record<TransferClassification, ClassStyle>> = {
   CAPITAL: { color: 'text-success', bg: 'bg-success-bg' },
-  INCOME: { color: 'text-success', bg: 'bg-success-bg' },
-  SWAP_IN: { color: 'text-success', bg: 'bg-success-bg' },
   LOAN: { color: 'text-info', bg: 'bg-info/10' },
-  REPAYMENT: { color: 'text-brand', bg: 'bg-brand/10' },
-  SWAP_OUT: { color: 'text-warning', bg: 'bg-warning/10' },
+  INCOME: { color: 'text-success', bg: 'bg-success-bg' },
   EXPENSE: { color: 'text-error', bg: 'bg-error-bg' },
+  SWAP_OUT: { color: 'text-warning', bg: 'bg-warning/10' },
+  SWAP_IN: { color: 'text-success', bg: 'bg-success-bg' },
   PAYMENT: { color: 'text-error', bg: 'bg-error-bg' },
+  RECEIVED: { color: 'text-success', bg: 'bg-success-bg' },
   NEUTRAL: { color: 'text-text-muted', bg: 'bg-surface' },
   UNCLASSIFIED: { color: 'text-warning', bg: 'bg-warning/10' },
   // legacy
   ASSET: { color: 'text-success', bg: 'bg-success-bg' },
-  RECEIVED: { color: 'text-success', bg: 'bg-success-bg' },
+  REPAYMENT: { color: 'text-brand', bg: 'bg-brand/10' },
   LIABILITY: { color: 'text-info', bg: 'bg-info/10' },
-  TRANSFER: { color: 'text-text-muted', bg: 'bg-surface' },
   SKIPPED: { color: 'text-text-muted', bg: 'bg-surface' },
 };
 
@@ -535,7 +523,7 @@ function TokenOverviewSection({
             By Classification
           </h3>
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
-            {(['CAPITAL', 'LOAN', 'INCOME', 'EXPENSE', 'PAYMENT', 'SWAP_OUT', 'SWAP_IN'] as TransferClassification[])
+            {(['CAPITAL', 'LOAN', 'INCOME', 'EXPENSE', 'SWAP_OUT', 'SWAP_IN', 'PAYMENT', 'RECEIVED'] as TransferClassification[])
               .map(cls => byClassification.find(b => b.classification === cls))
               .filter((item): item is NonNullable<typeof item> => !!item)
               .map(item => {

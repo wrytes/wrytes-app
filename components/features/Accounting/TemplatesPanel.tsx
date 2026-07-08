@@ -22,15 +22,21 @@ import type { AccountingAccount, ClassificationTemplate, TransferClassification 
 // ---------------------------------------------------------------------------
 
 const CLASSIFICATION_OPTIONS = [
-  { value: 'ASSET',        label: 'Asset' },
-  { value: 'RECEIVED',     label: 'Received' },
-  { value: 'SWAP_IN',      label: 'Swap In' },
-  { value: 'LIABILITY',    label: 'Liability' },
-  { value: 'PAYMENT',      label: 'Payment' },
-  { value: 'SWAP_OUT',     label: 'Swap Out' },
-  { value: 'TRANSFER',     label: 'Transfer' },
-  { value: 'SKIPPED',      label: 'Skipped' },
   { value: 'UNCLASSIFIED', label: 'Unclassified' },
+  { value: 'NEUTRAL',      label: 'Neutral' },
+  { value: 'CAPITAL',      label: 'Capital' },
+  { value: 'LOAN',         label: 'Loan' },
+  { value: 'INCOME',       label: 'Income' },
+  { value: 'EXPENSE',      label: 'Expense' },
+  { value: 'SWAP_OUT',     label: 'Swap Out' },
+  { value: 'SWAP_IN',      label: 'Swap In' },
+  { value: 'PAYMENT',      label: 'Payment' },
+  { value: 'RECEIVED',     label: 'Received' },
+  // legacy
+  { value: 'ASSET',        label: 'Asset' },
+  { value: 'LIABILITY',    label: 'Liability' },
+  { value: 'REPAYMENT',    label: 'Repayment' },
+  { value: 'SKIPPED',      label: 'Skipped' },
 ];
 
 const DIRECTION_OPTIONS = [
@@ -40,21 +46,21 @@ const DIRECTION_OPTIONS = [
 ];
 
 const CLASSIFICATION_STYLE: Record<TransferClassification, { color: string; bg: string }> = {
-  ASSET:        { color: 'text-success',        bg: 'bg-success-bg' },
-  RECEIVED:     { color: 'text-success',        bg: 'bg-success-bg' },
-  SWAP_IN:      { color: 'text-info',           bg: 'bg-info/10' },
-  LIABILITY:    { color: 'text-error',          bg: 'bg-error-bg' },
-  PAYMENT:      { color: 'text-error',          bg: 'bg-error-bg' },
-  SWAP_OUT:     { color: 'text-warning',        bg: 'bg-warning/10' },
-  TRANSFER:     { color: 'text-brand',          bg: 'bg-brand/10' },
-  SKIPPED:      { color: 'text-text-muted',     bg: 'bg-surface' },
-  UNCLASSIFIED: { color: 'text-text-secondary', bg: 'bg-surface' },
   CAPITAL:      { color: 'text-success',        bg: 'bg-success-bg' },
-  INCOME:       { color: 'text-success',        bg: 'bg-success-bg' },
   LOAN:         { color: 'text-info',           bg: 'bg-info/10' },
-  REPAYMENT:    { color: 'text-brand',          bg: 'bg-brand/10' },
+  INCOME:       { color: 'text-success',        bg: 'bg-success-bg' },
   EXPENSE:      { color: 'text-error',          bg: 'bg-error-bg' },
+  SWAP_OUT:     { color: 'text-warning',        bg: 'bg-warning/10' },
+  SWAP_IN:      { color: 'text-info',           bg: 'bg-info/10' },
+  PAYMENT:      { color: 'text-error',          bg: 'bg-error-bg' },
+  RECEIVED:     { color: 'text-success',        bg: 'bg-success-bg' },
   NEUTRAL:      { color: 'text-text-muted',     bg: 'bg-surface' },
+  UNCLASSIFIED: { color: 'text-text-secondary', bg: 'bg-surface' },
+  // legacy
+  ASSET:        { color: 'text-success',        bg: 'bg-success-bg' },
+  LIABILITY:    { color: 'text-error',          bg: 'bg-error-bg' },
+  REPAYMENT:    { color: 'text-brand',          bg: 'bg-brand/10' },
+  SKIPPED:      { color: 'text-text-muted',     bg: 'bg-surface' },
 };
 
 // ---------------------------------------------------------------------------
@@ -85,7 +91,7 @@ export function TemplatesPanel({ templates, accounts, onRefresh }: Props) {
   const [revertTarget, setRevertTarget] = useState<ClassificationTemplate | null>(null);
   const [deleteTarget, setDeleteTarget] = useState<ClassificationTemplate | null>(null);
   const [form, setForm] = useState<TemplateFormState>({
-    classification: 'ASSET',
+    classification: 'CAPITAL',
     direction: 'ANY',
     debitAccountId: '',
     creditAccountId: '',
@@ -103,7 +109,7 @@ export function TemplatesPanel({ templates, accounts, onRefresh }: Props) {
   const openAdd = () => {
     setEditTarget(null);
     setForm({
-      classification: 'ASSET',
+      classification: 'CAPITAL',
       direction: 'ANY',
       debitAccountId: accounts[0]?.id ?? '',
       creditAccountId: accounts[1]?.id ?? accounts[0]?.id ?? '',
@@ -181,7 +187,7 @@ export function TemplatesPanel({ templates, accounts, onRefresh }: Props) {
 
   const overrideCount = templates.filter(t => t.isOverridden).length;
   const isDefaultTemplate = (tmpl: ClassificationTemplate) =>
-    ['ASSET', 'RECEIVED', 'SWAP_IN', 'LIABILITY', 'PAYMENT', 'SWAP_OUT', 'TRANSFER'].includes(
+    ['ASSET', 'RECEIVED', 'SWAP_IN', 'LIABILITY', 'PAYMENT', 'SWAP_OUT'].includes(
       tmpl.classification
     );
 

@@ -71,7 +71,6 @@ const CLASSIFICATION_OPTIONS = [
   { label: 'Liability', value: 'LIABILITY' },
   { label: 'Payment', value: 'PAYMENT' },
   { label: 'Swap Out', value: 'SWAP_OUT' },
-  { label: 'Transfer', value: 'TRANSFER' },
   { label: 'Skipped', value: 'SKIPPED' },
 ];
 
@@ -83,7 +82,6 @@ const CLASSIFICATION_STYLE: Record<TransferClassification, { color: string; bg: 
   LIABILITY:    { color: 'text-error',          bg: 'bg-error-bg' },
   PAYMENT:      { color: 'text-error',          bg: 'bg-error-bg' },
   SWAP_OUT:     { color: 'text-warning',        bg: 'bg-warning/10' },
-  TRANSFER:     { color: 'text-brand',          bg: 'bg-brand/10' },
   SKIPPED:      { color: 'text-text-muted',     bg: 'bg-surface' },
   UNCLASSIFIED: { color: 'text-text-secondary', bg: 'bg-surface' },
   CAPITAL:      { color: 'text-success',        bg: 'bg-success-bg' },
@@ -101,7 +99,6 @@ const CLASSIFICATION_FILTER = [
   { label: 'Liability', value: 'LIABILITY' },
   { label: 'Payment', value: 'PAYMENT' },
   { label: 'Swap Out', value: 'SWAP_OUT' },
-  { label: 'Transfer', value: 'TRANSFER' },
   { label: 'Skipped', value: 'SKIPPED' },
   { label: 'Unclassified', value: 'UNCLASSIFIED' },
 ];
