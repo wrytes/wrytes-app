@@ -20,7 +20,7 @@ const TYPE_OPTIONS: { label: string; value: AdjustmentType; hint: string; color:
   { label: 'Liability Expense',value: 'REPAYMENT', hint: 'liability −', color: 'text-brand',   bg: 'bg-brand/10'   },
 ];
 
-const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', 'Address', ''];
+const HEADERS = ['Date', 'Type', 'Token', 'Amount', 'CHF Value', 'Note', ''];
 
 function typeStyle(type: AdjustmentType) {
   return TYPE_OPTIONS.find(o => o.value === type) ?? TYPE_OPTIONS[2];
@@ -109,13 +109,18 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
   if (editing) {
     return (
       <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
-        {/* Date */}
-        <input
-          type="date"
-          value={draft.date}
-          onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
-          className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
-        />
+        {/* Date (+ address badge stacked below, fixed — not editable) */}
+        <div className="flex flex-col items-start gap-1">
+          <input
+            type="date"
+            value={draft.date}
+            onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
+            className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
+          />
+          <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate max-w-full ${addressBadgeClasses}`}>
+            {addressLabel(address)}
+          </span>
+        </div>
         {/* Type */}
         <select
           value={draft.type}
@@ -158,10 +163,6 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
           placeholder="Note…"
           className="w-full bg-transparent border border-table-alt rounded px-2 py-1 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
         />
-        {/* Address (fixed — not editable) */}
-        <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate inline-block ${addressBadgeClasses}`}>
-          {addressLabel(address)}
-        </span>
         {/* Actions */}
         <div className="flex items-center justify-end gap-1.5">
           <button
@@ -186,8 +187,13 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
 
   return (
     <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
-      {/* Date */}
-      <span className="text-sm text-text-secondary text-left block">{fmtDate(adj.date)}</span>
+      {/* Date (+ address badge stacked below) */}
+      <div className="flex flex-col items-start gap-1">
+        <span className="text-sm text-text-secondary">{fmtDate(adj.date)}</span>
+        <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate max-w-full ${addressBadgeClasses}`}>
+          {addressLabel(address)}
+        </span>
+      </div>
 
       {/* Type */}
       {isExporting ? (
@@ -211,11 +217,6 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
 
       {/* Note */}
       <span className="text-sm text-text-secondary">{adj.note ?? '—'}</span>
-
-      {/* Address */}
-      <span className={`text-xs border rounded-lg px-1.5 py-0.5 truncate inline-block ${addressBadgeClasses}`}>
-        {addressLabel(address)}
-      </span>
 
       {/* Actions */}
       <div className={`flex items-center justify-end gap-1.5 ${isExporting ? 'invisible' : ''}`}>
@@ -281,12 +282,23 @@ function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) 
 
   return (
     <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
-      <input
-        type="date"
-        value={draft.date}
-        onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
-        className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
-      />
+      <div className="flex flex-col items-start gap-1">
+        <input
+          type="date"
+          value={draft.date}
+          onChange={e => setDraft(d => ({ ...d, date: e.target.value }))}
+          className="w-full bg-transparent border border-brand rounded px-2 py-1 text-sm text-text-primary outline-none"
+        />
+        <select
+          value={draft.addressId}
+          onChange={e => setDraft(d => ({ ...d, addressId: e.target.value }))}
+          className="text-xs rounded-lg px-2 py-1 border border-brand outline-none bg-card text-text-primary w-full"
+        >
+          {addresses.map(a => (
+            <option key={a.id} value={a.id}>{addressLabel(a)}</option>
+          ))}
+        </select>
+      </div>
       <select
         value={draft.type}
         onChange={e => setDraft(d => ({ ...d, type: e.target.value as AdjustmentType }))}
@@ -324,15 +336,6 @@ function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) 
         placeholder="Note…"
         className="w-full bg-transparent border border-table-alt rounded px-2 py-1 text-sm text-text-primary placeholder:text-text-muted outline-none focus:border-brand"
       />
-      <select
-        value={draft.addressId}
-        onChange={e => setDraft(d => ({ ...d, addressId: e.target.value }))}
-        className="text-xs rounded-lg px-2 py-1 border border-brand outline-none bg-card text-text-primary"
-      >
-        {addresses.map(a => (
-          <option key={a.id} value={a.id}>{addressLabel(a)}</option>
-        ))}
-      </select>
       <div className="flex items-center justify-end gap-1.5">
         <button
           onClick={handleAdd}

@@ -21,7 +21,7 @@ import type { TransferWithAddress, TransferClassification, CounterpartyLabelMap,
 // Constants
 // ---------------------------------------------------------------------------
 
-const HEADERS = ['Date', 'Counterparty', 'Amount', 'Value', 'Note', 'Address', 'Classification'];
+const HEADERS = ['Date', 'Counterparty', 'Amount', 'Value', 'Note', 'Classification'];
 
 const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification }[] = [
   { label: 'Unclassified', value: 'UNCLASSIFIED' },
@@ -249,8 +249,8 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
 
             return (
               <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
-                {/* Date */}
-                <div className="text-left">
+                {/* Date (+ address badge stacked below) */}
+                <div className="flex flex-col items-start gap-1">
                   {txUrl && !isExporting ? (
                     <a
                       href={txUrl}
@@ -265,6 +265,11 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                   ) : (
                     <span className="text-sm text-text-secondary">{formatDate(t.timestamp)}</span>
                   )}
+                  <span
+                    className={`text-xs border rounded-lg px-1.5 py-0.5 truncate max-w-full ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].bg} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].text} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].border}`}
+                  >
+                    {addressLabel(t.addressId)}
+                  </span>
                 </div>
 
                 {/* Counterparty */}
@@ -348,15 +353,6 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                     />
                   </div>
                 )}
-
-                {/* Address */}
-                <div className="flex justify-start md:justify-end">
-                  <span
-                    className={`text-xs border rounded-lg px-1.5 py-0.5 truncate max-w-full ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].bg} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].text} ${ADDRESS_COLOR_CLASSES[colorFor(t.addressId)].border}`}
-                  >
-                    {addressLabel(t.addressId)}
-                  </span>
-                </div>
 
                 {/* Classification */}
                 {isExporting ? (
