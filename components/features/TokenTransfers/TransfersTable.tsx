@@ -188,7 +188,14 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
             if (tDiff !== 0) return m * tDiff;
             const bDiff = (a.blockNumber ?? 0) - (b.blockNumber ?? 0);
             if (bDiff !== 0) return m * bDiff;
-            return m * ((a.logIndex ?? 0) - (b.logIndex ?? 0));
+            const lDiff = (a.logIndex ?? 0) - (b.logIndex ?? 0);
+            if (lDiff !== 0) return m * lDiff;
+            // Same on-chain event recorded on both sides of a transfer between two
+            // tracked addresses — show the outgoing leg before the incoming leg,
+            // regardless of ascending/descending, since it's a narrative order (send
+            // causes receive), not a magnitude to reverse.
+            if (a.direction !== b.direction) return a.direction === 'OUT' ? -1 : 1;
+            return 0;
           }
         }
       });
