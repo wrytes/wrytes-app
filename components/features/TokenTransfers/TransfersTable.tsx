@@ -200,6 +200,11 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
     setChfEditing(null);
   };
 
+  const handleClearChf = async (id: string) => {
+    await onUpdate(id, { chfValue: null });
+    setChfEditing(null);
+  };
+
   const handleSaveNote = async () => {
     if (!noteEditing) return;
     await onUpdate(noteEditing.id, { notes: noteEditing.value.trim() || null });
@@ -309,7 +314,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                 {/* Value (CHF) — sign and colour driven by direction, input stays positive */}
                 {isExporting ? (
                   <div className="text-right">
-                    <span className={`text-sm font-semibold tabular-nums ${t.chfValue ? (isIn ? 'text-success' : 'text-error') : 'text-text-muted'}`}>
+                    <span className={`text-sm font-semibold tabular-nums ${t.chfValue ? (isIn ? 'text-success' : 'text-error') : 'text-text-muted'} ${t.chfValueIsEstimate ? 'italic opacity-80' : ''}`}>
                       {t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
                     </span>
                   </div>
@@ -321,11 +326,14 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                       editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
                       onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
                       onSave={handleSaveChf}
+                      onClear={() => handleClearChf(t.id)}
                       onCancel={() => setChfEditing(null)}
                       onChange={v => setChfEditing({ id: t.id, value: v })}
                       placeholder="0.00"
                       emptyText="Set value"
                       valueClassName={`font-semibold ${isIn ? 'text-success' : 'text-error'}`}
+                      isEstimate={t.chfValueIsEstimate}
+                      estimateTooltip="Estimated from daily close rate — click to confirm or clear to re-estimate"
                     />
                   </div>
                 )}

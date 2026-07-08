@@ -40,6 +40,7 @@ export interface Transfer {
   classification: TransferClassification
   isHidden: boolean
   chfValue: string | null
+  chfValueIsEstimate: boolean
   notes: string | null
 }
 
@@ -95,6 +96,15 @@ export type TokenPriceMap = Record<string, string>          // tokenSymbol → C
 export type CounterpartyLabelMap = Record<string, string>   // address (lowercase) → label
 
 export type AdjustmentType = 'PROFIT' | 'LOSS' | 'BORROW' | 'REPAYMENT'
+
+// Pre-fills the manual-entry "Add" form — used by both the plain "Add correction"
+// action and the "Settle unrealized P/L" action on the Token Balances table.
+export interface CorrectionPrefill {
+  tokenSymbol?: string | null
+  type?: AdjustmentType
+  chfValue?: string
+  note?: string
+}
 
 export interface Adjustment {
   id: string

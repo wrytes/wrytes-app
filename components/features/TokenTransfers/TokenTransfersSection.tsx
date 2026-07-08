@@ -12,6 +12,7 @@ import {
   faBan,
   faPrint,
   faCheck,
+  faCircleCheck,
 } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { EditableCell } from '@/components/ui/Table/EditableCell';
@@ -32,6 +33,7 @@ import type {
   TokenOverviewClassification,
   MergedTokenOverview,
   TokenPriceMap,
+  CorrectionPrefill,
 } from './types';
 
 // ---------------------------------------------------------------------------
@@ -218,7 +220,7 @@ function AddressBar({
   onToggle: (id: string) => void;
   onUpdateLabel: (id: string, label: string | null) => Promise<void>;
 }) {
-  const [open, setOpen] = useState(true);
+  const [open, setOpen] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [address, setAddress] = useState('');
   const [chain, setChain] = useState('eth-mainnet');
@@ -494,7 +496,7 @@ function TokenOverviewSection({
   year: number | null;
   isExporting: boolean;
   onBlacklist: (tokenAddress: string, chainId: number, tokenSymbol: string | null) => Promise<void>;
-  onAddCorrection: (tokenSymbol: string | null) => void;
+  onAddCorrection: (prefill: CorrectionPrefill) => void;
   onSaveTokenPrice: (tokenSymbol: string, priceChf: string | null) => Promise<void>;
 }) {
   const [priceEditing, setPriceEditing] = useState<{ symbol: string; value: string } | null>(null);
@@ -661,7 +663,7 @@ function TokenOverviewSection({
                         <div className="group flex items-center gap-2 text-left">
                           <TokenLogo symbol={t.tokenSymbol} />
                           <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
-                          <button onClick={() => onAddCorrection(t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
+                          <button onClick={() => onAddCorrection({ tokenSymbol: t.tokenSymbol })} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
                             <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
                           </button>
                           {t.tokenAddress && (
@@ -697,13 +699,27 @@ function TokenOverviewSection({
                           )}
                         </div>
                         <div className="text-right">{chfCell(t.chfNet)}</div>
-                        <div className="text-right">
+                        <div className="group flex items-center justify-end gap-1.5">
                           {unrealized === null || Math.abs(unrealized) < 0.01 ? (
                             <span className="text-text-muted text-xs">—</span>
                           ) : (
-                            <span className={`text-sm tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
-                              {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
-                            </span>
+                            <>
+                              <button
+                                onClick={() => onAddCorrection({
+                                  tokenSymbol: t.tokenSymbol,
+                                  type: unrealized >= 0 ? 'PROFIT' : 'LOSS',
+                                  chfValue: String(Math.abs(unrealized)),
+                                  note: 'Year-end unrealized P/L settlement',
+                                })}
+                                className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5"
+                                title="Settle unrealized P/L into a manual entry"
+                              >
+                                <FontAwesomeIcon icon={faCircleCheck} className="w-3 h-3" />
+                              </button>
+                              <span className={`text-sm tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
+                                {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
+                              </span>
+                            </>
                           )}
                         </div>
                       </TableRow>
@@ -761,7 +777,7 @@ export function TokenTransfersSection() {
   const [selectedQuarter, setSelectedQuarter] = useState<number | null>(
     () => Math.ceil((new Date().getMonth() + 1) / 3)
   );
-  const [prefillToken, setPrefillToken] = useState<string | null>(null);
+  const [correctionPrefill, setCorrectionPrefill] = useState<CorrectionPrefill | null>(null);
   const [tokenPrices, setTokenPrices] = useState<TokenPriceMap>({});
   const [isExporting, setIsExporting] = useState(false);
   const printRef = useRef<HTMLDivElement>(null);
@@ -781,9 +797,9 @@ export function TokenTransfersSection() {
     const data = await apiRequest<WalletAddress[]>('/accounting/addresses');
     setAddresses(data);
     if (data.length > 0) {
-      const first = data[0].id;
+      const all = data.map(a => a.id);
       setSelectedIds(prev => {
-        const ids = prev.length > 0 ? prev : [first];
+        const ids = prev.length > 0 ? prev : all;
         void loadTransfers(ids, data);
         void loadOverview(ids, selectedYear, selectedQuarter);
         return ids;
@@ -1178,7 +1194,7 @@ export function TokenTransfersSection() {
           year={selectedYear}
           isExporting={isExporting}
           onBlacklist={handleBlacklist}
-          onAddCorrection={sym => setPrefillToken(sym)}
+          onAddCorrection={prefill => setCorrectionPrefill(prefill)}
           onSaveTokenPrice={handleSaveTokenPrice}
         />
 
@@ -1191,8 +1207,8 @@ export function TokenTransfersSection() {
               addresses={selectedAddresses}
               year={selectedYear}
               quarter={selectedQuarter}
-              prefillToken={prefillToken}
-              onPrefillConsumed={() => setPrefillToken(null)}
+              prefill={correctionPrefill}
+              onPrefillConsumed={() => setCorrectionPrefill(null)}
               onMutate={() => void loadOverview(selectedIds, selectedYear, selectedQuarter)}
               isExporting={isExporting}
             />

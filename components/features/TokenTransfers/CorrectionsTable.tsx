@@ -7,7 +7,7 @@ import { formatCurrency } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
 import { useAddressColors } from '@/hooks/redux/useAddressColors';
 import { ADDRESS_COLOR_CLASSES } from './addressColors';
-import type { Adjustment, AdjustmentType, WalletAddress } from './types';
+import type { Adjustment, AdjustmentType, WalletAddress, CorrectionPrefill } from './types';
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -246,18 +246,18 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
 interface AddRowProps {
   onAdd: (entry: { date: string; type: AdjustmentType; tokenSymbol: string | null; amount: string | null; chfValue: string | null; note: string | null; addressId: string }) => Promise<void>;
   onCancel: () => void;
-  initialToken?: string;
+  prefill?: CorrectionPrefill;
   addresses: WalletAddress[];
 }
 
-function AddRow({ onAdd, onCancel, initialToken = '', addresses }: AddRowProps) {
+function AddRow({ onAdd, onCancel, prefill, addresses }: AddRowProps) {
   const [draft, setDraft] = useState({
     date: new Date().toISOString().slice(0, 10),
-    type: 'PROFIT' as AdjustmentType,
-    tokenSymbol: initialToken,
+    type: prefill?.type ?? ('PROFIT' as AdjustmentType),
+    tokenSymbol: prefill?.tokenSymbol ?? '',
     amount: '',
-    chfValue: '',
-    note: '',
+    chfValue: prefill?.chfValue ?? '',
+    note: prefill?.note ?? '',
     addressId: addresses[0]?.id ?? '',
   });
   const [saving, setSaving] = useState(false);
@@ -366,17 +366,17 @@ interface Props {
   addresses: WalletAddress[];
   year: number | null;
   quarter: number | null;
-  prefillToken?: string | null;
+  prefill?: CorrectionPrefill | null;
   onPrefillConsumed?: () => void;
   onMutate?: () => void;
   isExporting?: boolean;
 }
 
-export function CorrectionsTable({ addressIds, addresses, year, quarter, prefillToken, onPrefillConsumed, onMutate, isExporting = false }: Props) {
+export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill, onPrefillConsumed, onMutate, isExporting = false }: Props) {
   const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
-  const [addInitialToken, setAddInitialToken] = useState<string>('');
+  const [addPrefill, setAddPrefill] = useState<CorrectionPrefill>({});
   // Ordered by selection order so the first-selected address is the default for new entries
   const orderedAddresses = useMemo(
     () => addressIds.map(id => addresses.find(a => a.id === id)).filter((a): a is WalletAddress => !!a),
@@ -389,12 +389,12 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
   const [typeFilters, setTypeFilters] = useState<string[]>([]);
 
   useEffect(() => {
-    if (prefillToken != null) {
-      setAddInitialToken(prefillToken);
+    if (prefill != null) {
+      setAddPrefill(prefill);
       setAdding(true);
       onPrefillConsumed?.();
     }
-  }, [prefillToken]);
+  }, [prefill]);
 
   const load = useCallback(async () => {
     if (addressIds.length === 0) {
@@ -446,7 +446,7 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
     });
     setAdjustments(prev => [created, ...prev]);
     setAdding(false);
-    setAddInitialToken('');
+    setAddPrefill({});
     onMutate?.();
   };
 
@@ -476,7 +476,7 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
         </h3>
         {!isExporting && (
           <button
-            onClick={() => setAdding(true)}
+            onClick={() => { setAddPrefill({}); setAdding(true); }}
             className="flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
           >
             <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
@@ -514,8 +514,8 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
               <AddRow
                 key="__add"
                 onAdd={handleAdd}
-                onCancel={() => { setAdding(false); setAddInitialToken(''); }}
-                initialToken={addInitialToken}
+                onCancel={() => { setAdding(false); setAddPrefill({}); }}
+                prefill={addPrefill}
                 addresses={orderedAddresses}
               />
             );

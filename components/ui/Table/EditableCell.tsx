@@ -1,5 +1,5 @@
 import { useEffect, useRef } from 'react';
-import { faPen, faCheck, faXmark } from '@fortawesome/free-solid-svg-icons';
+import { faCheck, faXmark, faEraser } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 
 interface EditableCellProps {
@@ -10,11 +10,16 @@ interface EditableCellProps {
   onSave: () => void;
   onCancel: () => void;
   onChange: (v: string) => void;
+  /** Optional explicit "clear" action shown in edit mode (e.g. reset to an auto-estimate) */
+  onClear?: () => void;
   placeholder?: string;
   emptyText?: string;
   maxLength?: number;
   align?: 'left' | 'right';
   valueClassName?: string;
+  /** Renders the value ghost-italic with a "~" prefix — for auto-derived, unconfirmed values */
+  isEstimate?: boolean;
+  estimateTooltip?: string;
 }
 
 export function EditableCell({
@@ -25,11 +30,14 @@ export function EditableCell({
   onSave,
   onCancel,
   onChange,
+  onClear,
   placeholder = 'Label',
   emptyText = 'Add label',
   maxLength = 64,
   align = 'right',
   valueClassName,
+  isEstimate = false,
+  estimateTooltip = 'Estimated from daily close rate — click to confirm',
 }: EditableCellProps) {
   const inputRef = useRef<HTMLInputElement>(null);
   const justifyClass = align === 'right' ? 'justify-end' : 'justify-start';
@@ -61,6 +69,11 @@ export function EditableCell({
         <button onClick={onSave} className="text-success hover:text-success/80 transition-colors">
           <FontAwesomeIcon icon={faCheck} className="text-xs" />
         </button>
+        {onClear && (
+          <button onClick={onClear} className="text-text-muted hover:text-error transition-colors" title="Clear">
+            <FontAwesomeIcon icon={faEraser} className="text-xs" />
+          </button>
+        )}
         <button onClick={onCancel} className="text-text-muted hover:text-text-secondary transition-colors">
           <FontAwesomeIcon icon={faXmark} className="text-xs" />
         </button>
@@ -71,14 +84,19 @@ export function EditableCell({
   return (
     <button
       onClick={onEdit}
-      className={`group flex w-full items-center gap-1.5 text-sm hover:text-brand transition-colors ${justifyClass} ${textAlignClass}`}
+      className={`flex w-full items-center text-sm hover:text-brand transition-colors ${justifyClass} ${textAlignClass}`}
     >
       {value ? (
-        <span className={valueClassName}>{value}</span>
+        isEstimate ? (
+          <span className="text-text-muted italic" title={estimateTooltip}>
+            {value}
+          </span>
+        ) : (
+          <span className={valueClassName}>{value}</span>
+        )
       ) : (
         <span className="text-text-muted italic">{emptyText}</span>
       )}
-      <FontAwesomeIcon icon={faPen} className="text-xs opacity-60 group-hover:text-brand" />
     </button>
   );
 }
