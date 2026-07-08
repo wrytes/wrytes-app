@@ -16,13 +16,17 @@ export enum FormatType {
   'symbol',
 }
 
+/** Strips thousands-separator commas from a user-typed numeric string (e.g.
+ *  "47,323.94" -> "47323.94"), so parseFloat doesn't silently truncate at the comma. */
+export const sanitizeNumericInput = (value: string): string => value.replace(/,/g, '');
+
 export const formatCurrency = (
   value: string | number,
   minimumFractionDigits = 0,
   maximumFractionDigits = 2,
   format = FormatType.us
 ) => {
-  const amount = typeof value === 'string' ? parseFloat(value) : value;
+  const amount = typeof value === 'string' ? parseFloat(sanitizeNumericInput(value)) : value;
 
   // exceptions
   if (amount === null || !!isNaN(amount)) return null;

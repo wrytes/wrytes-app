@@ -17,7 +17,7 @@ import {
 import { Table, TableBody, TableHead, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
-import { formatCurrency } from '@/lib/utils/format-handling';
+import { formatCurrency, sanitizeNumericInput } from '@/lib/utils/format-handling';
 import { CorrectionsTable } from './CorrectionsTable';
 import { TransfersTable } from './TransfersTable';
 import { TokenLogo } from './TokenLogo';
@@ -688,7 +688,7 @@ function TokenOverviewSection({
                               isEditing={isEditingPrice}
                               editValue={isEditingPrice ? priceEditing!.value : ''}
                               onEdit={() => setPriceEditing({ symbol: sym, value: tokenPrices[sym] ?? '' })}
-                              onSave={async () => { if (!priceEditing) return; await onSaveTokenPrice(sym, priceEditing.value.trim() || null); setPriceEditing(null); }}
+                              onSave={async () => { if (!priceEditing) return; await onSaveTokenPrice(sym, sanitizeNumericInput(priceEditing.value.trim()) || null); setPriceEditing(null); }}
                               onCancel={() => setPriceEditing(null)}
                               onChange={v => setPriceEditing({ symbol: sym, value: v })}
                               placeholder="0.00"

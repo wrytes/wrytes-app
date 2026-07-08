@@ -3,7 +3,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faPencil, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
 import { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { apiRequest } from '@/lib/api/client';
-import { formatCurrency } from '@/lib/utils/format-handling';
+import { formatCurrency, sanitizeNumericInput } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
 import { useAddressColors } from '@/hooks/redux/useAddressColors';
 import { ADDRESS_COLOR_CLASSES } from './addressColors';
@@ -82,8 +82,8 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
         date: draft.date,
         type: draft.type as AdjustmentType,
         tokenSymbol: draft.tokenSymbol || null,
-        amount: draft.amount || null,
-        chfValue: draft.chfValue || null,
+        amount: sanitizeNumericInput(draft.amount) || null,
+        chfValue: sanitizeNumericInput(draft.chfValue) || null,
         note: draft.note || null,
       });
       setEditing(false);
@@ -270,8 +270,8 @@ function AddRow({ onAdd, onCancel, prefill, addresses }: AddRowProps) {
         date: draft.date,
         type: draft.type,
         tokenSymbol: draft.tokenSymbol || null,
-        amount: draft.amount || null,
-        chfValue: draft.chfValue || null,
+        amount: sanitizeNumericInput(draft.amount) || null,
+        chfValue: sanitizeNumericInput(draft.chfValue) || null,
         note: draft.note || null,
         addressId: draft.addressId,
       });

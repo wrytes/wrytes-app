@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/Table';
 import { EditableCell } from '@/components/ui/Table/EditableCell';
 import { apiRequest } from '@/lib/api/client';
-import { formatCurrency } from '@/lib/utils/format-handling';
+import { formatCurrency, sanitizeNumericInput } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
 import { useAddressColors } from '@/hooks/redux/useAddressColors';
 import { ADDRESS_COLOR_CLASSES } from './addressColors';
@@ -196,7 +196,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
 
   const handleSaveChf = async () => {
     if (!chfEditing) return;
-    await onUpdate(chfEditing.id, { chfValue: chfEditing.value.trim() || null });
+    await onUpdate(chfEditing.id, { chfValue: sanitizeNumericInput(chfEditing.value.trim()) || null });
     setChfEditing(null);
   };
 
