@@ -143,13 +143,27 @@ div[data-hot-toast-wrapper] div[role="status"] > div {
     print-color-adjust: exact !important;
   }
 
-  /* Force desktop layout — prevents mobile Tailwind breakpoints from firing */
   html, body {
-    min-width: 1024px !important;
+    overflow: visible !important;
   }
 
+  /* Small margins so the wide table gets as much usable page width as
+     possible. No `size:` here on purpose — setting an orientation locks the
+     browser's print dialog orientation picker (e.g. Chrome disables it
+     entirely), so leave that to the user. */
   @page {
-    margin: 1.5cm;
+    margin: 0.6cm;
+  }
+
+  /* Force the desktop table layout — print's "viewport" is sized off the
+     physical page, which can evaluate under the md breakpoint even for a
+     wide page, leaving the mobile stacked layout showing instead of the
+     real table. */
+  .max-md\:hidden {
+    display: grid !important;
+  }
+  .md\:hidden {
+    display: none !important;
   }
 }
 

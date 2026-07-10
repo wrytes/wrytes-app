@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect, useMemo } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faPlus, faTrash, faPencil, faCheck, faTimes } from '@fortawesome/free-solid-svg-icons';
-import { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty } from '@/components/ui/Table';
+import { Table, TableBody, TableHeadSearchable, TableRow, TableRowEmpty } from '@/components/ui/Table';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency, sanitizeNumericInput } from '@/lib/utils/format-handling';
 import { useSort } from '@/hooks/useSort';
@@ -55,11 +55,10 @@ interface RowProps {
   adj: Adjustment;
   onSave: (id: string, patch: Partial<Omit<Adjustment, 'id' | 'accountingAddressId' | 'createdAt' | 'updatedAt'>>) => Promise<void>;
   onDelete: (id: string) => Promise<void>;
-  isExporting?: boolean;
   address?: WalletAddress;
 }
 
-function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: RowProps) {
+function AdjustmentRow({ adj, onSave, onDelete, address }: RowProps) {
   const { colorFor } = useAddressColors();
   const addressBadgeClasses = address
     ? `${ADDRESS_COLOR_CLASSES[colorFor(address.id)].bg} ${ADDRESS_COLOR_CLASSES[colorFor(address.id)].text} ${ADDRESS_COLOR_CLASSES[colorFor(address.id)].border}`
@@ -196,13 +195,9 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
       </div>
 
       {/* Type */}
-      {isExporting ? (
-        <span className={`text-xs font-semibold ${style.color}`}>{style.label}</span>
-      ) : (
-        <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${style.bg} ${style.color}`}>
-          {style.label}
-        </span>
-      )}
+      <span className={`text-xs font-semibold px-2 py-0.5 rounded-lg ${style.bg} ${style.color}`}>
+        {style.label}
+      </span>
 
       {/* Token */}
       <span className="text-sm font-medium text-text-primary">{adj.tokenSymbol ?? '—'}</span>
@@ -219,7 +214,7 @@ function AdjustmentRow({ adj, onSave, onDelete, isExporting = false, address }: 
       <span className="text-sm text-text-secondary">{adj.note ?? '—'}</span>
 
       {/* Actions */}
-      <div className={`flex items-center justify-end gap-1.5 ${isExporting ? 'invisible' : ''}`}>
+      <div className="print:hidden flex items-center justify-end gap-1.5">
         <button
           onClick={() => setEditing(true)}
           className="text-text-muted hover:text-brand transition-colors p-1"
@@ -369,10 +364,9 @@ interface Props {
   prefill?: CorrectionPrefill | null;
   onPrefillConsumed?: () => void;
   onMutate?: () => void;
-  isExporting?: boolean;
 }
 
-export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill, onPrefillConsumed, onMutate, isExporting = false }: Props) {
+export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill, onPrefillConsumed, onMutate }: Props) {
   const [adjustments, setAdjustments] = useState<Adjustment[]>([]);
   const [loaded, setLoaded] = useState(false);
   const [adding, setAdding] = useState(false);
@@ -474,39 +468,33 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
         <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider">
           Accounting Entries
         </h3>
-        {!isExporting && (
-          <button
-            onClick={() => { setAddPrefill({}); setAdding(true); }}
-            className="flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
-          >
-            <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
-            Add entry
-          </button>
-        )}
+        <button
+          onClick={() => { setAddPrefill({}); setAdding(true); }}
+          className="print:hidden flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
+        >
+          <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
+          Add entry
+        </button>
       </div>
 
       <Table>
-        {isExporting ? (
-          <TableHead headers={SORTABLE_HEADERS} colSpan={HEADERS.length} />
-        ) : (
-          <TableHeadSearchable
-            headers={SORTABLE_HEADERS}
-            colSpan={HEADERS.length}
-            tab={sortTab}
-            reverse={sortReverse}
-            tabOnChange={handleSort}
-            searchValue={search}
-            onSearchChange={setSearch}
-            searchPlaceholder="Search by token or note…"
-            hideMyWallet
-            inMyWallet={false}
-            onInMyWalletChange={() => {}}
-            filterOptionsTitle="Type"
-            filterOptions={TYPE_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
-            activeFilters={typeFilters}
-            onFiltersChange={setTypeFilters}
-          />
-        )}
+        <TableHeadSearchable
+          headers={SORTABLE_HEADERS}
+          colSpan={HEADERS.length}
+          tab={sortTab}
+          reverse={sortReverse}
+          tabOnChange={handleSort}
+          searchValue={search}
+          onSearchChange={setSearch}
+          searchPlaceholder="Search by token or note…"
+          hideMyWallet
+          inMyWallet={false}
+          onInMyWalletChange={() => {}}
+          filterOptionsTitle="Type"
+          filterOptions={TYPE_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+          activeFilters={typeFilters}
+          onFiltersChange={setTypeFilters}
+        />
         <TableBody>
           {(() => {
             const rows: React.ReactElement[] = [];
@@ -533,7 +521,6 @@ export function CorrectionsTable({ addressIds, addresses, year, quarter, prefill
                     adj={adj}
                     onSave={handleSave}
                     onDelete={handleDelete}
-                    isExporting={isExporting}
                     address={addresses.find(a => a.id === adj.accountingAddressId)}
                   />
                 )

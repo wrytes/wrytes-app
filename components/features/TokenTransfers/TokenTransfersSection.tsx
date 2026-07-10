@@ -1,5 +1,4 @@
-import { useState, useMemo, useCallback, useEffect, useRef } from 'react';
-import generatePDF, { Margin } from 'react-to-pdf';
+import { useState, useMemo, useCallback, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faPlus,
@@ -10,7 +9,6 @@ import {
   faArrowUpRightFromSquare,
   faExclamationTriangle,
   faBan,
-  faPrint,
   faCheck,
   faCircleCheck,
 } from '@fortawesome/free-solid-svg-icons';
@@ -254,19 +252,18 @@ function AddressBar({
               {addresses.length}
             </span>
           )}
-          <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="w-2.5 h-2.5" />
+          <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="w-2.5 h-2.5 print:hidden" />
         </button>
         <button
           onClick={() => { setShowAdd(o => !o); setOpen(true); }}
-          className="flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
+          className="print:hidden flex items-center gap-1.5 text-xs text-brand border border-brand/30 px-3 py-1.5 rounded-lg hover:bg-brand/10 transition-colors"
         >
           <FontAwesomeIcon icon={showAdd ? faChevronUp : faPlus} className="w-3 h-3" />
           {showAdd ? 'Cancel' : 'Add address'}
         </button>
       </div>
 
-      {open && (
-        <div className="bg-card border border-table-alt rounded-lg overflow-hidden">
+      <div className={`bg-card border border-table-alt rounded-lg overflow-hidden ${open ? '' : 'hidden print:block'}`}>
           {addresses.length === 0 && !showAdd ? (
             <p className="text-center text-text-muted text-sm py-4">No addresses tracked yet.</p>
           ) : (
@@ -321,7 +318,7 @@ function AddressBar({
                   <span className="text-xs text-text-muted bg-surface border border-table-alt rounded px-1.5 py-0.5 flex-shrink-0">
                     {a.chain.split('-')[0]}
                   </span>
-                  <div className="flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
+                  <div className="print:hidden flex items-center gap-1 flex-shrink-0" onClick={e => e.stopPropagation()}>
                     <button
                       onClick={() => onSync(a.id)}
                       disabled={syncing === a.id}
@@ -344,7 +341,7 @@ function AddressBar({
           )}
 
           {showAdd && (
-            <div className="px-4 py-3 border-t border-table-alt bg-surface/30 space-y-2">
+            <div className="print:hidden px-4 py-3 border-t border-table-alt bg-surface/30 space-y-2">
               <div className="flex flex-col sm:flex-row gap-2">
                 <input
                   type="text"
@@ -383,7 +380,6 @@ function AddressBar({
             </div>
           )}
         </div>
-      )}
     </div>
   );
 }
@@ -407,18 +403,16 @@ function BlacklistPanel({
         onClick={() => setOpen(o => !o)}
         className="flex items-center gap-2 text-xs text-text-muted hover:text-text-secondary transition-colors"
       >
-        <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
-        <span>Blacklisted tokens</span>
+        <span className="font-semibold uppercase tracking-wider">Blacklisted tokens</span>
         {blacklist.length > 0 && (
           <span className="bg-surface border border-table-alt rounded px-1.5 py-0.5 tabular-nums">
             {blacklist.length}
           </span>
         )}
-        <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="w-2.5 h-2.5" />
+        <FontAwesomeIcon icon={open ? faChevronUp : faChevronDown} className="w-2.5 h-2.5 print:hidden" />
       </button>
 
-      {open && (
-        <div className="mt-3 bg-card border border-table-alt rounded-lg overflow-hidden">
+      <div className={`mt-3 bg-card border border-table-alt rounded-lg overflow-hidden ${open ? '' : 'hidden print:block'}`}>
           {blacklist.length === 0 ? (
             <p className="text-center text-text-muted text-sm py-4">No tokens blacklisted.</p>
           ) : (
@@ -427,7 +421,6 @@ function BlacklistPanel({
                 key={entry.id}
                 className="flex items-center gap-3 px-4 py-2.5 border-b border-table-alt/50 last:border-0"
               >
-                <FontAwesomeIcon icon={faBan} className="w-3 h-3 text-error shrink-0" />
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-medium text-text-primary">
                     {entry.tokenSymbol ?? 'Unknown'}
@@ -438,7 +431,7 @@ function BlacklistPanel({
                 </div>
                 <button
                   onClick={() => onRemove(entry.id)}
-                  className="text-text-muted hover:text-error transition-colors p-1 shrink-0"
+                  className="print:hidden text-text-muted hover:text-error transition-colors p-1 shrink-0"
                   title="Remove from blacklist"
                 >
                   <FontAwesomeIcon icon={faTrash} className="w-3 h-3" />
@@ -447,7 +440,6 @@ function BlacklistPanel({
             ))
           )}
         </div>
-      )}
     </div>
   );
 }
@@ -473,7 +465,6 @@ function TokenOverviewSection({
   prices: _prices,
   tokenPrices,
   year,
-  isExporting,
   onBlacklist,
   onAddCorrection,
   onSaveTokenPrice,
@@ -482,7 +473,6 @@ function TokenOverviewSection({
   prices: PriceMap;
   tokenPrices: TokenPriceMap;
   year: number | null;
-  isExporting: boolean;
   onBlacklist: (tokenAddress: string, chainId: number, tokenSymbol: string | null) => Promise<void>;
   onAddCorrection: (prefill: CorrectionPrefill) => void;
   onSaveTokenPrice: (tokenSymbol: string, priceChf: string | null) => Promise<void>;
@@ -554,85 +544,7 @@ function TokenOverviewSection({
             Token Balances
           </h3>
 
-          {isExporting ? (
-            /* Native table for PDF — guarantees column alignment */
-            <table className="w-full text-sm border-collapse bg-card rounded-lg overflow-hidden">
-              <thead>
-                <tr className="border-b border-table-alt">
-                  {TOKEN_OVERVIEW_HEADERS.map((h, i) => (
-                    <th
-                      key={h}
-                      className={`px-4 py-3 font-bold text-text-primary ${i === 0 ? 'text-left' : 'text-right'}`}
-                    >
-                      {h}
-                    </th>
-                  ))}
-                </tr>
-              </thead>
-              <tbody>
-                {visibleTokens.map(t => {
-                    const key = t.tokenAddress ?? t.tokenSymbol ?? 'UNKNOWN';
-                    const sym = t.tokenSymbol ?? '';
-                    const net = dust(t.net);
-                    const asset = dust(t.asset);
-                    const liability = dust(t.liability);
-                    const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
-                    const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
-                    return (
-                      <tr key={key} className="border-b border-table-alt/50 last:border-0">
-                        <td className="px-4 py-3 text-left">
-                          <div className="flex items-center gap-2">
-                            <TokenLogo symbol={t.tokenSymbol} />
-                            <span className="font-semibold text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
-                          </div>
-                        </td>
-                        <td className={`px-4 py-3 tabular-nums text-right font-medium ${asset === 0 ? 'text-text-muted' : asset > 0 ? 'text-success' : 'text-error'}`}>
-                          {asset === 0 ? '—' : `${asset > 0 ? '+' : ''}${fmtNum(asset, 4)}`}
-                        </td>
-                        <td className={`px-4 py-3 tabular-nums text-right font-medium ${liability === 0 ? 'text-text-muted' : 'text-error'}`}>
-                          {liability === 0 ? '—' : fmtNum(liability, 4)}
-                        </td>
-                        <td className={`px-4 py-3 tabular-nums text-right font-bold ${net === 0 ? 'text-text-muted' : net > 0 ? 'text-success' : 'text-error'}`}>
-                          {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
-                        </td>
-                        <td className="px-4 py-3 tabular-nums text-right text-text-secondary">
-                          {tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : '—'}
-                        </td>
-                        <td className="px-4 py-3 text-right">{chfCell(t.chfNet)}</td>
-                        <td className="px-4 py-3 text-right">
-                          {unrealized === null || Math.abs(unrealized) < 0.01 ? (
-                            <span className="text-text-muted">—</span>
-                          ) : (
-                            <span className={`tabular-nums font-medium ${unrealized >= 0 ? 'text-success' : 'text-error'}`}>
-                              {unrealized >= 0 ? '+' : ''}CHF {fmtNum(unrealized)}
-                            </span>
-                          )}
-                        </td>
-                      </tr>
-                    );
-                  })}
-                {/* Totals row */}
-                <tr className="border-t-2 border-table-alt">
-                  <td className="px-4 py-3 font-bold text-text-primary text-left">Total</td>
-                  <td /><td /><td />
-                  <td />
-                  <td className={`px-4 py-3 tabular-nums text-right font-bold ${Math.abs(totals.accounted) < 0.01 ? 'text-text-muted' : totals.accounted >= 0 ? 'text-success' : 'text-error'}`}>
-                    {Math.abs(totals.accounted) < 0.01 ? '—' : `${totals.accounted >= 0 ? '+' : ''}CHF ${fmtNum(totals.accounted)}`}
-                  </td>
-                  <td className="px-4 py-3 text-right">
-                    {totals.unrealized === null || Math.abs(totals.unrealized) < 0.01 ? (
-                      <span className="text-text-muted">—</span>
-                    ) : (
-                      <span className={`tabular-nums font-bold ${totals.unrealized >= 0 ? 'text-success' : 'text-error'}`}>
-                        {totals.unrealized >= 0 ? '+' : ''}CHF {fmtNum(totals.unrealized)}
-                      </span>
-                    )}
-                  </td>
-                </tr>
-              </tbody>
-            </table>
-          ) : (
-            <Table>
+          <Table>
               <TableHead headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} />
               <TableBody>
                 {((): React.ReactElement[] => {
@@ -697,7 +609,7 @@ function TokenOverviewSection({
                                   tokenSymbol: t.tokenSymbol,
                                   type: unrealized >= 0 ? 'PROFIT' : 'LOSS',
                                   chfValue: String(Math.abs(unrealized)),
-                                  note: 'Year-end unrealized P/L settlement',
+                                  note: 'Settlement: Unrealized P/L',
                                 })}
                                 className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5"
                                 title="Settle unrealized P/L into a manual entry"
@@ -738,7 +650,6 @@ function TokenOverviewSection({
                 })()}
               </TableBody>
             </Table>
-          )}
         </div>
       )}
     </div>
@@ -767,8 +678,6 @@ export function TokenTransfersSection() {
   );
   const [correctionPrefill, setCorrectionPrefill] = useState<CorrectionPrefill | null>(null);
   const [tokenPrices, setTokenPrices] = useState<TokenPriceMap>({});
-  const [isExporting, setIsExporting] = useState(false);
-  const printRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     void loadAddresses();
@@ -990,47 +899,6 @@ export function TokenTransfersSection() {
     [addresses, selectedIds]
   );
 
-  useEffect(() => {
-    if (!isExporting) return;
-    const label =
-      selectedAddresses.map(a => a.label ?? a.address.slice(0, 10)).join('_') || 'report';
-    const period = selectedYear
-      ? selectedQuarter
-        ? `${QUARTERS[selectedQuarter - 1].label}${selectedYear}`
-        : `${selectedYear}`
-      : 'all';
-
-    // Wait for freshly-mounted images (token logos) to load before capturing.
-    // html2canvas fires synchronously so images must already be in the DOM.
-    const waitForImages = (root: HTMLElement) =>
-      Promise.all(
-        Array.from(root.querySelectorAll('img')).map(
-          img =>
-            img.complete
-              ? Promise.resolve()
-              : new Promise<void>(res => {
-                  img.onload = () => res();
-                  img.onerror = () => res(); // resolve even on error — fallback will render
-                })
-        )
-      );
-
-    const el = printRef.current;
-    const run = async () => {
-      if (el) await waitForImages(el);
-
-      const pxToMm = 0.264583;
-    const widthMm = el ? el.scrollWidth * pxToMm : 210;
-    const heightMm = el ? el.scrollHeight * pxToMm : 297;
-    generatePDF(printRef, {
-      filename: `token-transfers-${label}-${period}.pdf`,
-      page: { margin: Margin.SMALL, format: [widthMm, heightMm] },
-      overrides: { canvas: { useCORS: true, allowTaint: false, logging: false } },
-    });
-    setIsExporting(false);
-    };
-    void run();
-  }, [isExporting]);
 
   const blacklistedAddresses = useMemo(
     () => new Set(blacklist.map(e => e.tokenAddress.toLowerCase())),
@@ -1129,32 +997,31 @@ export function TokenTransfersSection() {
             </div>
           )}
 
-          {/* Spacer + print */}
+          {/* Spacer */}
           <div className="flex-1" />
-          {selectedYear && (
-            <div className="self-end">
-              <button
-                onClick={() => setIsExporting(true)}
-                disabled={isExporting}
-                className="flex items-center gap-2 text-sm border border-table-alt px-3 py-1.5 rounded-lg text-text-secondary hover:text-brand hover:border-brand transition-colors disabled:opacity-50"
-              >
-                <FontAwesomeIcon icon={faPrint} className="w-3.5 h-3.5" />
-                {isExporting ? 'Generating…' : 'Export PDF'}
-              </button>
-            </div>
-          )}
         </div>
       )}
       {/* ------------------------------------------------------------------ */}
       {/* Printable region — starts here (after address bar, blacklist,      */}
-      {/* year/quarter filter)                                               */}
+      {/* year/quarter filter). Use the browser's native print (⌘P/Ctrl+P)   */}
+      {/* — @media print rules in globals.css make it look right.           */}
       {/* ------------------------------------------------------------------ */}
-      <div ref={printRef} className={isExporting ? 'w-[92rem]' : ''}>
-        {/* Print header — only visible when exporting */}
-        <div className={`mb-6 ${isExporting ? 'block' : 'hidden'}`}>
+      <div>
+        {/* Print-only header */}
+        <div className="hidden print:block mb-6">
           <h1 className="text-xl font-bold text-text-primary">Token Transfer Report</h1>
+          {selectedYear && (
+            <p className="text-sm text-text-muted">
+              Period:{' '}
+              {selectedQuarter
+                ? quarterLabel(selectedYear, selectedQuarter)
+                : `Full year ${selectedYear}`}
+            </p>
+          )}
+
           {selectedAddresses.length > 0 && (
-            <div className="mt-1 space-y-1.5">
+            <div className="mt-3 space-y-1.5">
+              <p className="text-xs font-semibold text-text-muted uppercase tracking-wider">Tracked Addresses</p>
               {selectedAddresses.map(a => (
                 <div key={a.id} className="space-y-0.5">
                   {a.label && <p className="text-sm font-medium text-text-secondary">{a.label}</p>}
@@ -1164,14 +1031,6 @@ export function TokenTransfersSection() {
               ))}
             </div>
           )}
-          {selectedYear && (
-            <p className="text-sm text-text-muted">
-              Period:{' '}
-              {selectedQuarter
-                ? quarterLabel(selectedYear, selectedQuarter)
-                : `Full year ${selectedYear}`}
-            </p>
-          )}
         </div>
 
         {/* Overview */}
@@ -1180,7 +1039,6 @@ export function TokenTransfersSection() {
           prices={prices}
           tokenPrices={tokenPrices}
           year={selectedYear}
-          isExporting={isExporting}
           onBlacklist={handleBlacklist}
           onAddCorrection={prefill => setCorrectionPrefill(prefill)}
           onSaveTokenPrice={handleSaveTokenPrice}
@@ -1198,7 +1056,6 @@ export function TokenTransfersSection() {
               prefill={correctionPrefill}
               onPrefillConsumed={() => setCorrectionPrefill(null)}
               onMutate={() => void loadOverview(selectedIds, selectedYear, selectedQuarter)}
-              isExporting={isExporting}
             />
 
             <h3 className="text-xs font-semibold text-text-muted uppercase tracking-wider mb-3 mt-8">
@@ -1209,11 +1066,18 @@ export function TokenTransfersSection() {
               transfers={visible}
               addresses={selectedAddresses}
               loading={loadingTransfers}
-              isExporting={isExporting}
               onUpdate={handleUpdateTransfer}
             />
           </>
         )}
+
+        {/* Print-only legend */}
+        <div className="hidden print:block mt-8 pt-3 border-t border-table-alt space-y-1 text-xs text-text-muted">
+          <p className="font-semibold uppercase tracking-wider">Legend</p>
+          <p>Colored pill below a date — the tracked address that row belongs to.</p>
+          <p><span className="italic">Gray italic</span> CHF value — calculated value from fetched daily price.</p>
+          <p><span className="text-success">Green</span> / <span className="text-error">Red</span> CHF value — manually entered value.</p>
+        </div>
       </div>{' '}
       {/* end printable region */}
     </div>

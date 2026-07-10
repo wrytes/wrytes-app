@@ -4,7 +4,6 @@ import { faArrowUpRightFromSquare } from '@fortawesome/free-solid-svg-icons';
 import {
   Table,
   TableBody,
-  TableHead,
   TableHeadSearchable,
   TableRow,
   TableRowEmpty,
@@ -36,9 +35,6 @@ const CLASSIFICATION_OPTIONS: { label: string; value: TransferClassification }[]
   { label: 'Received',     value: 'RECEIVED'     },
 ];
 
-const CLASSIFICATION_LABEL: Partial<Record<TransferClassification, string>> = Object.fromEntries(
-  CLASSIFICATION_OPTIONS.map(o => [o.value, o.label])
-);
 
 type ClassStyle = { color: string; bg: string };
 
@@ -109,11 +105,10 @@ interface Props {
   transfers: TransferWithAddress[];
   addresses: WalletAddress[];
   loading: boolean;
-  isExporting: boolean;
   onUpdate: (id: string, patch: { classification?: string; chfValue?: string | null; notes?: string | null }) => Promise<void>;
 }
 
-export function TransfersTable({ transfers, addresses, loading, isExporting, onUpdate }: Props) {
+export function TransfersTable({ transfers, addresses, loading, onUpdate }: Props) {
   const { sortTab, sortReverse, handleSort } = useSort('Date');
   const [search, setSearch] = useState('');
   const [classFilters, setClassFilters] = useState<string[]>([]);
@@ -220,27 +215,23 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
 
   return (
     <Table>
-      {isExporting ? (
-        <TableHead headers={HEADERS} colSpan={HEADERS.length} />
-      ) : (
-        <TableHeadSearchable
-          headers={HEADERS}
-          colSpan={HEADERS.length}
-          tab={sortTab}
-          reverse={sortReverse}
-          tabOnChange={handleSort}
-          searchValue={search}
-          onSearchChange={setSearch}
-          searchPlaceholder="Search by counterparty, token, note or tx hash…"
-          hideMyWallet
-          inMyWallet={false}
-          onInMyWalletChange={() => {}}
-          filterOptionsTitle="Classification"
-          filterOptions={CLASSIFICATION_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
-          activeFilters={classFilters}
-          onFiltersChange={setClassFilters}
-        />
-      )}
+      <TableHeadSearchable
+        headers={HEADERS}
+        colSpan={HEADERS.length}
+        tab={sortTab}
+        reverse={sortReverse}
+        tabOnChange={handleSort}
+        searchValue={search}
+        onSearchChange={setSearch}
+        searchPlaceholder="Search by counterparty, token, note or tx hash…"
+        hideMyWallet
+        inMyWallet={false}
+        onInMyWalletChange={() => {}}
+        filterOptionsTitle="Classification"
+        filterOptions={CLASSIFICATION_OPTIONS.map(o => ({ label: o.label, value: o.value }))}
+        activeFilters={classFilters}
+        onFiltersChange={setClassFilters}
+      />
       <TableBody>
         {loading ? (
           <TableRowEmpty>Loading transfers…</TableRowEmpty>
@@ -263,7 +254,7 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
               <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
                 {/* Date (+ address badge stacked below) */}
                 <div className="flex flex-col items-start gap-1">
-                  {txUrl && !isExporting ? (
+                  {txUrl ? (
                     <a
                       href={txUrl}
                       target="_blank"
@@ -286,27 +277,17 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
 
                 {/* Counterparty */}
                 <div onClick={e => e.stopPropagation()}>
-                  {isExporting ? (
-                    <div className="text-right">
-                      {existingLabel ? (
-                        <span className="text-sm font-medium text-text-primary">{existingLabel}</span>
-                      ) : (
-                        <span className="text-xs text-text-muted font-mono">{shortenAddr(addr)}</span>
-                      )}
-                    </div>
-                  ) : (
-                    <EditableCell
-                      value={existingLabel}
-                      isEditing={isEditingLabel}
-                      editValue={isEditingLabel ? labelEditing!.value : ''}
-                      onEdit={() => setLabelEditing({ addr, value: existingLabel ?? '' })}
-                      onSave={() => handleSaveLabel(addr, labelEditing?.value ?? '')}
-                      onCancel={() => setLabelEditing(null)}
-                      onChange={v => setLabelEditing({ addr, value: v })}
-                      emptyText={shortenAddr(addr)}
-                      placeholder="e.g. Morpho, Alice…"
-                    />
-                  )}
+                  <EditableCell
+                    value={existingLabel}
+                    isEditing={isEditingLabel}
+                    editValue={isEditingLabel ? labelEditing!.value : ''}
+                    onEdit={() => setLabelEditing({ addr, value: existingLabel ?? '' })}
+                    onSave={() => handleSaveLabel(addr, labelEditing?.value ?? '')}
+                    onCancel={() => setLabelEditing(null)}
+                    onChange={v => setLabelEditing({ addr, value: v })}
+                    emptyText={shortenAddr(addr)}
+                    placeholder="e.g. Morpho, Alice…"
+                  />
                 </div>
 
                 {/* Amount */}
@@ -319,76 +300,55 @@ export function TransfersTable({ transfers, addresses, loading, isExporting, onU
                 </div>
 
                 {/* Value (CHF) — sign and colour driven by direction, input stays positive */}
-                {isExporting ? (
-                  <div className="text-right">
-                    <span className={`text-sm font-semibold tabular-nums ${t.chfValue ? (isIn ? 'text-success' : 'text-error') : 'text-text-muted'} ${t.chfValueIsEstimate ? 'italic opacity-80' : ''}`}>
-                      {t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : '—'}
-                    </span>
-                  </div>
-                ) : (
-                  <div onClick={e => e.stopPropagation()}>
-                    <EditableCell
-                      value={t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
-                      isEditing={chfEditing?.id === t.id}
-                      editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
-                      onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
-                      onSave={handleSaveChf}
-                      onClear={() => handleClearChf(t.id)}
-                      onCancel={() => setChfEditing(null)}
-                      onChange={v => setChfEditing({ id: t.id, value: v })}
-                      placeholder="0.00"
-                      emptyText="Set value"
-                      valueClassName={`font-semibold ${isIn ? 'text-success' : 'text-error'}`}
-                      isEstimate={t.chfValueIsEstimate}
-                      estimateTooltip="Estimated from daily close rate — click to confirm or clear to re-estimate"
-                    />
-                  </div>
-                )}
+                <div onClick={e => e.stopPropagation()}>
+                  <EditableCell
+                    value={t.chfValue ? `${isIn ? '+' : '−'}CHF ${fmtNum(parseFloat(t.chfValue))}` : null}
+                    isEditing={chfEditing?.id === t.id}
+                    editValue={chfEditing?.id === t.id ? chfEditing.value : ''}
+                    onEdit={() => setChfEditing({ id: t.id, value: t.chfValue ?? '' })}
+                    onSave={handleSaveChf}
+                    onClear={() => handleClearChf(t.id)}
+                    onCancel={() => setChfEditing(null)}
+                    onChange={v => setChfEditing({ id: t.id, value: v })}
+                    placeholder="0.00"
+                    emptyText="Set value"
+                    valueClassName={`font-semibold ${isIn ? 'text-success' : 'text-error'}`}
+                    isEstimate={t.chfValueIsEstimate}
+                    estimateTooltip="Estimated from daily close rate — click to confirm or clear to re-estimate"
+                  />
+                </div>
 
                 {/* Note */}
-                {isExporting ? (
-                  <div className="text-right">
-                    <span className="text-sm text-text-secondary">
-                      {t.notes ?? '—'}
-                    </span>
-                  </div>
-                ) : (
-                  <div onClick={e => e.stopPropagation()}>
-                    <EditableCell
-                      value={t.notes ?? null}
-                      isEditing={noteEditing?.id === t.id}
-                      editValue={noteEditing?.id === t.id ? noteEditing.value : ''}
-                      onEdit={() => setNoteEditing({ id: t.id, value: t.notes ?? '' })}
-                      onSave={handleSaveNote}
-                      onCancel={() => setNoteEditing(null)}
-                      onChange={v => setNoteEditing({ id: t.id, value: v })}
-                      placeholder="Add note…"
-                      emptyText="Add note"
-                      maxLength={200}
-                    />
-                  </div>
-                )}
+                <div onClick={e => e.stopPropagation()}>
+                  <EditableCell
+                    value={t.notes ?? null}
+                    isEditing={noteEditing?.id === t.id}
+                    editValue={noteEditing?.id === t.id ? noteEditing.value : ''}
+                    onEdit={() => setNoteEditing({ id: t.id, value: t.notes ?? '' })}
+                    onSave={handleSaveNote}
+                    onCancel={() => setNoteEditing(null)}
+                    onChange={v => setNoteEditing({ id: t.id, value: v })}
+                    placeholder="Add note…"
+                    emptyText="Add note"
+                    maxLength={200}
+                  />
+                </div>
 
                 {/* Classification */}
-                {isExporting ? (
-                  <div className="flex justify-end">
-                    <span className={`text-xs font-medium ${cls.color}`}>
-                      {CLASSIFICATION_LABEL[t.classification] ?? t.classification}
-                    </span>
-                  </div>
-                ) : (
-                  <div className="flex justify-end min-w-0" onClick={e => e.stopPropagation()}>
-                    <select
-                      value={t.classification}
-                      onChange={e => onUpdate(t.id, { classification: e.target.value })}
-                      className={`text-xs rounded-lg px-2 py-1 border-transparent outline-none cursor-pointer max-w-full ${cls.bg} ${cls.color}`}
-                    >
-                      {CLASSIFICATION_OPTIONS.map(o => (
-                        <option key={o.value} value={o.value}>{o.label}</option>
-                      ))}
-                    </select>
-                  </div>
-                )}
+                <div className="flex justify-end min-w-0" onClick={e => e.stopPropagation()}>
+                  <select
+                    value={t.classification}
+                    onChange={e => onUpdate(t.id, { classification: e.target.value })}
+                    className={`print:hidden text-xs rounded-lg px-2 py-1 border-transparent outline-none cursor-pointer max-w-full ${cls.bg} ${cls.color}`}
+                  >
+                    {CLASSIFICATION_OPTIONS.map(o => (
+                      <option key={o.value} value={o.value}>{o.label}</option>
+                    ))}
+                  </select>
+                  <span className={`hidden print:inline-block text-xs font-medium rounded-lg px-2 py-1 ${cls.bg} ${cls.color}`}>
+                    {CLASSIFICATION_OPTIONS.find(o => o.value === t.classification)?.label ?? t.classification}
+                  </span>
+                </div>
               </TableRow>
             );
           })

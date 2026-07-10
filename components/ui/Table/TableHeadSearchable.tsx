@@ -119,8 +119,8 @@ export default function TableHeadSearchable({
 
   return (
     <div className="rounded-t-lg bg-card">
-      {/* Search / toggle / filter bar */}
-      <div className="grid grid-cols-1 md:flex md:items-center md:justify-between p-4 xl:px-6 border-b border-table-alt gap-3">
+      {/* Search / toggle / filter bar — not useful on paper */}
+      <div className="print:hidden grid grid-cols-1 md:flex md:items-center md:justify-between p-4 xl:px-6 border-b border-table-alt gap-3">
         {/* Search */}
         <div className="flex flex-1 items-center gap-2 text-text-secondary py-2">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="w-4 h-4 text-text-secondary" />
