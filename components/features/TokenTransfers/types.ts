@@ -81,6 +81,8 @@ export interface TokenOverviewResponse {
   byClassification: TokenOverviewClassification[]
   unclassifiedCount: number
   years: number[]
+  periodEndDate: string | null
+  periodEnded: boolean
 }
 
 // Client-side aggregation of TokenOverviewResponse across multiple selected addresses
@@ -89,9 +91,23 @@ export interface MergedTokenOverview {
   byClassification: TokenOverviewClassification[]
   unclassifiedCount: number
   years: number[]
+  periodEndDate: string | null
+  periodEnded: boolean
 }
 
-export type TokenPriceMap = Record<string, string>          // tokenSymbol → CHF price string
+// Manual per-token price entries for a year, bucketed by quarter.
+// Bucket 0 = year-end/whole-year (today's original behavior); 1-3 = Q1-Q3 override (exotic tokens only).
+export type TokenPriceBucketMap = Record<string /* tokenSymbol */, Partial<Record<number, string>>>
+
+export interface DailyPriceLookup {
+  mapped: boolean
+  base?: string
+  date?: string
+  chfClose?: number
+  source?: string
+}
+export type DailyPriceMap = Record<string /* tokenSymbol */, DailyPriceLookup>
+
 export type CounterpartyLabelMap = Record<string, string>   // address (lowercase) → label
 
 export type AdjustmentType = 'PROFIT' | 'LOSS' | 'BORROW' | 'REPAYMENT'

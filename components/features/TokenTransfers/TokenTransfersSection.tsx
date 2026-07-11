@@ -30,7 +30,9 @@ import type {
   TokenOverviewResponse,
   TokenOverviewClassification,
   MergedTokenOverview,
-  TokenPriceMap,
+  TokenPriceBucketMap,
+  DailyPriceMap,
+  DailyPriceLookup,
   CorrectionPrefill,
 } from './types';
 
@@ -140,6 +142,99 @@ function quarterLabel(year: number, quarter: number) {
   return `${QUARTERS[quarter - 1].label} ${year} (${QUARTERS[quarter - 1].months})`;
 }
 
+function todayDateString() {
+  return new Date().toISOString().slice(0, 10);
+}
+
+// Bucket 0 = year-end/whole-year price; buckets 1-3 = a Q1-Q3 override (exotic tokens only).
+function isYearEndPeriodFor(quarter: number | null) {
+  return quarter === null || quarter === 4;
+}
+
+function priceBucketFor(quarter: number | null) {
+  return isYearEndPeriodFor(quarter) ? 0 : quarter!;
+}
+
+// Looks up a manual price bucket; if empty (and not the year-end bucket), carries forward
+// the most recent earlier-quarter value in the same year as a suggested default.
+function getManualEntry(
+  bucketMap: TokenPriceBucketMap,
+  sym: string,
+  bucket: number
+): { value: string | null; isCarriedForward: boolean } {
+  const symMap = bucketMap[sym];
+  if (!symMap) return { value: null, isCarriedForward: false };
+  if (symMap[bucket] !== undefined) return { value: symMap[bucket]!, isCarriedForward: false };
+  if (bucket === 0) return { value: null, isCarriedForward: false };
+  for (let b = bucket - 1; b >= 1; b--) {
+    if (symMap[b] !== undefined) return { value: symMap[b]!, isCarriedForward: true };
+  }
+  return { value: null, isCarriedForward: false };
+}
+
+interface CellPrice {
+  price: number | null;
+  editable: boolean;
+  bucket: number;
+  rawValue: string | null;
+  isCarriedForward: boolean;
+  auto: DailyPriceLookup | null;
+}
+
+// Resolves the effective price for one token row, given the current year/quarter selection:
+// - no year selected -> nothing to show
+// - year-end period (Q4 or whole year) that has already ended -> manual entry (bucket 0), as before
+// - a mapped token (has a reference daily-close feed) in any other period -> auto, read-only
+// - anything else (exotic token, or daily price not loaded yet) -> manual entry, always editable,
+//   carrying forward the last known quarter's value as a suggestion
+function computeCellPrice(
+  sym: string,
+  year: number | null,
+  quarter: number | null,
+  periodEnded: boolean,
+  tokenPrices: TokenPriceBucketMap,
+  dailyPrices: DailyPriceMap
+): CellPrice {
+  if (!year || !sym) {
+    return { price: null, editable: false, bucket: 0, rawValue: null, isCarriedForward: false, auto: null };
+  }
+
+  if (isYearEndPeriodFor(quarter) && periodEnded) {
+    const entry = getManualEntry(tokenPrices, sym, 0);
+    return {
+      price: entry.value ? parseFloat(entry.value) || null : null,
+      editable: true,
+      bucket: 0,
+      rawValue: entry.value,
+      isCarriedForward: false,
+      auto: null,
+    };
+  }
+
+  const daily = dailyPrices[sym];
+  if (daily?.mapped) {
+    return {
+      price: daily.chfClose ?? null,
+      editable: false,
+      bucket: 0,
+      rawValue: null,
+      isCarriedForward: false,
+      auto: daily,
+    };
+  }
+
+  const bucket = priceBucketFor(quarter);
+  const entry = getManualEntry(tokenPrices, sym, bucket);
+  return {
+    price: entry.value ? parseFloat(entry.value) || null : null,
+    editable: true,
+    bucket,
+    rawValue: entry.value,
+    isCarriedForward: entry.isCarriedForward,
+    auto: null,
+  };
+}
+
 // Aggregate per-address TokenOverviewResponses (one per selected address) into a single
 // combined overview — summed per token symbol and per classification.
 function mergeOverviews(overviews: TokenOverviewResponse[]): MergedTokenOverview {
@@ -180,6 +275,8 @@ function mergeOverviews(overviews: TokenOverviewResponse[]): MergedTokenOverview
     byClassification: [...classMap.values()],
     unclassifiedCount: overviews.reduce((sum, ov) => sum + ov.unclassifiedCount, 0),
     years: [...new Set(overviews.flatMap(ov => ov.years))].sort((a, b) => b - a),
+    periodEndDate: overviews[0]?.periodEndDate ?? null,
+    periodEnded: overviews[0]?.periodEnded ?? false,
   };
 }
 
@@ -448,15 +545,17 @@ function BlacklistPanel({
 // TokenOverviewSection
 // ---------------------------------------------------------------------------
 
-const TOKEN_OVERVIEW_HEADERS = [
-  'Token',
-  'Asset',
-  'Liability',
-  'Net',
-  'Year End Price',
-  'Accounted',
-  'Unrealized P/L',
-];
+function getTokenOverviewHeaders(isYearEndPeriod: boolean): string[] {
+  return [
+    'Token',
+    'Asset',
+    'Liability',
+    'Net',
+    isYearEndPeriod ? 'Year End Price' : 'Token Price',
+    'Accounted',
+    'Unrealized P/L',
+  ];
+}
 
 type PriceMap = Record<string, { chf: number | null }>;
 
@@ -464,20 +563,24 @@ function TokenOverviewSection({
   overview,
   prices: _prices,
   tokenPrices,
+  dailyPrices,
   year,
+  quarter,
   onBlacklist,
   onAddCorrection,
   onSaveTokenPrice,
 }: {
   overview: MergedTokenOverview | null;
   prices: PriceMap;
-  tokenPrices: TokenPriceMap;
+  tokenPrices: TokenPriceBucketMap;
+  dailyPrices: DailyPriceMap;
   year: number | null;
+  quarter: number | null;
   onBlacklist: (tokenAddress: string, chainId: number, tokenSymbol: string | null) => Promise<void>;
   onAddCorrection: (prefill: CorrectionPrefill) => void;
-  onSaveTokenPrice: (tokenSymbol: string, priceChf: string | null) => Promise<void>;
+  onSaveTokenPrice: (tokenSymbol: string, quarter: number, priceChf: string | null) => Promise<void>;
 }) {
-  const [priceEditing, setPriceEditing] = useState<{ symbol: string; value: string } | null>(null);
+  const [priceEditing, setPriceEditing] = useState<{ symbol: string; bucket: number; value: string } | null>(null);
 
   if (!overview) {
     return (
@@ -489,14 +592,17 @@ function TokenOverviewSection({
 
   const { tokens, byClassification } = overview;
 
+  const isYearEndPeriod = isYearEndPeriodFor(quarter);
+  const headers = getTokenOverviewHeaders(isYearEndPeriod);
+
   const visibleTokens = tokens.filter(t => dust(t.net) !== 0 || dust(t.chfNet) !== 0);
 
   const totals = visibleTokens.reduce(
     (acc, t) => {
       const sym = t.tokenSymbol ?? '';
       const net = dust(t.net);
-      const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
-      const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
+      const cell = computeCellPrice(sym, year, quarter, overview.periodEnded, tokenPrices, dailyPrices);
+      const unrealized = cell.price !== null ? net * cell.price - t.chfNet : null;
       return {
         accounted: acc.accounted + t.chfNet,
         unrealized: unrealized !== null ? (acc.unrealized ?? 0) + unrealized : acc.unrealized,
@@ -545,7 +651,7 @@ function TokenOverviewSection({
           </h3>
 
           <Table>
-              <TableHead headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} />
+              <TableHead headers={headers} colSpan={headers.length} />
               <TableBody>
                 {((): React.ReactElement[] => {
                   const rows: React.ReactElement[] = visibleTokens.map(t => {
@@ -554,12 +660,12 @@ function TokenOverviewSection({
                     const net = dust(t.net);
                     const asset = dust(t.asset);
                     const liability = dust(t.liability);
-                    const enteredPrice = sym ? parseFloat(tokenPrices[sym] ?? '') || null : null;
-                    const unrealized = enteredPrice !== null ? net * enteredPrice - t.chfNet : null;
-                    const isEditingPrice = priceEditing?.symbol === sym;
+                    const cell = computeCellPrice(sym, year, quarter, overview.periodEnded, tokenPrices, dailyPrices);
+                    const unrealized = cell.price !== null ? net * cell.price - t.chfNet : null;
+                    const isEditingPrice = priceEditing?.symbol === sym && priceEditing.bucket === cell.bucket;
 
                     return (
-                      <TableRow key={key} headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
+                      <TableRow key={key} headers={headers} colSpan={headers.length} rawHeader>
                         <div className="group flex items-center gap-2 text-left">
                           <TokenLogo symbol={t.tokenSymbol} />
                           <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
@@ -582,20 +688,33 @@ function TokenOverviewSection({
                           {net === 0 ? '—' : `${net > 0 ? '+' : ''}${fmtNum(net, 4)}`}
                         </div>
                         <div onClick={e => e.stopPropagation()}>
-                          {year ? (
+                          {!year ? (
+                            <span className="text-text-muted text-xs">select year</span>
+                          ) : cell.editable ? (
                             <EditableCell
-                              value={tokenPrices[sym] ? `CHF ${fmtNum(parseFloat(tokenPrices[sym]))}` : null}
+                              value={cell.rawValue ? `CHF ${fmtNum(parseFloat(cell.rawValue))}` : null}
                               isEditing={isEditingPrice}
                               editValue={isEditingPrice ? priceEditing!.value : ''}
-                              onEdit={() => setPriceEditing({ symbol: sym, value: tokenPrices[sym] ?? '' })}
-                              onSave={async () => { if (!priceEditing) return; await onSaveTokenPrice(sym, sanitizeNumericInput(priceEditing.value.trim()) || null); setPriceEditing(null); }}
+                              onEdit={() => setPriceEditing({ symbol: sym, bucket: cell.bucket, value: cell.rawValue ?? '' })}
+                              onSave={async () => { if (!priceEditing) return; await onSaveTokenPrice(sym, priceEditing.bucket, sanitizeNumericInput(priceEditing.value.trim()) || null); setPriceEditing(null); }}
                               onCancel={() => setPriceEditing(null)}
-                              onChange={v => setPriceEditing({ symbol: sym, value: v })}
+                              onChange={v => setPriceEditing({ symbol: sym, bucket: cell.bucket, value: v })}
                               placeholder="0.00"
                               emptyText="Set price"
+                              isEstimate={cell.isCarriedForward}
+                              estimateTooltip="Carried forward from an earlier quarter — click to confirm or change"
                             />
                           ) : (
-                            <span className="text-text-muted text-xs">select year</span>
+                            <span
+                              className="text-text-muted text-xs"
+                              title={
+                                cell.auto?.chfClose != null
+                                  ? `${cell.auto.source ?? 'auto'} close, ${cell.auto.date ?? ''}`
+                                  : 'No daily price available yet'
+                              }
+                            >
+                              {cell.price != null ? `CHF ${fmtNum(cell.price)}` : '—'}
+                            </span>
                           )}
                         </div>
                         <div className="text-right">{chfCell(t.chfNet)}</div>
@@ -626,7 +745,7 @@ function TokenOverviewSection({
                     );
                   });
                   rows.push(
-                    <TableRow key="__total" headers={TOKEN_OVERVIEW_HEADERS} colSpan={TOKEN_OVERVIEW_HEADERS.length} rawHeader>
+                    <TableRow key="__total" headers={headers} colSpan={headers.length} rawHeader>
                       <div className="text-left font-bold text-text-primary text-sm">Total</div>
                       <div />
                       <div />
@@ -677,7 +796,8 @@ export function TokenTransfersSection() {
     () => Math.ceil((new Date().getMonth() + 1) / 3)
   );
   const [correctionPrefill, setCorrectionPrefill] = useState<CorrectionPrefill | null>(null);
-  const [tokenPrices, setTokenPrices] = useState<TokenPriceMap>({});
+  const [tokenPrices, setTokenPrices] = useState<TokenPriceBucketMap>({});
+  const [dailyPrices, setDailyPrices] = useState<DailyPriceMap>({});
 
   useEffect(() => {
     void loadAddresses();
@@ -740,34 +860,81 @@ export function TokenTransfersSection() {
       setTokenPrices({});
       return;
     }
-    const maps = await Promise.all(
-      ids.map(id => apiRequest<TokenPriceMap>(`/accounting/addresses/${id}/token-prices?year=${year}`))
+    const results = await Promise.all(
+      ids.map(id =>
+        apiRequest<{ tokenSymbol: string; quarter: number; priceChf: string }[]>(
+          `/accounting/addresses/${id}/token-prices?year=${year}`
+        )
+      )
     );
     // Primary (first-selected) address wins on conflicts.
-    const merged: TokenPriceMap = {};
-    for (let i = maps.length - 1; i >= 0; i--) Object.assign(merged, maps[i]);
+    const merged: TokenPriceBucketMap = {};
+    for (let i = results.length - 1; i >= 0; i--) {
+      for (const row of results[i]) {
+        merged[row.tokenSymbol] = { ...merged[row.tokenSymbol], [row.quarter]: row.priceChf };
+      }
+    }
     setTokenPrices(merged);
   }, []);
 
   const handleSaveTokenPrice = useCallback(
-    async (tokenSymbol: string, priceChf: string | null) => {
+    async (tokenSymbol: string, quarter: number, priceChf: string | null) => {
       const primaryId = selectedIds[0];
       if (!primaryId || !selectedYear) return;
       await apiRequest(`/accounting/addresses/${primaryId}/token-prices`, {
         method: 'POST',
-        body: JSON.stringify({ year: selectedYear, tokenSymbol, priceChf }),
+        body: JSON.stringify({ year: selectedYear, quarter, tokenSymbol, priceChf }),
       });
       setTokenPrices(prev => {
-        if (!priceChf) {
-          const next = { ...prev };
-          delete next[tokenSymbol];
-          return next;
-        }
-        return { ...prev, [tokenSymbol]: priceChf };
+        const nextSymMap = { ...prev[tokenSymbol] };
+        if (!priceChf) delete nextSymMap[quarter];
+        else nextSymMap[quarter] = priceChf;
+        return { ...prev, [tokenSymbol]: nextSymMap };
       });
     },
     [selectedIds, selectedYear]
   );
+
+  // Auto-fetch a reference daily/quarter-end price for mapped tokens whenever we're not
+  // in the manual year-end editing state (see computeCellPrice for the full decision tree).
+  useEffect(() => {
+    let cancelled = false;
+    if (!overview || !selectedYear) {
+      setDailyPrices({});
+      return;
+    }
+    if (isYearEndPeriodFor(selectedQuarter) && overview.periodEnded) {
+      setDailyPrices({});
+      return;
+    }
+
+    const date = overview.periodEnded ? overview.periodEndDate! : todayDateString();
+    const symbols = [...new Set(overview.tokens.map(t => t.tokenSymbol).filter((s): s is string => !!s))];
+    if (symbols.length === 0) {
+      setDailyPrices({});
+      return;
+    }
+
+    void Promise.all(
+      symbols.map(async sym => {
+        try {
+          const result = await apiRequest<DailyPriceLookup>(
+            `/prices/daily?symbol=${encodeURIComponent(sym)}&date=${date}`
+          );
+          return [sym, result] as const;
+        } catch {
+          return [sym, { mapped: true }] as const;
+        }
+      })
+    ).then(entries => {
+      if (cancelled) return;
+      setDailyPrices(Object.fromEntries(entries));
+    });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [overview, selectedYear, selectedQuarter]);
 
   const loadOverview = useCallback(
     async (ids: string[], year?: number | null, quarter?: number | null) => {
@@ -1038,7 +1205,9 @@ export function TokenTransfersSection() {
           overview={overview}
           prices={prices}
           tokenPrices={tokenPrices}
+          dailyPrices={dailyPrices}
           year={selectedYear}
+          quarter={selectedQuarter}
           onBlacklist={handleBlacklist}
           onAddCorrection={prefill => setCorrectionPrefill(prefill)}
           onSaveTokenPrice={handleSaveTokenPrice}
