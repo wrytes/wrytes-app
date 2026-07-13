@@ -12,10 +12,12 @@ import {
   faStop,
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
+import { parseUnits, formatUnits } from 'viem';
 import { Section, PageHeader } from '@/components/ui/Layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
 import TextInput from '@/components/ui/Input/TextInput';
+import TokenInput from '@/components/ui/Input/TokenInput';
 import { CellEditable } from '@/components/ui/CellEditable';
 import { SelectInput } from '@/components/ui/Input/SelectInput';
 import TableHeadSearchable from '@/components/ui/Table/TableHeadSearchable';
@@ -51,6 +53,8 @@ const CURRENCY_OPTIONS = [
   { value: 'BTC', label: 'BTC' },
   { value: 'ETH', label: 'ETH' },
 ];
+
+const CAPITAL_DECIMALS = 8; // satoshi precision
 
 const BLANK_RUN: CreateRunBody = {
   name: '',
@@ -270,11 +274,18 @@ export default function DeribitRunsPage() {
                 onChange={v => patchForm('name', v)}
               />
               {form.runType !== 'LIVE' && (
-                <TextInput
-                  label="Initial Capital (BTC)"
+                <TokenInput
+                  label="Initial Capital"
+                  symbol="BTC"
                   placeholder="1.0"
-                  value={String(form.initialCapitalBtc)}
-                  onChange={v => patchForm('initialCapitalBtc', parseFloat(v) || 0)}
+                  digit={CAPITAL_DECIMALS}
+                  value={parseUnits(String(form.initialCapitalBtc || 0), CAPITAL_DECIMALS).toString()}
+                  onChange={v =>
+                    patchForm(
+                      'initialCapitalBtc',
+                      Number(formatUnits(BigInt(v || '0'), CAPITAL_DECIMALS))
+                    )
+                  }
                 />
               )}
               {form.runType === 'LIVE' && (
@@ -394,6 +405,7 @@ export default function DeribitRunsPage() {
                         colSpan={TABLE_HEADERS.length}
                         headers={TABLE_HEADERS}
                         tab={sortCol}
+                        noFirstHeader
                         onClick={() => router.push(`/deribit-agent/agents/${run.id}`)}
                         actionCol={
                           <div className="flex items-center justify-end gap-1">
