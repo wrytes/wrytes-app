@@ -63,19 +63,20 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │   ├── Routes/         # On/off-ramp routes feature
 │   │   ├── Vaults/         # Vault management
 │   │   └── [Future]/       # Future feature modules
-│   ├── layout/             # 📐 Layout components
+│   ├── layout/             # 📐 Layout components — generic building blocks live at this root
 │   │   ├── AppLayout.tsx   # ⭐ Generic layout shell — use for ALL new sections
-│   │   ├── WalletButton.tsx # Shared wallet connect/display (no visibility classes)
 │   │   ├── Layout.tsx      # Route → layout dispatcher
-│   │   ├── DashboardLayout.tsx
-│   │   ├── DeribitAgentLayout.tsx
-│   │   ├── DocsLayout.tsx
-│   │   ├── RoutesLayout.tsx
-│   │   ├── HomeLayout.tsx
-│   │   ├── SimpleLayout.tsx
-│   │   ├── CenterLayout.tsx
-│   │   ├── FooterSimple.tsx
-│   │   └── Footer.tsx
+│   │   ├── SimpleLayout.tsx # Nav-less shell; `center="full"` dead-centers small blocks (404/auth)
+│   │   ├── actions/        # WalletButton.tsx — shared wallet connect/display (no visibility classes)
+│   │   ├── footers/        # FooterSimple.tsx (generic) + Footer.tsx (Home-only, marketing links)
+│   │   └── variants/       # Section-specific layouts (each wraps AppLayout with its own nav)
+│   │       ├── DashboardLayout.tsx
+│   │       ├── DeribitAgentLayout.tsx
+│   │       ├── DocsLayout.tsx
+│   │       ├── RoutesLayout.tsx
+│   │       ├── InvoicesLayout.tsx
+│   │       ├── CoinTrackingLayout.tsx
+│   │       └── HomeLayout.tsx
 │   └── sections/           # 🏠 Landing page sections
 ├── hooks/                  # 🔗 Custom React hooks
 │   ├── adapter/            # Protocol adapter hooks (Falcon, Morpho)
@@ -131,9 +132,8 @@ The platform combines **independent asset management funding** with **cutting-ed
 
 2. **`components/layout/`** - Shared layout pieces
    - `AppLayout.tsx` - **Generic layout shell** — inject `logo`, `navItems`, `isActive`, `headerRight`, `mobileExtra`. Use this for every new section layout.
-   - `WalletButton.tsx` - Self-contained wallet connect/display with no visibility classes. Pass to `headerRight` and `mobileExtra` for consistent wallet UX across all sections.
-   - `NavbarWallet.tsx` - Thin `hidden md:flex` wrapper around `WalletButton`. Used where only desktop wallet display is needed.
-   - `FooterSimple.tsx` - Minimal footer strip (copyright + version), rendered by `AppLayout` automatically.
+   - `actions/WalletButton.tsx` - Self-contained wallet connect/display with no visibility classes. Pass to `headerRight` and `mobileExtra` for consistent wallet UX across all sections.
+   - `footers/FooterSimple.tsx` - Minimal footer strip (copyright + version), rendered by `AppLayout` automatically.
 
 3. **`components/features/[existing-feature]/`** - Feature-specific patterns
    - Reuse patterns from `Vaults/` for similar data management
@@ -484,13 +484,13 @@ export const MY_NAVIGATION: NavItem[] = [
 ];
 ```
 
-### 2. Layout — `components/layout/MySectionLayout.tsx`
+### 2. Layout — `components/layout/variants/MySectionLayout.tsx`
 
 ```typescript
 import { faIcon } from '@fortawesome/free-solid-svg-icons';
 import { MY_NAVIGATION } from '@/lib/navigation/my-section';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
-import WalletButton from '@/components/layout/WalletButton';
+import WalletButton from '@/components/layout/actions/WalletButton';
 import AppLayout from '@/components/layout/AppLayout';
 
 export default function MySectionLayout({ children }) {

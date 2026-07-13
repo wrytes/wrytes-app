@@ -5,7 +5,7 @@ import { faGithub, faTelegram, faXTwitter } from '@fortawesome/free-brands-svg-i
 import { faExternalLinkAlt, faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import Link from 'next/link';
 import { SOCIAL, COMPANY } from '@/lib/constants';
-import packageInfo from '../../package.json';
+import packageInfo from '@/package.json';
 
 interface FooterItemProps {
   link: string;

@@ -8,7 +8,7 @@ import {
   faLightbulb,
 } from '@fortawesome/free-solid-svg-icons';
 import { COMPANY } from '@/lib/constants';
-import Footer from './Footer';
+import Footer from '@/components/layout/footers/Footer';
 import { HOME_NAVIGATION } from '@/lib/navigation/home';
 
 interface HomeLayoutProps {

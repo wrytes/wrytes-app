@@ -1,5 +1,5 @@
 import { COMPANY } from '@/lib/constants';
-import packageInfo from '../../package.json';
+import packageInfo from '@/package.json';
 
 export default function FooterSimple() {
   return (

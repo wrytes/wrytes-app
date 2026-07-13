@@ -5,7 +5,7 @@ import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { cn } from '@/lib/utils';
 import { COMPANY } from '@/lib/constants';
-import FooterSimple from '@/components/layout/FooterSimple';
+import FooterSimple from '@/components/layout/footers/FooterSimple';
 import type { NavItem } from '@/lib/navigation/types';
 
 interface AppLayoutProps {
@@ -14,7 +14,7 @@ interface AppLayoutProps {
     icon: IconDefinition;
     /** Defaults to the first word of COMPANY.name */
     brand?: string;
-    subtitle: string;
+    subtitle?: string;
     /** Defaults to '/' */
     href?: string;
   };
@@ -30,8 +30,11 @@ interface AppLayoutProps {
    * Any click inside auto-closes the mobile panel.
    */
   mobileExtra?: React.ReactNode;
-  /** Centers page content vertically (SimpleLayout style). Default: false */
-  centerContent?: boolean;
+  /**
+   * Centers page content horizontally. `'full'` also centers vertically
+   * (dead-centers a small block, e.g. 404/auth screens). Default: false
+   */
+  centerContent?: boolean | 'full';
 }
 
 function NavLinks({
@@ -132,9 +135,11 @@ export default function AppLayout({
               <Link href={logo.href ?? '/'} className="text-xl font-bold text-text-primary">
                 {brand}
                 <span className="text-brand">.</span>
-                <span className="text-text-secondary text-base font-normal ml-1">
-                  {logo.subtitle}
-                </span>
+                {logo.subtitle && (
+                  <span className="text-text-secondary text-base font-normal ml-1">
+                    {logo.subtitle}
+                  </span>
+                )}
               </Link>
             </div>
 
@@ -186,7 +191,14 @@ export default function AppLayout({
       {/* Content */}
       {centerContent ? (
         <>
-          <main className="flex-1 flex flex-col items-center pt-20 px-6 pb-8">{children}</main>
+          <main
+            className={cn(
+              'flex-1 flex flex-col items-center pt-20 px-6 pb-8',
+              centerContent === 'full' && 'justify-center'
+            )}
+          >
+            {children}
+          </main>
           <FooterSimple />
         </>
       ) : (

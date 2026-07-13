@@ -3,7 +3,7 @@ import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import { DASHBOARD_NAVIGATION } from '@/lib/navigation/dashboard';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
 import { useAuth } from '@/hooks/useAuth';
-import WalletButton from '@/components/layout/WalletButton';
+import WalletButton from '@/components/layout/actions/WalletButton';
 import AppLayout from '@/components/layout/AppLayout';
 
 interface DashboardLayoutProps {
