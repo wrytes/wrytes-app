@@ -2,8 +2,8 @@ import React from 'react';
 import { faFileInvoiceDollar } from '@fortawesome/free-solid-svg-icons';
 import { INVOICES_NAVIGATION } from '@/lib/navigation/invoices';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
-import WalletButton from '@/components/layout/actions/WalletButton';
-import AppLayout from '@/components/layout/AppLayout';
+import WalletButton from '@/components/layouts/actions/WalletButton';
+import AppLayout from '@/components/layouts/AppLayout';
 
 interface InvoicesLayoutProps {
   children: React.ReactNode;

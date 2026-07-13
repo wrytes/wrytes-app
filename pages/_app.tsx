@@ -6,7 +6,7 @@ import { useEffect } from 'react';
 import { Toaster } from 'react-hot-toast';
 import { Provider as ReduxProvider } from 'react-redux';
 import { PersistGate } from 'redux-persist/integration/react';
-import Layout from '@/components/layout/Layout';
+import Layout from '@/components/layouts/Layout';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ApolloProvider } from '@/lib/graphql/provider';
 import AppKitProvider from '@/lib/web3/appkit-provider';

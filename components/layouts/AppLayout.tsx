@@ -5,7 +5,7 @@ import { faBars, faTimes } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
 import { cn } from '@/lib/utils';
 import { COMPANY } from '@/lib/constants';
-import FooterSimple from '@/components/layout/footers/FooterSimple';
+import FooterSimple from '@/components/layouts/footers/FooterSimple';
 import type { NavItem } from '@/lib/navigation/types';
 
 interface AppLayoutProps {

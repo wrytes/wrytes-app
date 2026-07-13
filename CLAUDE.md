@@ -63,7 +63,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │   ├── Routes/         # On/off-ramp routes feature
 │   │   ├── Vaults/         # Vault management
 │   │   └── [Future]/       # Future feature modules
-│   ├── layout/             # 📐 Layout components — generic building blocks live at this root
+│   ├── layouts/            # 📐 Layout components — generic building blocks live at this root
 │   │   ├── AppLayout.tsx   # ⭐ Generic layout shell — use for ALL new sections
 │   │   ├── Layout.tsx      # Route → layout dispatcher
 │   │   ├── SimpleLayout.tsx # Nav-less shell; `center="full"` dead-centers small blocks (404/auth)
@@ -77,7 +77,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │       ├── InvoicesLayout.tsx
 │   │       ├── CoinTrackingLayout.tsx
 │   │       └── HomeLayout.tsx
-│   └── sections/           # 🏠 Landing page sections
+│   └── landing/            # 🏠 Landing page sections
 ├── hooks/                  # 🔗 Custom React hooks
 │   ├── adapter/            # Protocol adapter hooks (Falcon, Morpho)
 │   ├── redux/              # Redux state hooks
@@ -130,7 +130,7 @@ The platform combines **independent asset management funding** with **cutting-ed
    - `Stats/` - Metric display with various layouts
    - `TransactionQueue/` - Generic transaction management
 
-2. **`components/layout/`** - Shared layout pieces
+2. **`components/layouts/`** - Shared layout pieces
    - `AppLayout.tsx` - **Generic layout shell** — inject `logo`, `navItems`, `isActive`, `headerRight`, `mobileExtra`. Use this for every new section layout.
    - `actions/WalletButton.tsx` - Self-contained wallet connect/display with no visibility classes. Pass to `headerRight` and `mobileExtra` for consistent wallet UX across all sections.
    - `footers/FooterSimple.tsx` - Minimal footer strip (copyright + version), rendered by `AppLayout` automatically.
@@ -484,14 +484,14 @@ export const MY_NAVIGATION: NavItem[] = [
 ];
 ```
 
-### 2. Layout — `components/layout/variants/MySectionLayout.tsx`
+### 2. Layout — `components/layouts/variants/MySectionLayout.tsx`
 
 ```typescript
 import { faIcon } from '@fortawesome/free-solid-svg-icons';
 import { MY_NAVIGATION } from '@/lib/navigation/my-section';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
-import WalletButton from '@/components/layout/actions/WalletButton';
-import AppLayout from '@/components/layout/AppLayout';
+import WalletButton from '@/components/layouts/actions/WalletButton';
+import AppLayout from '@/components/layouts/AppLayout';
 
 export default function MySectionLayout({ children }) {
   const { isActive } = useActiveNavigation();
@@ -512,7 +512,7 @@ export default function MySectionLayout({ children }) {
 ### 3. Wire into Layout.tsx dispatcher
 
 ```typescript
-// components/layout/Layout.tsx
+// components/layouts/Layout.tsx
 if (pathname.startsWith('/my-section')) {
   return <MySectionLayout>{children}</MySectionLayout>;
 }

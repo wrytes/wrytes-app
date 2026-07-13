@@ -1,7 +1,7 @@
 import React from 'react';
 import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
 import type { IconDefinition } from '@fortawesome/fontawesome-svg-core';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layouts/AppLayout';
 
 interface SimpleLayoutProps {
   children: React.ReactNode;

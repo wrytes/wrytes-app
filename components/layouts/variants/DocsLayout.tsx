@@ -1,9 +1,9 @@
 import React from 'react';
 import { useRouter } from 'next/router';
 import { faLightbulb } from '@fortawesome/free-solid-svg-icons';
-import AppLayout from '@/components/layout/AppLayout';
+import AppLayout from '@/components/layouts/AppLayout';
 import { DOCS_NAVIGATION } from '@/lib/navigation/docs';
-import WalletButton from '@/components/layout/actions/WalletButton';
+import WalletButton from '@/components/layouts/actions/WalletButton';
 
 interface DocsLayoutProps {
   children: React.ReactNode;

@@ -2,8 +2,8 @@ import React from 'react';
 import { faCoins } from '@fortawesome/free-solid-svg-icons';
 import { COIN_TRACKING_NAVIGATION } from '@/lib/navigation/coin-tracking';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
-import WalletButton from '@/components/layout/actions/WalletButton';
-import AppLayout from '@/components/layout/AppLayout';
+import WalletButton from '@/components/layouts/actions/WalletButton';
+import AppLayout from '@/components/layouts/AppLayout';
 
 interface CoinTrackingLayoutProps {
   children: React.ReactNode;

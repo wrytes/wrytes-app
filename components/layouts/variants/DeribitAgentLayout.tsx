@@ -2,8 +2,8 @@ import React from 'react';
 import { faRobot } from '@fortawesome/free-solid-svg-icons';
 import { DERIBIT_NAVIGATION } from '@/lib/navigation/deribit';
 import { useActiveNavigation } from '@/hooks/useActiveNavigation';
-import WalletButton from '@/components/layout/actions/WalletButton';
-import AppLayout from '@/components/layout/AppLayout';
+import WalletButton from '@/components/layouts/actions/WalletButton';
+import AppLayout from '@/components/layouts/AppLayout';
 
 interface DeribitAgentLayoutProps {
   children: React.ReactNode;
