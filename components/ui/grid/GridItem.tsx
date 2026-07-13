@@ -50,7 +50,7 @@ export default function GridItem({
       <div className="flex flex-1 flex-col justify-between p-4 min-w-0">
         <div>
           {(badge || meta) && (
-            <div className="flex items-start justify-between gap-2">
+            <div className="flex items-center justify-between gap-2">
               {badge && <div className="min-w-0">{badge}</div>}
               {meta && (
                 <span className="text-xs text-text-secondary whitespace-nowrap flex-shrink-0">
