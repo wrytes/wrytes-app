@@ -89,6 +89,53 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   const pollingRef = useRef<ReturnType<typeof setInterval> | null>(null)
   // Hold the user profile while we wait for namespace selection
   const pendingUserRef = useRef<(User & { walletAddress: Address }) | null>(null)
+  const expiryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+
+  // ---------------------------------------------------------------------------
+  // Auto sign-out when the JWT's `exp` claim is reached
+  // ---------------------------------------------------------------------------
+
+  const clearExpiryTimer = useCallback(() => {
+    if (expiryTimerRef.current) {
+      clearTimeout(expiryTimerRef.current)
+      expiryTimerRef.current = null
+    }
+  }, [])
+
+  const scheduleExpiryLogout = useCallback((token: string) => {
+    clearExpiryTimer()
+
+    let exp: number | undefined
+    try {
+      exp = JSON.parse(atob(token.split('.')[1])).exp
+    } catch {
+      exp = undefined
+    }
+    if (!exp) return
+
+    const expiresAtMs = exp * 1000
+    const expiresAtLabel = new Date(expiresAtMs).toLocaleString()
+    // setTimeout delays beyond ~24.8 days overflow a 32-bit int and fire immediately — chain in chunks.
+    const MAX_DELAY = 2_147_483_647
+
+    const arm = () => {
+      const msRemaining = expiresAtMs - Date.now()
+
+      if (msRemaining <= 0) {
+        console.log(`[auth] JWT expired at ${expiresAtLabel} — clearing session.`)
+        authService.clearSession()
+        dispatch({ type: 'CLEAR_AUTH' })
+        return
+      }
+
+      console.log(`[auth] JWT expires at ${expiresAtLabel} (in ${Math.round(msRemaining / 1000)}s).`)
+      expiryTimerRef.current = setTimeout(arm, Math.min(msRemaining, MAX_DELAY))
+    }
+
+    arm()
+  }, [authService, clearExpiryTimer])
+
+  useEffect(() => () => clearExpiryTimer(), [clearExpiryTimer])
 
   // ---------------------------------------------------------------------------
   // After JWT: fetch namespaces + user, decide next step
@@ -167,6 +214,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const payload = authService.decodeToken(token)
       if (payload) {
         dispatch({ type: 'SET_TOKEN', payload: token })
+        scheduleExpiryLogout(token)
         // Show AUTHENTICATED optimistically while we load namespaces in the background
         dispatch({ type: 'SET_AUTH_FLOW', payload: { currentStep: AuthStep.AUTHENTICATED } })
         afterJwt(payload.wallet as Address).catch(() => {
@@ -198,6 +246,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     if (!isConnected) {
       stopPolling()
       if (state.isAuthenticated) {
+        clearExpiryTimer()
         authService.clearSession()
         dispatch({ type: 'CLEAR_AUTH' })
       } else {
@@ -239,6 +288,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           const payload = authService.decodeToken(result.jwt)
           if (payload) {
             dispatch({ type: 'SET_TOKEN', payload: result.jwt })
+            scheduleExpiryLogout(result.jwt)
             // Show the "Done" step as loading while we fetch namespaces
             dispatch({ type: 'SET_AUTH_FLOW', payload: { isLoading: true } })
             await afterJwt(payload.wallet as Address)
@@ -270,7 +320,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         // Network glitch — keep polling silently
       }
     }, 2000)
-  }, [afterJwt, authService, stopPolling])
+  }, [afterJwt, authService, scheduleExpiryLogout, stopPolling])
 
   useEffect(() => () => stopPolling(), [stopPolling])
 
@@ -374,11 +424,12 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const signOut = useCallback(async () => {
     stopPolling()
+    clearExpiryTimer()
     authService.clearSession()
     pendingUserRef.current = null
     await disconnect().catch(() => null)
     dispatch({ type: 'CLEAR_AUTH' })
-  }, [authService, disconnect, stopPolling])
+  }, [authService, clearExpiryTimer, disconnect, stopPolling])
 
   // ---------------------------------------------------------------------------
   // clearError
