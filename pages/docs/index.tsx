@@ -7,9 +7,9 @@ import { PageHeader, Section } from '@/components/ui/layout';
 import {
   Badge,
   TagList,
-  TableHeadSearchable,
   Grid,
   GridBody,
+  GridHeader,
   GridItem,
   GridItemEmpty,
 } from '@/components/ui';
@@ -17,7 +17,7 @@ import { scanDocs, type DocEntry } from '@/lib/docs/scan';
 import { docUrl } from '@/lib/docs/url';
 import { formatDate } from '@/lib/utils';
 
-const HEADERS = ['Date', 'Title'];
+const SORT_OPTIONS = ['Date', 'Title'];
 
 const STATUS_FILTERS = [
   { label: 'New', value: 'new' },
@@ -133,7 +133,7 @@ export default function DocsIndexPage({ entries }: DocsIndexPageProps) {
         />
 
         <Grid>
-          <TableHeadSearchable
+          <GridHeader
             searchPlaceholder="Search documents…"
             searchValue={search}
             onSearchChange={setSearch}
@@ -148,11 +148,10 @@ export default function DocsIndexPage({ entries }: DocsIndexPageProps) {
             customCategoriesTitle="Tags"
             activeCustomCategories={activeTags}
             onCustomCategoriesChange={setActiveTags}
-            headers={HEADERS}
+            sortOptions={SORT_OPTIONS}
             tab={sortTab}
             reverse={sortReverse}
             tabOnChange={handleSortChange}
-            compactHeaders
           />
 
           <GridBody>
@@ -178,7 +177,7 @@ export default function DocsIndexPage({ entries }: DocsIndexPageProps) {
                       />
                     }
                     meta={meta || undefined}
-                    subtitle={entry.author}
+                    subtitle={<Badge text={`by ${entry.author}`} />}
                     title={entry.title}
                     description={entry.description}
                     footer={<TagList tags={entry.tags} activeTags={activeTags} align="left" />}

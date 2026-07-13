@@ -36,4 +36,5 @@ export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmp
 export type { FilterOption } from './table';
 
 // Grid Components
-export { Grid, GridBody, GridItem, GridItemEmpty } from './grid';
+export { Grid, GridBody, GridHeader, GridItem, GridItemEmpty } from './grid';
+export type { GridFilterOption } from './grid';

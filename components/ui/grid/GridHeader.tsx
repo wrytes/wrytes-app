@@ -8,7 +8,7 @@ import {
   faSlidersH,
 } from '@fortawesome/free-solid-svg-icons';
 
-export interface FilterOption {
+export interface GridFilterOption {
   label: string;
   value: string;
 }
@@ -26,7 +26,7 @@ interface Props {
 
   // Category filter
   filterOptionsTitle?: string;
-  filterOptions: FilterOption[];
+  filterOptions: GridFilterOption[];
   activeFilters: string[];
   onFiltersChange: (filters: string[]) => void;
 
@@ -36,25 +36,21 @@ interface Props {
   activeCustomCategories?: string[];
   onCustomCategoriesChange?: (values: string[]) => void;
 
-  // Table column headers
-  headers: string[];
-  subHeaders?: string[];
-  actionCol?: boolean;
-  colSpan?: number;
+  // Sort — grids have no column headers, so this always renders as a compact dropdown
+  sortOptions: string[];
   tab?: string;
   reverse?: boolean;
-  logoPadding?: boolean;
   tabOnChange?: (tab: string) => void;
 }
 
-export default function TableHeadSearchable({
+export default function GridHeader({
   searchPlaceholder = 'Search',
   searchValue,
   onSearchChange,
   hideMyWallet,
   inMyWallet,
   onInMyWalletChange,
-  filterOptionsTitle = 'Asset Categories',
+  filterOptionsTitle = 'Categories',
   filterOptions,
   activeFilters,
   onFiltersChange,
@@ -62,13 +58,9 @@ export default function TableHeadSearchable({
   customCategoriesTitle = 'State',
   activeCustomCategories = [],
   onCustomCategoriesChange,
-  headers,
-  subHeaders,
-  actionCol,
-  colSpan,
+  sortOptions,
   tab = '',
   reverse = false,
-  logoPadding = false,
   tabOnChange,
 }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
@@ -96,8 +88,6 @@ export default function TableHeadSearchable({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
-  const handleTabClick = (header: string) => tabOnChange?.(header);
-
   const toggleFilter = (value: string) => {
     if (activeFilters.includes(value)) {
       onFiltersChange(activeFilters.filter(f => f !== value));
@@ -118,9 +108,9 @@ export default function TableHeadSearchable({
   const totalActiveFilters = activeFilters.length + activeCustomCategories.length;
 
   return (
-    <div className="rounded-t-lg bg-card">
+    <div className="rounded-lg bg-card border border-table-alt shadow-card">
       {/* Search / toggle / filter bar — not useful on paper */}
-      <div className="print:hidden grid grid-cols-1 md:flex md:items-center md:justify-between px-4 md:h-14 xl:px-6 border-b border-table-alt gap-x-3 gap-y-0">
+      <div className="print:hidden grid grid-cols-1 md:flex md:items-center md:justify-between px-4 md:h-14 xl:px-6 gap-x-3 gap-y-0">
         {/* Search */}
         <div className="flex flex-1 items-center gap-2 text-text-secondary min-h-14">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="w-4 h-4 text-text-secondary" />
@@ -159,13 +149,13 @@ export default function TableHeadSearchable({
             </div>
           )}
 
-          {/* Sort by — mobile only */}
-          <div className="relative md:hidden" ref={sortRef}>
+          {/* Sort by */}
+          <div className="relative" ref={sortRef}>
             <button
               onClick={() => setSortOpen(prev => !prev)}
               className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-lg px-3 py-1.5 border border-table-alt outline-none cursor-pointer"
             >
-              <span>{tab || headers[0]}</span>
+              <span>{tab || sortOptions[0]}</span>
               <FontAwesomeIcon
                 icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
                 className="w-3 h-3 text-text-secondary"
@@ -173,21 +163,23 @@ export default function TableHeadSearchable({
             </button>
             {sortOpen && (
               <div className="absolute left-0 top-full mt-1 z-50 min-w-[10rem] rounded-lg bg-card shadow-card border border-table-alt py-1">
-                {headers.map(h => (
+                {sortOptions.map(option => (
                   <button
-                    key={h}
+                    key={option}
                     onClick={() => {
-                      handleTabClick(h);
+                      tabOnChange?.(option);
                       setSortOpen(false);
                     }}
                     className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-card"
                   >
                     <span
-                      className={`flex-1 ${tab === h ? 'text-brand font-semibold' : 'text-text-primary'}`}
+                      className={`flex-1 ${tab === option ? 'text-brand font-semibold' : 'text-text-primary'}`}
                     >
-                      {h}
+                      {option}
                     </span>
-                    {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />}
+                    {tab === option && (
+                      <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />
+                    )}
                   </button>
                 ))}
               </div>
@@ -266,50 +258,6 @@ export default function TableHeadSearchable({
             )}
           </div>
         </div>
-      </div>
-
-      {/* Column headers — desktop */}
-      <div className="max-md:hidden items-center justify-between px-4 xl:px-6 md:flex md:h-14">
-        <div
-          className="max-md:hidden flex-grow md:grid"
-          style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
-        >
-          {headers.map((header, i) => (
-            <div
-              key={`th-${i}`}
-              className={`${i > 0 ? 'text-right' : logoPadding ? 'pl-8' : ''} `}
-              onClick={() => handleTabClick(header)}
-            >
-              <span
-                className={`font-bold ${tab ? 'cursor-pointer' : ''} ${
-                  tab === header ? 'text-brand' : 'text-text-primary'
-                }`}
-              >
-                {header}
-              </span>
-              {tab === header && (
-                <FontAwesomeIcon
-                  icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-                  className="ml-2 cursor-pointer text-brand"
-                />
-              )}
-            </div>
-          ))}
-          {subHeaders?.map((header, i) => (
-            <div key={`th-sub-${i}`} className={`${i > 0 ? 'text-right' : ''}`}>
-              <span className="text-text-secondary">{header}</span>
-            </div>
-          ))}
-        </div>
-
-        {actionCol && (
-          <div className="max-md:hidden">
-            <div
-              className={`text-text-primary text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
-            />
-            {subHeaders && <span> </span>}
-          </div>
-        )}
       </div>
     </div>
   );
