@@ -1,10 +1,10 @@
 import Head from 'next/head';
-import Hero from '@/components/sections/Hero';
-import About from '@/components/sections/About';
-import Integrations from '@/components/sections/Integrations';
-import MiniApps from '@/components/sections/MiniApps';
-import Revenue from '@/components/sections/Revenue';
-import Contact from '@/components/sections/Contact';
+import Hero from '@/components/landing/Hero';
+import About from '@/components/landing/About';
+import Integrations from '@/components/landing/Integrations';
+import MiniApps from '@/components/landing/MiniApps';
+import Revenue from '@/components/landing/Revenue';
+import Contact from '@/components/landing/Contact';
 import { COMPANY } from '@/lib/constants';
 
 export default function Home() {
