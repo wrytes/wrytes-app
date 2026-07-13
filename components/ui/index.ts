@@ -34,3 +34,6 @@ export type { BigNumberInputProps, TabInputProps } from './input';
 // Table Components
 export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty, EditableCell } from './table';
 export type { FilterOption } from './table';
+
+// Grid Components
+export { Grid, GridBody, GridItem, GridItemEmpty } from './grid';

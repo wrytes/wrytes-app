@@ -45,6 +45,11 @@ interface Props {
   reverse?: boolean;
   logoPadding?: boolean;
   tabOnChange?: (tab: string) => void;
+
+  // Renders the sort control as a compact dropdown in the search row at every
+  // breakpoint instead of a separate column-headers row — for non-tabular
+  // layouts (e.g. card grids) where headers are sort options, not columns.
+  compactHeaders?: boolean;
 }
 
 export default function TableHeadSearchable({
@@ -70,6 +75,7 @@ export default function TableHeadSearchable({
   reverse = false,
   logoPadding = false,
   tabOnChange,
+  compactHeaders = false,
 }: Props) {
   const [filterOpen, setFilterOpen] = useState(false);
   const filterRef = useRef<HTMLDivElement>(null);
@@ -137,7 +143,7 @@ export default function TableHeadSearchable({
         <div className="md:hidden border-t border-table-alt -mx-4" />
 
         {/* Right controls */}
-        <div className="flex items-center justify-end gap-5 min-h-14">
+        <div className="flex items-center justify-between md:justify-end gap-3 md:gap-5 min-h-14">
           {/* In my wallet toggle */}
           {!hideMyWallet && (
             <div className="flex items-center gap-2">
@@ -158,6 +164,41 @@ export default function TableHeadSearchable({
               <span className="text-sm text-text-secondary whitespace-nowrap">In my wallet</span>
             </div>
           )}
+
+          {/* Sort by — mobile only, or every breakpoint when headers are compact */}
+          <div className={`relative ${compactHeaders ? '' : 'md:hidden'}`} ref={sortRef}>
+            <button
+              onClick={() => setSortOpen(prev => !prev)}
+              className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-lg px-3 py-1.5 border border-table-alt outline-none cursor-pointer"
+            >
+              <span>{tab || headers[0]}</span>
+              <FontAwesomeIcon
+                icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
+                className="w-3 h-3 text-text-secondary"
+              />
+            </button>
+            {sortOpen && (
+              <div className="absolute left-0 top-full mt-1 z-50 min-w-[10rem] rounded-lg bg-card shadow-card border border-table-alt py-1">
+                {headers.map(h => (
+                  <button
+                    key={h}
+                    onClick={() => {
+                      handleTabClick(h);
+                      setSortOpen(false);
+                    }}
+                    className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-card"
+                  >
+                    <span
+                      className={`flex-1 ${tab === h ? 'text-brand font-semibold' : 'text-text-primary'}`}
+                    >
+                      {h}
+                    </span>
+                    {tab === h && <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
 
           {/* Filter button + dropdown */}
           <div className="relative" ref={filterRef}>
@@ -234,90 +275,50 @@ export default function TableHeadSearchable({
       </div>
 
       {/* Column headers — desktop */}
-      <div className="items-center justify-between px-4 xl:px-6 md:flex md:h-14">
-        <div
-          className="max-md:hidden flex-grow md:grid"
-          style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
-        >
-          {headers.map((header, i) => (
-            <div
-              key={`th-${i}`}
-              className={`${i > 0 ? 'text-right' : logoPadding ? 'pl-8' : ''} `}
-              onClick={() => handleTabClick(header)}
-            >
-              <span
-                className={`font-bold ${tab ? 'cursor-pointer' : ''} ${
-                  tab === header ? 'text-brand' : 'text-text-primary'
-                }`}
+      {!compactHeaders && (
+        <div className="max-md:hidden items-center justify-between px-4 xl:px-6 md:flex md:h-14">
+          <div
+            className="max-md:hidden flex-grow md:grid"
+            style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
+          >
+            {headers.map((header, i) => (
+              <div
+                key={`th-${i}`}
+                className={`${i > 0 ? 'text-right' : logoPadding ? 'pl-8' : ''} `}
+                onClick={() => handleTabClick(header)}
               >
-                {header}
-              </span>
-              {tab === header && (
-                <FontAwesomeIcon
-                  icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-                  className="ml-2 cursor-pointer text-brand"
-                />
-              )}
-            </div>
-          ))}
-          {subHeaders?.map((header, i) => (
-            <div key={`th-sub-${i}`} className={`${i > 0 ? 'text-right' : ''}`}>
-              <span className="text-text-secondary">{header}</span>
-            </div>
-          ))}
-        </div>
-
-        {actionCol && (
-          <div className="max-md:hidden">
-            <div
-              className={`text-text-primary text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
-            />
-            {subHeaders && <span> </span>}
+                <span
+                  className={`font-bold ${tab ? 'cursor-pointer' : ''} ${
+                    tab === header ? 'text-brand' : 'text-text-primary'
+                  }`}
+                >
+                  {header}
+                </span>
+                {tab === header && (
+                  <FontAwesomeIcon
+                    icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
+                    className="ml-2 cursor-pointer text-brand"
+                  />
+                )}
+              </div>
+            ))}
+            {subHeaders?.map((header, i) => (
+              <div key={`th-sub-${i}`} className={`${i > 0 ? 'text-right' : ''}`}>
+                <span className="text-text-secondary">{header}</span>
+              </div>
+            ))}
           </div>
-        )}
 
-        {/* Column headers — mobile */}
-        <div className="md:hidden flex items-center gap-3 min-h-14">
-          <span className="flex-1 font-semibold text-text-secondary">Sort By</span>
-          <div className="flex items-center gap-2">
-            <div className="relative" ref={sortRef}>
-              <button
-                onClick={() => setSortOpen(prev => !prev)}
-                className="flex items-center gap-2 bg-card text-text-primary text-sm rounded-lg px-2 py-1.5 border border-table-alt outline-none cursor-pointer"
-              >
-                <span>{tab || headers[0]}</span>
-                <FontAwesomeIcon
-                  icon={reverse ? faArrowUpShortWide : faArrowDownWideShort}
-                  className="w-3 h-3 text-text-secondary"
-                />
-              </button>
-              {sortOpen && (
-                <div className="absolute right-0 top-full mt-1 z-50 min-w-[10rem] rounded-lg bg-card shadow-card border border-table-alt py-1">
-                  {headers.map(h => (
-                    <button
-                      key={h}
-                      onClick={() => {
-                        handleTabClick(h);
-                        setSortOpen(false);
-                      }}
-                      className="flex items-center gap-2 w-full px-3 py-2 text-sm text-left hover:bg-card"
-                    >
-                      <span
-                        className={`flex-1 ${tab === h ? 'text-brand font-semibold' : 'text-text-primary'}`}
-                      >
-                        {h}
-                      </span>
-                      {tab === h && (
-                        <FontAwesomeIcon icon={faCheck} className="w-3 h-3 text-brand" />
-                      )}
-                    </button>
-                  ))}
-                </div>
-              )}
+          {actionCol && (
+            <div className="max-md:hidden">
+              <div
+                className={`text-text-primary text-right w-40 flex-shrink-0 ${subHeaders ? 'items-center' : ''}`}
+              />
+              {subHeaders && <span> </span>}
             </div>
-          </div>
+          )}
         </div>
-      </div>
+      )}
     </div>
   );
 }

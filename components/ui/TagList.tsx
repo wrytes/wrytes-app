@@ -3,6 +3,7 @@ import { cn } from '@/lib/utils';
 interface TagListProps {
   tags: string[];
   activeTags?: string[];
+  align?: 'left' | 'right';
   className?: string;
 }
 
@@ -26,13 +27,19 @@ function tagColor(tag: string) {
   return TAG_PALETTE[hash % TAG_PALETTE.length];
 }
 
-export function TagList({ tags, activeTags = [], className }: TagListProps) {
+export function TagList({ tags, activeTags = [], align = 'right', className }: TagListProps) {
   if (tags.length === 0) {
     return <span className="text-xs text-text-secondary italic">—</span>;
   }
 
   return (
-    <div className={cn('flex flex-row flex-wrap gap-1.5 justify-end', className)}>
+    <div
+      className={cn(
+        'flex flex-row flex-wrap gap-1.5',
+        align === 'left' ? 'justify-start' : 'justify-end',
+        className
+      )}
+    >
       {tags.map(tag => {
         const active = activeTags.includes(tag);
         const { bg, text, border } = active
