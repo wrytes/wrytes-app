@@ -120,9 +120,9 @@ export default function TableHeadSearchable({
   return (
     <div className="rounded-t-lg bg-card">
       {/* Search / toggle / filter bar — not useful on paper */}
-      <div className="print:hidden grid grid-cols-1 md:flex md:items-center md:justify-between p-4 xl:px-6 border-b border-table-alt gap-3">
+      <div className="print:hidden grid grid-cols-1 md:flex md:items-center md:justify-between px-4 md:h-14 xl:px-6 border-b border-table-alt gap-x-3 gap-y-0">
         {/* Search */}
-        <div className="flex flex-1 items-center gap-2 text-text-secondary py-2">
+        <div className="flex flex-1 items-center gap-2 text-text-secondary min-h-14">
           <FontAwesomeIcon icon={faMagnifyingGlass} className="w-4 h-4 text-text-secondary" />
           <input
             type="text"
@@ -137,7 +137,7 @@ export default function TableHeadSearchable({
         <div className="md:hidden border-t border-table-alt -mx-4" />
 
         {/* Right controls */}
-        <div className="flex items-center justify-end gap-5">
+        <div className="flex items-center justify-end gap-5 min-h-14">
           {/* In my wallet toggle */}
           {!hideMyWallet && (
             <div className="flex items-center gap-2">
@@ -234,7 +234,7 @@ export default function TableHeadSearchable({
       </div>
 
       {/* Column headers — desktop */}
-      <div className="items-center justify-between p-4 xl:px-6 md:flex">
+      <div className="items-center justify-between px-4 xl:px-6 md:flex md:h-14">
         <div
           className="max-md:hidden flex-grow md:grid"
           style={{ gridTemplateColumns: `repeat(${colSpan || headers.length}, minmax(0, 1fr))` }}
@@ -277,7 +277,7 @@ export default function TableHeadSearchable({
         )}
 
         {/* Column headers — mobile */}
-        <div className="md:hidden flex items-center gap-3">
+        <div className="md:hidden flex items-center gap-3 min-h-14">
           <span className="flex-1 font-semibold text-text-secondary">Sort By</span>
           <div className="flex items-center gap-2">
             <div className="relative" ref={sortRef}>
