@@ -79,34 +79,28 @@ export default function HomeLayout({ children }: HomeLayoutProps) {
 
           {/* Mobile Navigation */}
           {isMobileMenuOpen && (
-            <div className="md:hidden mt-4 pb-4 border-t border-surface pt-4">
-              <nav className="space-y-4">
+            <div className="md:hidden mt-4 border-t border-surface pt-4 pb-2">
+              <nav className="space-y-1">
                 {HOME_NAVIGATION.map(item => (
                   <Link
                     key={item.path}
                     href={item.path}
-                    className="text-text-secondary hover:text-brand transition-colors text-sm uppercase tracking-wide"
+                    className="flex items-center gap-3 px-4 py-2 rounded-lg text-text-secondary hover:text-brand hover:bg-brand/20 hover:shadow-sm transition-all duration-200 text-sm uppercase tracking-wide"
                     onClick={closeMobileMenu}
                   >
                     {item.label}
                   </Link>
                 ))}
-
-                {/* Mobile CTA Button */}
-                <div></div>
-                {/* <Link
-                  href="/dashboard"
-                  className="inline-flex items-center gap-2 bg-brand text-white px-4 py-2 rounded-lg hover:bg-opacity-90 transition-colors text-sm font-medium"
-                  onClick={closeMobileMenu}
-                >
-                  Get Started
-                  <FontAwesomeIcon icon={faArrowUpRightFromSquare} className="w-3 h-3" />
-                </Link> */}
               </nav>
             </div>
           )}
         </div>
       </header>
+
+      {/* Backdrop */}
+      {isMobileMenuOpen && (
+        <div className="fixed inset-0 bg-black/50 z-40 md:hidden" onClick={closeMobileMenu} />
+      )}
 
       <main className="">{children}</main>
       <Footer />
