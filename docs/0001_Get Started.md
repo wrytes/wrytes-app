@@ -1,6 +1,10 @@
 ---
 tags: [guide, getting-started, overview]
 description: Introduction to the Wrytes AG platform — what it is, what you need, and where to begin.
+date: 2026-06-01
+status: published
+author: Wrytes Team
+image: /docs-media/get-started.svg
 ---
 
 # Get Started

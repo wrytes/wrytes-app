@@ -1,6 +1,10 @@
 ---
 tags: [wallets, accounts, linking, management]
 description: How to link, view, and unlink wallet addresses from your account.
+date: 2026-07-01
+status: new
+author: Wrytes Team
+image: /docs-media/wallet-management.svg
 ---
 
 # Wallet Management

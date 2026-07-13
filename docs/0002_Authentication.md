@@ -1,6 +1,10 @@
 ---
 tags: [guide, authentication, security, telegram, wallet]
 description: How the wallet-based login flow works, including Telegram 2FA approval and session management.
+date: 2026-06-05
+status: published
+author: Wrytes Team
+image: /docs-media/authentication.svg
 ---
 
 # Authentication

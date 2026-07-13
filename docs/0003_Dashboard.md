@@ -1,6 +1,10 @@
 ---
 tags: [guide, dashboard, navigation, overview]
 description: What the dashboard contains, how navigation works, and where to find each feature.
+date: 2026-06-20
+status: draft
+author: Wrytes Team
+image: /docs-media/dashboard.svg
 ---
 
 # Dashboard

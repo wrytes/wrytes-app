@@ -1,6 +1,10 @@
 ---
 tags: [access-control, scopes, permissions, admin, security]
 description: How roles and scopes control feature access across the platform.
+date: 2026-07-10
+status: draft
+author: Wrytes Team
+image: /docs-media/access-control.svg
 ---
 
 # Access Control
