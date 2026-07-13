@@ -1,7 +1,7 @@
 import { useDispatch, useSelector } from 'react-redux';
 import type { AppDispatch } from '@/redux/redux.store';
 import { setAddressColor, type AddressColorsState } from '@/redux/slices/addressColors.slice';
-import { ADDRESS_COLOR_KEYS, type AddressColorKey, defaultAddressColor } from '@/components/features/TokenTransfers/addressColors';
+import { ADDRESS_COLOR_KEYS, type AddressColorKey, defaultAddressColor } from '@/components/features/tokenTransfers/addressColors';
 
 export function useAddressColors() {
   const dispatch = useDispatch<AppDispatch>();

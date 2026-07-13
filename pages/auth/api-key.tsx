@@ -9,10 +9,10 @@ import {
   faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Section } from '@/components/ui/Layout';
-import { PageHeader } from '@/components/ui/Layout';
+import { Section } from '@/components/ui/layout';
+import { PageHeader } from '@/components/ui/layout';
 import { Card } from '@/components/ui';
-import { ButtonInput } from '@/components/ui/Input';
+import { ButtonInput } from '@/components/ui/input';
 import { Badge } from '@/components/ui';
 import { CONFIG } from '@/lib/constants';
 

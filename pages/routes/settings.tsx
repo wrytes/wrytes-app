@@ -3,10 +3,10 @@ import { useState, useEffect } from 'react';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faEye, faEyeSlash, faKey, faTrash, faCircleCheck } from '@fortawesome/free-solid-svg-icons';
 import { useKrakenCredentials } from '@/hooks/redux/useKrakenCredentials';
-import { Section } from '@/components/ui/Layout';
+import { Section } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
-import TextInput from '@/components/ui/Input/TextInput';
-import ButtonInput from '@/components/ui/Input/ButtonInput';
+import TextInput from '@/components/ui/input/TextInput';
+import ButtonInput from '@/components/ui/input/ButtonInput';
 import { cn } from '@/lib/utils';
 
 export default function RoutesSettingsPage() {

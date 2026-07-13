@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '@/lib/api/client';
 import { showToast } from '@/components/ui';
-import type { Invoice, InvoiceItem } from '@/components/features/Invoices/types';
+import type { Invoice, InvoiceItem } from '@/components/features/invoices/types';
 
 interface CreateInvoicePayload {
   recipientName: string;

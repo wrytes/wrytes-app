@@ -5,10 +5,10 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
   faSliders, faTrash, faEye, faEyeSlash, faPlus, faStar, faPencil, faCheck, faXmark,
 } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import TextInput from '@/components/ui/Input/TextInput';
+import TextInput from '@/components/ui/input/TextInput';
 import {
   useDeribitFetch, agentFetch,
   type DeribitAccount, type CreateAccountBody, type UpdateAccountBody,

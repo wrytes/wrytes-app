@@ -1,11 +1,11 @@
 import Head from 'next/head';
 import { useState } from 'react';
-import { AgentError } from '@/components/features/DeribitAgent/AgentError';
+import { AgentError } from '@/components/features/deribitAgent/AgentError';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faLayerGroup, faRefresh } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
-import { StatCard, StatCardSkeleton } from '@/components/ui/Stats/StatCard';
+import { StatCard, StatCardSkeleton } from '@/components/ui/stats/StatCard';
 import { faBitcoinSign } from '@fortawesome/free-solid-svg-icons';
 import { useDeribitFetch, type AccountSummary } from '@/lib/deribit-agent/client';
 import { fmt } from '@/lib/deribit-agent/ui';

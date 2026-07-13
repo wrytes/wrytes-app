@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { TokenTransfersSection } from '@/components/features/TokenTransfers';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { TokenTransfersSection } from '@/components/features/tokenTransfers';
 
 export default function AccountingPage() {
   return (

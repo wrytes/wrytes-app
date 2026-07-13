@@ -15,10 +15,10 @@ import {
   faSpinner,
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Breadcrumb, Section } from '@/components/ui/Layout';
-import { StatGrid } from '@/components/ui/Stats';
+import { Breadcrumb, Section } from '@/components/ui/layout';
+import { StatGrid } from '@/components/ui/stats';
 import Card from '@/components/ui/Card';
-import { ButtonInput, TabInput, PageTabInput } from '@/components/ui/Input';
+import { ButtonInput, TabInput, PageTabInput } from '@/components/ui/input';
 import {
   Table,
   TableBody,
@@ -26,7 +26,7 @@ import {
   TableHeadSearchable,
   TableRow,
   TableRowEmpty,
-} from '@/components/ui/Table';
+} from '@/components/ui/table';
 import { TokenLogo, ChainLogo } from '@/components/ui/logo';
 import { Badge, CardTitle, Modal, ConfirmModal, showToast, IconLogo } from '@/components/ui';
 import HeroSteps from '@/components/ui/HeroSteps';

@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useAuth } from '@/hooks/useAuth';
-import { OnRampSection } from '@/components/features/Routes';
+import { OnRampSection } from '@/components/features/routes';
 
 export default function OnrampPage() {
   const { user } = useAuth();

@@ -1,6 +1,6 @@
 import Head from 'next/head';
 import { useAuth } from '@/hooks/useAuth';
-import { SafeWalletsSection } from '@/components/features/Accounts';
+import { SafeWalletsSection } from '@/components/features/accounts';
 
 export default function AccountsPage() {
   const { user } = useAuth();

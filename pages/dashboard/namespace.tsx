@@ -9,15 +9,15 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAuth } from '@/hooks/useAuth';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { ButtonInput } from '@/components/ui/Input';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { ButtonInput } from '@/components/ui/input';
 import { apiRequest } from '@/lib/api/client';
 import type { Namespace } from '@/lib/auth/types';
 import {
   NamespaceDetailsSection,
   NamespaceMembersSection,
   NamespaceSafeSection,
-} from '@/components/features/Namespace';
+} from '@/components/features/namespace';
 
 export default function NamespacePage() {
   const { activeNamespace, user, setActiveNamespace } = useAuth();

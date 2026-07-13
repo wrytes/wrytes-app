@@ -10,8 +10,8 @@ import {
 } from '@fortawesome/free-solid-svg-icons';
 import { useKrakenCredentials } from '@/hooks/redux/useKrakenCredentials';
 import Card from '@/components/ui/Card';
-import { Section } from '@/components/ui/Layout';
-import ButtonInput from '@/components/ui/Input/ButtonInput';
+import { Section } from '@/components/ui/layout';
+import ButtonInput from '@/components/ui/input/ButtonInput';
 
 function SetupRequired() {
   return (

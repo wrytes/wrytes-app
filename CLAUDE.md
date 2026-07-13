@@ -60,7 +60,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │   └── TransactionQueue/ # Generic transaction management
 │   ├── features/           # 🚀 Feature-specific components
 │   │   ├── Dashboard/      # Dashboard feature module
-│   │   ├── Routes/         # On/off-ramp routes feature
+│   │   ├── routes/         # On/off-ramp routes feature
 │   │   ├── Vaults/         # Vault management
 │   │   └── [Future]/       # Future feature modules
 │   ├── layouts/            # 📐 Layout components — generic building blocks live at this root
@@ -134,6 +134,7 @@ The platform combines **independent asset management funding** with **cutting-ed
    - `AppLayout.tsx` - **Generic layout shell** — inject `logo`, `navItems`, `isActive`, `headerRight`, `mobileExtra`. Use this for every new section layout.
    - `actions/WalletButton.tsx` - Self-contained wallet connect/display with no visibility classes. Pass to `headerRight` and `mobileExtra` for consistent wallet UX across all sections.
    - `footers/FooterSimple.tsx` - Minimal footer strip (copyright + version), rendered by `AppLayout` automatically.
+   - `footers/Footer.tsx` - Fuller marketing footer (links, socials) used only by `HomeLayout`.
 
 3. **`components/features/[existing-feature]/`** - Feature-specific patterns
    - Reuse patterns from `Vaults/` for similar data management
@@ -541,7 +542,7 @@ if (
 | `isActive`      | `(path) => boolean`                 | Active link detection. Inject from `useActiveNavigation()` or custom |
 | `headerRight`   | `ReactNode`                         | Desktop-only slot (hidden on mobile). Pass `<WalletButton />`        |
 | `mobileExtra`   | `ReactNode`                         | Shown below nav in mobile panel; any click auto-closes it            |
-| `centerContent` | `boolean`                           | Centers main content vertically (SimpleLayout style)                 |
+| `centerContent` | `boolean \| 'full'`                 | Centers content horizontally with wider gutters; `'full'` also centers vertically (404/auth dead-centered screens). Leave unset for standard content pages — it no longer covers `SimpleLayout`'s default case |
 
 ## 🔍 **Troubleshooting Guide**
 

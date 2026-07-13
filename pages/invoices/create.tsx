@@ -2,9 +2,9 @@ import Head from 'next/head';
 import { useState } from 'react';
 import { faFileInvoiceDollar, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { ButtonInput } from '@/components/ui/Input';
-import { InvoiceListSection } from '@/components/features/Invoices';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { ButtonInput } from '@/components/ui/input';
+import { InvoiceListSection } from '@/components/features/invoices';
 
 export default function InvoicesPage() {
   const [creating, setCreating] = useState(false);

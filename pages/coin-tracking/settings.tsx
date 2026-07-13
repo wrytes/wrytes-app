@@ -1,11 +1,11 @@
 import Head from 'next/head';
 import { useCallback, useEffect, useState } from 'react';
 import { faSliders } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import { apiRequest } from '@/lib/api/client';
-import { AccountsPanel } from '@/components/features/Accounting/AccountsPanel';
-import { TemplatesPanel } from '@/components/features/Accounting/TemplatesPanel';
-import type { AccountingAccount, ClassificationTemplate } from '@/components/features/Accounting/types';
+import { AccountsPanel } from '@/components/features/accounting/AccountsPanel';
+import { TemplatesPanel } from '@/components/features/accounting/TemplatesPanel';
+import type { AccountingAccount, ClassificationTemplate } from '@/components/features/accounting/types';
 
 export default function CoinTrackingSettingsPage() {
   const [accounts, setAccounts] = useState<AccountingAccount[]>([]);

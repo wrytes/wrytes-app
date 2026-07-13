@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { faExclamationTriangle } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import { Card } from '@/components/ui';
 import { COMPANY } from '@/lib/constants';
 

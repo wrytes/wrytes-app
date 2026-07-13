@@ -1,8 +1,8 @@
 import Head from 'next/head';
 import { faFileInvoice } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/hooks/useAuth';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { BillListSection } from '@/components/features/Bills';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { BillListSection } from '@/components/features/bills';
 
 export default function BillsPage() {
   const { user } = useAuth();

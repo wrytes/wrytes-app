@@ -4,11 +4,11 @@ import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { parseUnits } from 'viem';
 import Card from '@/components/ui/Card';
-import AddressInput from '@/components/ui/Input/AddressInput';
-import LiquidationSlider from '@/components/ui/Input/LiquidationSlider';
-import NormalInput from '@/components/ui/Input/NormalInput';
-import TextInput from '@/components/ui/Input/TextInput';
-import TokenInput from '@/components/ui/Input/TokenInput';
+import AddressInput from '@/components/ui/input/AddressInput';
+import LiquidationSlider from '@/components/ui/input/LiquidationSlider';
+import NormalInput from '@/components/ui/input/NormalInput';
+import TextInput from '@/components/ui/input/TextInput';
+import TokenInput from '@/components/ui/input/TokenInput';
 
 const COMPONENT_PAGES = [
   { label: 'Display', href: '/dashboard/components/display' },

@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { apiRequest } from '@/lib/api/client';
 import { showToast } from '@/components/ui';
-import type { Bill } from '@/components/features/Bills/types';
+import type { Bill } from '@/components/features/bills/types';
 
 export function useBills() {
   const [bills, setBills] = useState<Bill[]>([]);

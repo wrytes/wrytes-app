@@ -3,7 +3,7 @@ import { useRouter } from 'next/router';
 import * as fs from 'fs';
 import * as path from 'path';
 import { faBook, faFile, faFileArchive } from '@fortawesome/free-solid-svg-icons';
-import { PageHeader, Section } from '@/components/ui/Layout';
+import { PageHeader, Section } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
 import MarkdownContent from '@/components/ui/MarkdownContent';
 

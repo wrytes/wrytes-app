@@ -28,12 +28,12 @@ import {
   faStop,
   faRotateRight,
 } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import { AgentError } from '@/components/features/DeribitAgent/AgentError';
-import TextInput from '@/components/ui/Input/TextInput';
-import SliderInput from '@/components/ui/Input/SliderInput';
+import { AgentError } from '@/components/features/deribitAgent/AgentError';
+import TextInput from '@/components/ui/input/TextInput';
+import SliderInput from '@/components/ui/input/SliderInput';
 import { useDeribitFetch, agentFetch, type AgentRun, type AgentAction, type ExecutionSettings } from '@/lib/deribit-agent/client';
 import { RUN_STATUS_BADGE } from '@/lib/deribit-agent/ui';
 

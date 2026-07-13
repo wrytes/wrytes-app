@@ -9,14 +9,14 @@ export { TagList } from './TagList';
 export { TokenLogo, ChainLogo, IconLogo } from './logo';
 
 // Layout Components
-export { PageHeader, Section, Breadcrumb } from './Layout';
+export { PageHeader, Section, Breadcrumb } from './layout';
 
 // Stats Components
-export { StatCard, StatCardSkeleton, StatGrid } from './Stats';
+export { StatCard, StatCardSkeleton, StatGrid } from './stats';
 
 // Modal Components
-export { Modal, ConfirmModal } from './Modal';
-export type { ModalProps } from './Modal';
+export { Modal, ConfirmModal } from './modal';
+export type { ModalProps } from './modal';
 
 // Input Components
 export {
@@ -28,9 +28,9 @@ export {
   TabInput,
   PageTabInput,
   LiquidationSlider,
-} from './Input';
-export type { BigNumberInputProps, TabInputProps } from './Input';
+} from './input';
+export type { BigNumberInputProps, TabInputProps } from './input';
 
 // Table Components
-export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty, EditableCell } from './Table';
-export type { FilterOption } from './Table';
+export { Table, TableBody, TableHead, TableHeadSearchable, TableRow, TableRowEmpty, EditableCell } from './table';
+export type { FilterOption } from './table';

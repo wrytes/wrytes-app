@@ -2,7 +2,7 @@ import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useEffect } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import TokenMinimumsSection from '@/components/features/Admin/TokenMinimumsSection';
+import TokenMinimumsSection from '@/components/features/admin/TokenMinimumsSection';
 
 export default function AdminPage() {
   const { user, isLoading } = useAuth();

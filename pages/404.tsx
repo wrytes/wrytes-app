@@ -1,8 +1,8 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { faExclamationCircle } from '@fortawesome/free-solid-svg-icons';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { ButtonInput } from '@/components/ui/Input';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { ButtonInput } from '@/components/ui/input';
 import { Card } from '@/components/ui';
 
 export default function Custom404() {

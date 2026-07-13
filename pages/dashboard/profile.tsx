@@ -3,13 +3,13 @@ import { useRef, useState } from 'react';
 import { faUser, faCheck, faLink, faKey, faPlus } from '@fortawesome/free-solid-svg-icons';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { useAuth } from '@/hooks/useAuth';
-import { Section, PageHeader } from '@/components/ui/Layout';
-import { ButtonInput } from '@/components/ui/Input';
+import { Section, PageHeader } from '@/components/ui/layout';
+import { ButtonInput } from '@/components/ui/input';
 import {
   ProfileFormSection,
   LinkedWalletsSection,
   ApiKeysSection,
-} from '@/components/features/Profile';
+} from '@/components/features/profile';
 
 export default function ProfilePage() {
   const { user } = useAuth();

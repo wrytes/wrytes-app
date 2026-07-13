@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { useState, useMemo } from 'react';
 import { useRouter } from 'next/router';
-import { AgentError } from '@/components/features/DeribitAgent/AgentError';
+import { AgentError } from '@/components/features/deribitAgent/AgentError';
 import toast from 'react-hot-toast';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import {
@@ -13,17 +13,17 @@ import {
   faTrash,
 } from '@fortawesome/free-solid-svg-icons';
 import { parseUnits, formatUnits } from 'viem';
-import { Section, PageHeader } from '@/components/ui/Layout';
+import { Section, PageHeader } from '@/components/ui/layout';
 import Card from '@/components/ui/Card';
 import { Badge } from '@/components/ui/Badge';
-import TextInput from '@/components/ui/Input/TextInput';
-import TokenInput from '@/components/ui/Input/TokenInput';
+import TextInput from '@/components/ui/input/TextInput';
+import TokenInput from '@/components/ui/input/TokenInput';
 import { CellEditable } from '@/components/ui/CellEditable';
-import { SelectInput } from '@/components/ui/Input/SelectInput';
-import TableHeadSearchable from '@/components/ui/Table/TableHeadSearchable';
-import TableBody from '@/components/ui/Table/TableBody';
-import TableRow from '@/components/ui/Table/TableRow';
-import TableRowEmpty from '@/components/ui/Table/TableRowEmpty';
+import { SelectInput } from '@/components/ui/input/SelectInput';
+import TableHeadSearchable from '@/components/ui/table/TableHeadSearchable';
+import TableBody from '@/components/ui/table/TableBody';
+import TableRow from '@/components/ui/table/TableRow';
+import TableRowEmpty from '@/components/ui/table/TableRowEmpty';
 import {
   useDeribitFetch,
   agentFetch,

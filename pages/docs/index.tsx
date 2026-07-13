@@ -5,14 +5,14 @@ import * as fs from 'fs';
 import * as path from 'path';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faBook, faArrowRight, faFolder } from '@fortawesome/free-solid-svg-icons';
-import { PageHeader, Section } from '@/components/ui/Layout';
+import { PageHeader, Section } from '@/components/ui/layout';
 import {
   Table,
   TableBody,
   TableHeadSearchable,
   TableRow,
   TableRowEmpty,
-} from '@/components/ui/Table';
+} from '@/components/ui/table';
 import { TagList } from '@/components/ui';
 import type { DocEntry } from '@/pages/api/docs';
 import { docUrl } from '@/lib/docs/url';

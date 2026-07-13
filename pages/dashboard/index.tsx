@@ -3,11 +3,11 @@ import Head from 'next/head';
 import { faLightbulb, faArrowTrendUp, faArrowTrendDown, faScaleBalanced } from '@fortawesome/free-solid-svg-icons';
 import { useAuth } from '@/hooks/useAuth';
 import { UserBadge } from '@/components/auth/RequireScope';
-import { PageHeader, Section } from '@/components/ui/Layout';
-import { StatGrid } from '@/components/ui/Stats';
+import { PageHeader, Section } from '@/components/ui/layout';
+import { StatGrid } from '@/components/ui/stats';
 import { apiRequest } from '@/lib/api/client';
 import { formatCurrency, FormatType } from '@/lib/utils/format-handling';
-import type { TrialBalanceLine } from '@/components/features/Accounting/types';
+import type { TrialBalanceLine } from '@/components/features/accounting/types';
 
 function fmtChf(value: number): string {
   return `CHF ${formatCurrency(value, 0, 2, FormatType.tiny) ?? '0'}`;

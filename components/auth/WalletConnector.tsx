@@ -14,7 +14,7 @@ import { useWallet } from '@/hooks/useWallet';
 import { useAuth } from '@/hooks/useAuth';
 import { useWalletLink } from '@/hooks/useWalletLink';
 import { AuthStep } from '@/lib/auth/types';
-import ButtonInput from '@/components/ui/Input/ButtonInput';
+import ButtonInput from '@/components/ui/input/ButtonInput';
 import { NamespaceSelector } from './NamespaceSelector';
 import { useAppKit } from '@reown/appkit/react';
 

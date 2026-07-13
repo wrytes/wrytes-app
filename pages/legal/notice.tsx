@@ -1,7 +1,7 @@
 import Head from 'next/head';
 import { faFileContract } from '@fortawesome/free-solid-svg-icons';
-import { Section } from '@/components/ui/Layout';
-import { PageHeader } from '@/components/ui/Layout';
+import { Section } from '@/components/ui/layout';
+import { PageHeader } from '@/components/ui/layout';
 import { Card } from '@/components/ui';
 import { COMPANY } from '@/lib/constants';
 

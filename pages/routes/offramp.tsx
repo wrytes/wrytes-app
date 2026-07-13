@@ -1,8 +1,8 @@
 import Head from 'next/head';
 import { useState, useCallback } from 'react';
 import { useAuth } from '@/hooks/useAuth';
-import { OffRampSection, ExecutionHistorySection } from '@/components/features/Routes';
-import type { OffRampRoute } from '@/components/features/Routes';
+import { OffRampSection, ExecutionHistorySection } from '@/components/features/routes';
+import type { OffRampRoute } from '@/components/features/routes';
 
 export default function OfframpPage() {
   const { user } = useAuth();
