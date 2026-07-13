@@ -91,4 +91,18 @@ export const INTEGRATIONS: Integration[] = [
     url: 'https://ts.finance/',
     icon: '/integration/TermMax Logos/TermMax Logomark_Color.svg',
   },
+  {
+    id: 'ollama',
+    name: 'Ollama',
+    description: 'Local LLM runtime for self-hosted model inference and research prototyping',
+    url: 'https://ollama.com/',
+    icon: '/integration/Ollama Logos/ollama-brand.svg',
+  },
+  {
+    id: 'pytorch',
+    name: 'PyTorch',
+    description: 'Deep learning framework powering the Deribit Agent training pipeline',
+    url: 'https://pytorch.org/',
+    icon: '/integration/PyTorch Logos/pytorch-brand.svg',
+  },
 ];

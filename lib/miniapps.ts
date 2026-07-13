@@ -92,6 +92,6 @@ export const MINI_APPS: MiniApp[] = [
     icon: faRobot,
     color: 'bg-amber-50 text-amber-600',
     development: true,
-    disabled: true,
+    disabled: false,
   },
 ];
