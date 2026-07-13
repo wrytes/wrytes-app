@@ -18,7 +18,7 @@ export default function SimpleLayout({ children, logo, center = 'top' }: SimpleL
   return (
     <AppLayout
       logo={{ icon: logo?.icon ?? faLightbulb, subtitle: logo?.subtitle }}
-      centerContent={center === 'full' ? 'full' : true}
+      centerContent={center === 'full' ? 'full' : undefined}
     >
       {children}
     </AppLayout>

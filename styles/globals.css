@@ -37,6 +37,7 @@ a {
 /* Smooth scrolling */
 html {
   scroll-behavior: smooth;
+  scrollbar-gutter: stable;
 }
 
 /* Custom scrollbar for webkit browsers */
