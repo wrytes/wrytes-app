@@ -253,7 +253,7 @@ export function TransfersTable({ transfers, addresses, loading, onUpdate }: Prop
             return (
               <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length}>
                 {/* Date (+ address badge stacked below) */}
-                <div className="flex flex-col items-start gap-1">
+                <div className="flex flex-col items-end md:items-start gap-1">
                   {txUrl ? (
                     <a
                       href={txUrl}

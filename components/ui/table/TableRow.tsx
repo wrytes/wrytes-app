@@ -41,15 +41,15 @@ export default function TableRow({
       <div className="flex flex-col justify-between gap-y-5 md:flex-row">
         {/* Desktop */}
         <div
-          className="max-md:hidden text-right grid flex-grow items-center py-2"
+          className="max-md:hidden grid flex-grow items-center py-2"
           style={{ gridTemplateColumns: `repeat(${colSpan || childArray.length}, minmax(0, 1fr))` }}
         >
           {childArray.map((child, idx) => (
             <div
               key={child.key ?? `row-desktop-${idx}`}
-              className={
+              className={`${idx > 0 ? 'text-right' : 'text-left'} ${
                 headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'
-              }
+              }`}
             >
               {child}
             </div>

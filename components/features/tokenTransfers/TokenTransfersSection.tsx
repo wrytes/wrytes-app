@@ -669,11 +669,11 @@ function TokenOverviewSection({
                         <div className="group flex items-center gap-2 text-left">
                           <TokenLogo symbol={t.tokenSymbol} />
                           <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
-                          <button onClick={() => onAddCorrection({ tokenSymbol: t.tokenSymbol })} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
+                          <button onClick={() => onAddCorrection({ tokenSymbol: t.tokenSymbol })} className="max-md:hidden opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-brand p-0.5" title="Add manual correction">
                             <FontAwesomeIcon icon={faPlus} className="w-3 h-3" />
                           </button>
                           {t.tokenAddress && (
-                            <button onClick={() => onBlacklist(t.tokenAddress!, t.chainId, t.tokenSymbol)} className="opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5" title="Blacklist token">
+                            <button onClick={() => onBlacklist(t.tokenAddress!, t.chainId, t.tokenSymbol)} className="max-md:hidden opacity-0 group-hover:opacity-100 transition-opacity text-text-muted hover:text-error p-0.5" title="Blacklist token">
                               <FontAwesomeIcon icon={faBan} className="w-3 h-3" />
                             </button>
                           )}
