@@ -1,36 +1,54 @@
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { useState, useMemo, useEffect } from 'react';
-import * as fs from 'fs';
 import * as path from 'path';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faBook, faArrowRight, faFolder } from '@fortawesome/free-solid-svg-icons';
+import { faBook, faFolder } from '@fortawesome/free-solid-svg-icons';
 import { PageHeader, Section } from '@/components/ui/layout';
 import {
-  Table,
-  TableBody,
+  Badge,
+  TagList,
   TableHeadSearchable,
-  TableRow,
-  TableRowEmpty,
-} from '@/components/ui/table';
-import { TagList } from '@/components/ui';
-import type { DocEntry } from '@/pages/api/docs';
+  Grid,
+  GridBody,
+  GridItem,
+  GridItemEmpty,
+} from '@/components/ui';
+import { scanDocs, type DocEntry } from '@/lib/docs/scan';
 import { docUrl } from '@/lib/docs/url';
+import { formatDate } from '@/lib/utils';
 
-const HEADERS = ['Document', 'Tags'];
-const COL_SPAN = 2;
+const HEADERS = ['Date', 'Title'];
+
+const STATUS_FILTERS = [
+  { label: 'New', value: 'new' },
+  { label: 'Published', value: 'published' },
+  { label: 'Draft', value: 'draft' },
+];
+
+const STATUS_META: Record<DocEntry['status'], { label: string; color: string; bg: string }> = {
+  new: { label: 'New', color: 'text-brand', bg: 'bg-brand/10' },
+  published: { label: 'Published', color: 'text-success', bg: 'bg-success-bg' },
+  draft: { label: 'Draft', color: 'text-text-secondary', bg: 'bg-surface' },
+};
 
 interface DocsIndexPageProps {
   entries: DocEntry[];
-  folders: string[];
 }
 
-export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) {
+function formatDocDate(date: string | null): string | null {
+  if (!date) return null;
+  const [y, m, d] = date.split('-').map(Number);
+  if (!y || !m || !d) return null;
+  return formatDate(new Date(y, m - 1, d));
+}
+
+export default function DocsIndexPage({ entries }: DocsIndexPageProps) {
   const router = useRouter();
 
   const [search, setSearch] = useState('');
-  const [sortTab, setSortTab] = useState('Document');
-  const [sortReverse, setSortReverse] = useState(false);
+  const [sortTab, setSortTab] = useState('Date');
+  const [sortReverse, setSortReverse] = useState(true);
+  const [activeStatuses, setActiveStatuses] = useState<string[]>([]);
   const [activeTags, setActiveTags] = useState<string[]>([]);
   const [activeFolder, setActiveFolder] = useState<string | null>(null);
 
@@ -57,8 +75,13 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
         e =>
           e.title.toLowerCase().includes(q) ||
           e.tags.some(t => t.toLowerCase().includes(q)) ||
-          e.description.toLowerCase().includes(q)
+          e.description.toLowerCase().includes(q) ||
+          e.author.toLowerCase().includes(q)
       );
+    }
+
+    if (activeStatuses.length > 0) {
+      result = result.filter(e => activeStatuses.includes(e.status));
     }
 
     if (activeTags.length > 0) {
@@ -67,10 +90,12 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
 
     return [...result].sort((a, b) => {
       const cmp =
-        sortTab === 'Tags' ? a.tags.length - b.tags.length : a.title.localeCompare(b.title);
+        sortTab === 'Date'
+          ? (a.date ?? '').localeCompare(b.date ?? '')
+          : a.title.localeCompare(b.title);
       return sortReverse ? -cmp : cmp;
     });
-  }, [entries, search, activeTags, activeFolder, sortTab, sortReverse]);
+  }, [entries, search, activeStatuses, activeTags, activeFolder, sortTab, sortReverse]);
 
   const handleSortChange = (col: string) => {
     if (col === sortTab) setSortReverse(r => !r);
@@ -107,7 +132,7 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
           }
         />
 
-        <Table>
+        <Grid>
           <TableHeadSearchable
             searchPlaceholder="Search documents…"
             searchValue={search}
@@ -115,72 +140,54 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
             hideMyWallet
             inMyWallet={false}
             onInMyWalletChange={() => {}}
-            filterOptions={[]}
-            activeFilters={[]}
-            onFiltersChange={() => {}}
+            filterOptionsTitle="Status"
+            filterOptions={STATUS_FILTERS}
+            activeFilters={activeStatuses}
+            onFiltersChange={setActiveStatuses}
             customCategories={allTags}
             customCategoriesTitle="Tags"
             activeCustomCategories={activeTags}
             onCustomCategoriesChange={setActiveTags}
             headers={HEADERS}
-            colSpan={COL_SPAN}
             tab={sortTab}
             reverse={sortReverse}
             tabOnChange={handleSortChange}
+            compactHeaders
           />
-          <TableBody>
-            {filtered.length === 0 ? (
-              <TableRowEmpty>No documents match your search.</TableRowEmpty>
-            ) : (
-              filtered.map(entry => (
-                <TableRow
-                  key={`${entry.folder ?? 'root'}/${entry.filename}`}
-                  headers={HEADERS}
-                  tab={sortTab}
-                  colSpan={COL_SPAN}
-                  className="cursor-pointer"
-                  noFirstHeader
-                  actionCol={
-                    <button
-                      type="button"
-                      onClick={() => router.push(docUrl(entry))}
-                      className="flex items-center justify-end gap-2 w-full text-brand hover:underline text-sm font-medium"
-                    >
-                      View
-                      <FontAwesomeIcon icon={faArrowRight} className="w-3 h-3" />
-                    </button>
-                  }
-                >
-                  {/* Title */}
-                  <div
-                    className="cursor-pointer text-left"
-                    onClick={() => router.push(docUrl(entry))}
-                  >
-                    <p className="font-semibold text-text-primary hover:text-text-primary transition-colors">
-                      {entry.title}
-                    </p>
-                    {entry.description && (
-                      <p className="text-xs text-text-secondary mt-0.5 line-clamp-2 md:line-clamp-1 md:max-w-xs">
-                        {entry.description}
-                      </p>
-                    )}
-                    {entry.folder && (
-                      <span className="inline-flex items-center gap-1 mt-1 text-xs text-text-secondary">
-                        <FontAwesomeIcon icon={faFolder} className="w-3 h-3" />
-                        {entry.folder}
-                      </span>
-                    )}
-                  </div>
 
-                  {/* Tags */}
-                  <div className="flex max-md:pt-8 max-md:pb-4">
-                    <TagList tags={entry.tags} activeTags={activeTags} />
-                  </div>
-                </TableRow>
-              ))
+          <GridBody>
+            {filtered.length === 0 ? (
+              <GridItemEmpty>No documents match your search.</GridItemEmpty>
+            ) : (
+              filtered.map(entry => {
+                const meta = [entry.folder, formatDocDate(entry.date)].filter(Boolean).join(' · ');
+                const status = STATUS_META[entry.status];
+
+                return (
+                  <GridItem
+                    key={`${entry.folder ?? 'root'}/${entry.filename}`}
+                    onClick={() => router.push(docUrl(entry))}
+                    image={entry.image ? { src: entry.image, alt: entry.title } : undefined}
+                    avatar={{ src: entry.avatar ?? undefined, label: entry.author }}
+                    badge={
+                      <Badge
+                        text={status.label}
+                        variant="custom"
+                        customColor={status.color}
+                        customBgColor={status.bg}
+                      />
+                    }
+                    meta={meta || undefined}
+                    subtitle={entry.author}
+                    title={entry.title}
+                    description={entry.description}
+                    footer={<TagList tags={entry.tags} activeTags={activeTags} align="left" />}
+                  />
+                );
+              })
             )}
-          </TableBody>
-        </Table>
+          </GridBody>
+        </Grid>
       </Section>
     </>
   );
@@ -188,77 +195,8 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
 
 // ── SSR ───────────────────────────────────────────────────────────────────────
 
-function parseFrontmatter(content: string): { tags: string[]; description: string } {
-  if (!content.startsWith('---')) return { tags: [], description: '' };
-  const end = content.indexOf('\n---', 3);
-  if (end === -1) return { tags: [], description: '' };
-  const result = { tags: [] as string[], description: '' };
-  for (const line of content.slice(3, end).trim().split('\n')) {
-    const colonIdx = line.indexOf(':');
-    if (colonIdx === -1) continue;
-    const key = line.slice(0, colonIdx).trim();
-    const val = line.slice(colonIdx + 1).trim();
-    if (key === 'tags') {
-      const inner = val.startsWith('[') && val.endsWith(']') ? val.slice(1, -1) : val;
-      result.tags = inner
-        .split(',')
-        .map(t => t.trim())
-        .filter(Boolean);
-    } else if (key === 'description') {
-      result.description = val.replace(/^["']|["']$/g, '');
-    }
-  }
-  return result;
-}
-
-function titleFromFilename(filename: string): string {
-  return filename.split('_').slice(1).join(' ').trim() || filename;
-}
-
-function scanRecursive(
-  dirPath: string,
-  docsRoot: string,
-  entries: DocEntry[],
-  folders: Set<string>
-) {
-  if (!fs.existsSync(dirPath)) return;
-  for (const item of fs.readdirSync(dirPath, { withFileTypes: true })) {
-    const fullPath = path.join(dirPath, item.name);
-    const relDir = path.relative(docsRoot, dirPath).replace(/\\/g, '/');
-    const folder = relDir === '' ? null : relDir.split('/')[0];
-
-    if (item.isFile() && item.name.endsWith('.md')) {
-      const filename = item.name.slice(0, -3);
-      const relPath = relDir === '' ? filename : `${relDir}/${filename}`;
-      const { tags, description } = parseFrontmatter(fs.readFileSync(fullPath, 'utf-8'));
-      entries.push({
-        filename,
-        folder,
-        path: relPath,
-        title: titleFromFilename(filename),
-        tags,
-        description,
-      });
-    }
-
-    if (item.isDirectory()) {
-      const folderRelPath = path.relative(docsRoot, fullPath).replace(/\\/g, '/');
-      folders.add(folderRelPath.split('/')[0]);
-      scanRecursive(fullPath, docsRoot, entries, folders);
-    }
-  }
-}
-
 export async function getServerSideProps() {
   const docsPath = path.join(process.cwd(), 'docs');
-  const entries: DocEntry[] = [];
-  const folders = new Set<string>();
-
-  try {
-    scanRecursive(docsPath, docsPath, entries, folders);
-  } catch {
-    // docs dir not accessible
-  }
-
-  return { props: { entries, folders: [...folders].sort() } };
+  const { entries } = scanDocs(docsPath);
+  return { props: { entries } };
 }
