@@ -32,7 +32,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 
 ### **Technology Stack Philosophy:**
 
-- **Next.js 15** with Pages Router - Optimal Web3 compatibility
+- **Next.js 16** with Pages Router - Optimal Web3 compatibility
 - **React 19** with TypeScript - Type-safe, modern development
 - **Wagmi 2.x + Viem + Reown AppKit** - Modern Web3 stack
 - **Redux Toolkit + Persist** - Centralized state with persistence
@@ -52,17 +52,18 @@ The platform combines **independent asset management funding** with **cutting-ed
 /wrytes/
 ├── components/              # 🧩 Reusable UI Components
 │   ├── ui/                 # Generic UI primitives (ALWAYS REUSE THESE)
-│   │   ├── Input/ButtonInput.tsx  # Multi-variant button system
+│   │   ├── input/          # ButtonInput.tsx, TextInput.tsx, TokenInput.tsx, ...
 │   │   ├── Card.tsx        # Flexible card component
 │   │   ├── Toast.tsx       # Flexible toast component
-│   │   ├── Modal/          # Modal system with variants
-│   │   ├── Stats/          # Metric display components
-│   │   └── TransactionQueue/ # Generic transaction management
+│   │   ├── modal/          # Modal system with variants
+│   │   ├── stats/          # Metric display components
+│   │   ├── table/          # Table, TableRow, TableHeadSearchable, ...
+│   │   └── layout/         # PageHeader, Section, Breadcrumb
 │   ├── features/           # 🚀 Feature-specific components
-│   │   ├── Dashboard/      # Dashboard feature module
+│   │   ├── accounting/     # Coin-tracking / accounting feature module
 │   │   ├── routes/         # On/off-ramp routes feature
-│   │   ├── Vaults/         # Vault management
-│   │   └── [Future]/       # Future feature modules
+│   │   ├── deribitAgent/   # Deribit Agent shared components
+│   │   └── [feature]/      # Other feature modules
 │   ├── layouts/            # 📐 Layout components — generic building blocks live at this root
 │   │   ├── AppLayout.tsx   # ⭐ Generic layout shell — use for ALL new sections
 │   │   ├── Layout.tsx      # Route → layout dispatcher
@@ -79,12 +80,10 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │       └── HomeLayout.tsx
 │   └── landing/            # 🏠 Landing page sections
 ├── hooks/                  # 🔗 Custom React hooks
-│   ├── adapter/            # Protocol adapter hooks (Falcon, Morpho)
 │   ├── redux/              # Redux state hooks
 │   │   ├── useTransactionQueue.ts
 │   │   └── useKrakenCredentials.ts
 │   ├── ui/                 # Generic UI hooks
-│   ├── vaults/             # Vault-specific hooks
 │   ├── web3/               # Web3 interaction hooks
 │   └── [feature]/          # Feature-specific hooks
 ├── lib/                    # 🛠️ Business logic & integrations
@@ -95,9 +94,9 @@ The platform combines **independent asset management funding** with **cutting-ed
 │   │   ├── docs.ts         # DOCS_NAVIGATION
 │   │   ├── home.ts         # HOME_NAVIGATION
 │   │   └── routes.ts       # ROUTES_NAVIGATION
-│   ├── vaults/             # Vault configurations (extensible)
 │   ├── web3/               # Web3 configuration
 │   ├── graphql/            # GraphQL client & queries
+│   ├── deribit-agent/      # Deribit Agent API client
 │   └── utils/              # Utility functions
 ├── logs/                   # 📋 Project Documentation & Change History
 │   └── CHANGELOG-YYYY.MM.DD.md # Dated changelog files for version tracking
@@ -123,12 +122,12 @@ The platform combines **independent asset management funding** with **cutting-ed
 **Before building new components, check these locations:**
 
 1. **`components/ui/`** - Generic UI primitives
-   - `Input/ButtonInput.tsx` - Variants: `primary | secondary | outline | ghost | error`
+   - `input/ButtonInput.tsx` - Variants: `primary | secondary | outline | ghost | error`
    - `Card.tsx` - Flexible card component
    - `Toast.tsx` + `showToast` - `success | error | info | warning | custom`
-   - `Modal/` - Complete modal system with confirm variants
-   - `Stats/` - Metric display with various layouts
-   - `TransactionQueue/` - Generic transaction management
+   - `modal/` - Complete modal system with confirm variants
+   - `stats/` - Metric display with various layouts
+   - `table/` - Generic table/row components with searchable headers
 
 2. **`components/layouts/`** - Shared layout pieces
    - `AppLayout.tsx` - **Generic layout shell** — inject `logo`, `navItems`, `isActive`, `headerRight`, `mobileExtra`. Use this for every new section layout.
@@ -137,17 +136,12 @@ The platform combines **independent asset management funding** with **cutting-ed
    - `footers/Footer.tsx` - Fuller marketing footer (links, socials) used only by `HomeLayout`.
 
 3. **`components/features/[existing-feature]/`** - Feature-specific patterns
-   - Reuse patterns from `Vaults/` for similar data management
-   - Adapt `Dashboard/` patterns for analytics features
+   - Reuse patterns from `routes/` or `tokenTransfers/` for similar data-heavy management
 
 4. **`hooks/ui/`** - Generic UI hooks
    - `useModal.ts` - Modal state management
 
-5. **`hooks/adapter/`** - Protocol-specific data fetching hooks
-   - `useFalconData.ts` - Falcon protocol integration
-   - `useMorphoVaultData.ts` - Enhanced Morpho vault data fetching
-
-6. **`hooks/redux/`** - Redux state management hooks
+5. **`hooks/redux/`** - Redux state management hooks
    - `useTransactionQueue.ts` - Transaction queue management
    - `useKrakenCredentials.ts` - Kraken API key/secret (read, save, clear)
 
@@ -179,7 +173,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 1. **Create Feature Directory:**
 
    ```
-   components/features/[FeatureName]/
+   components/features/[featureName]/
    ├── index.ts              # Feature exports
    ├── types.ts              # Feature-specific types
    ├── [FeatureName].tsx     # Main feature component
@@ -195,13 +189,6 @@ The platform combines **independent asset management funding** with **cutting-ed
    └── use[Feature]Actions.ts # Feature actions
    ```
 
-   **OR use Protocol Adapters:**
-
-   ```
-   hooks/adapter/
-   ├── use[Protocol]Data.ts  # Protocol-specific data fetching
-   ```
-
 3. **Add to Navigation:**
 
    ```
@@ -209,14 +196,13 @@ The platform combines **independent asset management funding** with **cutting-ed
    ```
 
 4. **Follow Existing Patterns:**
-   - Use `Vaults/` as reference for data-heavy features
-   - Use `Dashboard/` as reference for analytics features
+   - Use `routes/` or `tokenTransfers/` as reference for data-heavy features
    - Reuse `ui/` components extensively
 
 ### **Feature Integration Checklist:**
 
 - [ ] Reuse existing UI components from `components/ui/`
-- [ ] Create feature-specific hooks in `hooks/[feature]/` or protocol adapters in `hooks/adapter/`
+- [ ] Create feature-specific hooks in `hooks/[feature]/`
 - [ ] Add to navigation system
 - [ ] Implement proper loading states
 - [ ] Add error boundaries
@@ -229,7 +215,7 @@ The platform combines **independent asset management funding** with **cutting-ed
 ### **Multi-Protocol Support:**
 
 - **Current:** Morpho (with enhanced GraphQL), Curve, TermMax, Frankencoin, USDU Finance, Deribit
-- **Architecture:** Protocol adapter pattern for standardized interfaces
+- **Architecture:** Each protocol integration owns its own hooks/queries under `lib/graphql/` or its feature folder — no shared adapter-hook layer
 - **Future:** Any Distributed Ledger Technology protocol with standardized interfaces
 
 ### **Wallet Integration:**
@@ -241,17 +227,13 @@ The platform combines **independent asset management funding** with **cutting-ed
 ### **Contract Interaction Patterns:**
 
 ```typescript
-// ✅ Use existing patterns from vaults/
-const { data, isLoading, error } = useContractRead({
-  address: vaultAddress,
-  abi: vaultABI,
+// ✅ Read on-chain data with wagmi
+const { data, isLoading, error } = useReadContract({
+  address: contractAddress,
+  abi: contractAbi,
   functionName: 'balanceOf',
   args: [userAddress],
 });
-
-// ✅ Use protocol adapters for enhanced data fetching
-const { vaultData, isLoading } = useMorphoVaultData(vaultAddress);
-const { falconData } = useFalconData();
 
 // ✅ Use transaction queue for batch operations
 const { addTransaction, clearQueue } = useTransactionQueue();
@@ -359,7 +341,6 @@ interface ProtocolConfig {
     graphql?: string;
     rpc?: string;
   };
-  vaults: VaultConfig[];
 }
 
 // Feature module pattern
@@ -549,7 +530,7 @@ if (
 ### **Common Issues:**
 
 - **Build Errors** → Run `yarn type-check` first
-- **Wallet Issues** → Check `REOWN_PROJECT_ID` configuration
+- **Wallet Issues** → Check `NEXT_PUBLIC_REOWN_PROJECT_ID` configuration
 - **GraphQL Errors** → Verify API endpoints and keys
 - **Performance Issues** → Use `yarn analyze` for bundle analysis
 
