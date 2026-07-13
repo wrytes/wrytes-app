@@ -665,7 +665,7 @@ function TokenOverviewSection({
                     const isEditingPrice = priceEditing?.symbol === sym && priceEditing.bucket === cell.bucket;
 
                     return (
-                      <TableRow key={key} headers={headers} colSpan={headers.length} rawHeader>
+                      <TableRow key={key} headers={headers} colSpan={headers.length}>
                         <div className="group flex items-center gap-2 text-left">
                           <TokenLogo symbol={t.tokenSymbol} />
                           <span className="font-semibold text-sm text-text-primary">{t.tokenSymbol ?? 'Unknown'}</span>
@@ -745,7 +745,7 @@ function TokenOverviewSection({
                     );
                   });
                   rows.push(
-                    <TableRow key="__total" headers={headers} colSpan={headers.length} rawHeader>
+                    <TableRow key="__total" headers={headers} colSpan={headers.length}>
                       <div className="text-left font-bold text-text-primary text-sm">Total</div>
                       <div />
                       <div />

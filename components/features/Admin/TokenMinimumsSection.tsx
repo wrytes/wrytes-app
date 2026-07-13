@@ -140,7 +140,7 @@ export default function TokenMinimumsSection() {
               <TableRowEmpty>No token minimums configured.</TableRowEmpty>
             ) : (
               tokens.map(t => (
-                <TableRow key={t.symbol} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+                <TableRow key={t.symbol} headers={HEADERS} colSpan={HEADERS.length}>
                   <div className="font-mono font-medium text-left">{t.symbol}</div>
                   <EditableCell
                     value={t.minAmount}

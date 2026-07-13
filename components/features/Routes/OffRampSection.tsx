@@ -213,7 +213,6 @@ export default function OffRampSection({ hasScope, onRoutesLoaded }: Props) {
                     headers={ROUTE_HEADERS}
                     colSpan={ROUTE_HEADERS.length}
                     tab={rSort}
-                    rawHeader
                   >
                     <div className="text-left">
                       <AddressDisplay

@@ -171,7 +171,6 @@ export default function BankAccountsSection({ hasScope, addOpen = false, onClose
                     headers={HEADERS}
                     colSpan={HEADERS.length}
                     tab={accSort}
-                    rawHeader
                   >
                     <div className="text-left font-mono text-sm">{acc.iban}</div>
                     <div className="flex justify-end">

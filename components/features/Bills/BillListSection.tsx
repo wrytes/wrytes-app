@@ -152,7 +152,6 @@ export default function BillListSection({ isAdmin }: Props) {
                     headers={HEADERS}
                     colSpan={HEADERS.length}
                     tab={sortTab}
-                    rawHeader
                     onClick={() => setSelected(bill)}
                   >
                     <div className="flex flex-col gap-0.5 md:text-left max-md:text-right">

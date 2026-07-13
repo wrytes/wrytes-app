@@ -87,7 +87,6 @@ export default function SafeWalletsSection({ hasScope }: Props) {
                   headers={SAFE_HEADERS}
                   colSpan={SAFE_HEADERS.length}
                   tab={safeSort}
-                  rawHeader
                 >
                   <div className="text-left">
                     <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />

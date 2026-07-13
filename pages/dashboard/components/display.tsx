@@ -552,7 +552,6 @@ export default function DisplayComponentPage() {
                   headers={POSITION_HEADERS}
                   tab={sortTab}
                   colSpan={4}
-                  rawHeader
                 >
                   <div className="text-left font-semibold text-text-primary flex items-center gap-2">
                     <TokenLogo currency={pos.asset} size={6} />
@@ -585,7 +584,6 @@ export default function DisplayComponentPage() {
                 headers={PROTOCOL_HEADERS}
                 tab={protocolSortTab}
                 colSpan={4}
-                rawHeader
               >
                 <div className="text-left font-semibold text-text-primary flex items-center gap-2">
                   <ChainLogo chain={row.chain} size={6} />

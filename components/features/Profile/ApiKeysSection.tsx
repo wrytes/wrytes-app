@@ -144,7 +144,6 @@ export default function ApiKeysSection({ hasScope = true }: Props) {
                     headers={KEY_HEADERS}
                     colSpan={KEY_HEADERS.length}
                     tab={kSort}
-                    rawHeader
                   >
                     <div className="text-left font-mono text-sm">{k.keyId}</div>
                     <div className="text-right text-sm">{fmt(k.createdAt)}</div>

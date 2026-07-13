@@ -139,6 +139,7 @@ export default function DocsIndexPage({ entries, folders }: DocsIndexPageProps) 
                   tab={sortTab}
                   colSpan={COL_SPAN}
                   className="cursor-pointer"
+                  noFirstHeader
                   actionCol={
                     <button
                       type="button"

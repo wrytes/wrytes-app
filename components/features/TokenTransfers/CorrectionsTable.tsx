@@ -107,7 +107,7 @@ function AdjustmentRow({ adj, onSave, onDelete, address }: RowProps) {
 
   if (editing) {
     return (
-      <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+      <TableRow headers={HEADERS} colSpan={HEADERS.length}>
         {/* Date (+ address badge stacked below, fixed — not editable) */}
         <div className="flex flex-col items-start gap-1">
           <input
@@ -185,7 +185,7 @@ function AdjustmentRow({ adj, onSave, onDelete, address }: RowProps) {
   }
 
   return (
-    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+    <TableRow headers={HEADERS} colSpan={HEADERS.length}>
       {/* Date (+ address badge stacked below) */}
       <div className="flex flex-col items-start gap-1">
         <span className="text-sm text-text-secondary">{fmtDate(adj.date)}</span>
@@ -276,7 +276,7 @@ function AddRow({ onAdd, onCancel, prefill, addresses }: AddRowProps) {
   };
 
   return (
-    <TableRow headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+    <TableRow headers={HEADERS} colSpan={HEADERS.length}>
       <div className="flex flex-col items-start gap-1">
         <input
           type="date"

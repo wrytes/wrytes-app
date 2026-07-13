@@ -9,7 +9,7 @@ interface Props {
   headers?: string[];
   subHeaders?: string[];
   tab?: string;
-  rawHeader?: boolean;
+  noFirstHeader?: boolean;
   paddingY?: string;
   onClick?: () => void;
 }
@@ -23,7 +23,7 @@ export default function TableRow({
   tab = '',
   className,
   classNameMobile = '',
-  rawHeader = false,
+  noFirstHeader = false,
   paddingY,
   onClick,
 }: Props) {
@@ -62,7 +62,7 @@ export default function TableRow({
           subHeaders={subHeaders}
           tab={tab}
           className={classNameMobile}
-          rawHeader={rawHeader}
+          noFirstHeader={noFirstHeader}
         >
           {childArray}
         </TableRowMobile>
@@ -84,12 +84,12 @@ interface TableRowMobileProps {
   subHeaders: string[];
   tab: string;
   className: string;
-  rawHeader: boolean;
+  noFirstHeader: boolean;
 }
 
 function TableRowMobile({
   children,
-  rawHeader,
+  noFirstHeader,
   headers,
   subHeaders,
   tab,
@@ -110,7 +110,7 @@ function TableRowMobile({
       {children.map((c, idx) => (
         <div className="flex items-center" key={c.key ?? `row-mobile-${tab}-${idx}`}>
           <div className="flex-1 text-left">
-            {idx === 0 && !rawHeader ? (
+            {idx === 0 && noFirstHeader ? (
               <div
                 className={
                   headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'
@@ -140,7 +140,7 @@ function TableRowMobile({
           <div
             className={`text-right ${headers[idx] === tab ? 'text-text-primary font-semibold' : 'text-text-secondary'}`}
           >
-            {idx === 0 && !rawHeader ? '' : c}
+            {idx === 0 && noFirstHeader ? '' : c}
           </div>
         </div>
       ))}

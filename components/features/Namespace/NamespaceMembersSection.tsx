@@ -71,7 +71,6 @@ export default function NamespaceMembersSection({
                 headers={MEMBER_HEADERS}
                 colSpan={MEMBER_HEADERS.length}
                 tab={sortTab}
-                rawHeader
               >
                 <div className="text-left text-sm text-text-primary">{displayName(m)}</div>
                 <div className="flex justify-end">

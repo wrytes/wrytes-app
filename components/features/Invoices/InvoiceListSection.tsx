@@ -81,7 +81,6 @@ export default function InvoiceListSection({ creating = false, onCloseCreate }: 
                   headers={HEADERS}
                   colSpan={HEADERS.length}
                   tab={sortTab}
-                  rawHeader
                   onClick={() => setSelected(inv)}
                 >
                   <div className="text-sm font-medium text-text-primary text-left">

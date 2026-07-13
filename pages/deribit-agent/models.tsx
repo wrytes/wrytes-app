@@ -939,6 +939,7 @@ export default function ModelsPage() {
                       colSpan={SESSION_HEADERS.length}
                       headers={SESSION_HEADERS}
                       tab={sessionSortCol}
+                      noFirstHeader
                       actionCol={
                         <div className="flex items-center justify-end gap-1">
                           {(s.status === 'QUEUED' || s.status === 'RUNNING') && (
@@ -1040,6 +1041,7 @@ export default function ModelsPage() {
                       colSpan={MODEL_HEADERS.length}
                       headers={MODEL_HEADERS}
                       tab={modelSortCol}
+                      noFirstHeader
                       actionCol={
                         <div className="flex items-center justify-end">
                           <button

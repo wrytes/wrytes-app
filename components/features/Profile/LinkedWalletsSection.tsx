@@ -178,7 +178,6 @@ export default function LinkedWalletsSection({ hasScope = true, linkOpen = false
                     headers={WALLET_HEADERS}
                     colSpan={WALLET_HEADERS.length}
                     tab={wSort}
-                    rawHeader
                   >
                     <div className="text-left">
                       <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />

@@ -167,7 +167,6 @@ export default function ExecutionHistorySection({ isAdmin, hasScope, routes }: P
                       headers={EXEC_HEADERS}
                       colSpan={EXEC_HEADERS.length}
                       tab={eSort}
-                      rawHeader
                       onClick={() => setDetailTarget(ex)}
                     >
                       <div className="text-left text-sm">{formatDate(ex.createdAt)}</div>

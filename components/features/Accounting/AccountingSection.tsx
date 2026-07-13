@@ -892,7 +892,6 @@ export default function AccountingSection() {
                         headers={TRANSFER_HEADERS}
                         colSpan={TRANSFER_HEADERS.length}
                         tab={sortTab}
-                        rawHeader
                       >
                         {/* Date + tx hash */}
                         <div className="flex flex-col gap-1 text-left">

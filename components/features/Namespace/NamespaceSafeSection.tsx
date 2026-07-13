@@ -200,7 +200,6 @@ export default function NamespaceSafeSection({
                 headers={SAFE_HEADERS}
                 colSpan={SAFE_HEADERS.length}
                 tab={sortTab}
-                rawHeader
               >
                 <div className="text-left">
                   <AddressDisplay address={w.address} prefixLength={8} suffixLength={6} />

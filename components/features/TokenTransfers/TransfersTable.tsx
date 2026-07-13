@@ -251,7 +251,7 @@ export function TransfersTable({ transfers, addresses, loading, onUpdate }: Prop
             const isEditingLabel = labelEditing?.addr === addr;
 
             return (
-              <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length} rawHeader>
+              <TableRow key={t.id} headers={HEADERS} colSpan={HEADERS.length}>
                 {/* Date (+ address badge stacked below) */}
                 <div className="flex flex-col items-start gap-1">
                   {txUrl ? (
