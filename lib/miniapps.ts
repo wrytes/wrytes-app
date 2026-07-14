@@ -39,7 +39,7 @@ export const MINI_APPS: MiniApp[] = [
     icon: faChartLine,
     color: 'bg-brand/10 text-brand',
     development: true,
-    disabled: false,
+    disabled: true,
   },
   {
     id: 'invoices',
@@ -60,7 +60,7 @@ export const MINI_APPS: MiniApp[] = [
     icon: faCoins,
     color: 'bg-teal-50 text-teal-600',
     development: true,
-    disabled: false,
+    disabled: true,
   },
   {
     id: 'execution-engine',
@@ -92,6 +92,6 @@ export const MINI_APPS: MiniApp[] = [
     icon: faRobot,
     color: 'bg-amber-50 text-amber-600',
     development: true,
-    disabled: false,
+    disabled: true,
   },
 ];
